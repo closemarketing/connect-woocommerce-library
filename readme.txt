@@ -1,0 +1,45 @@
+=== Sync eCommerce for NEO ERP ===
+Contributors: closemarketing, davidperez, sacrajaimez
+Tags: neo erp, woocommerce
+Donate link: https://www.closemarketing.es/go/donate/
+Requires at least: 3.0
+Tested up to: 5.6
+Stable tag: 1.2b4
+Version: 1.2b4
+
+Imports Products and data from NEO software to WooCommerce or Easy Digital Downloads.
+
+== Description ==
+
+This plugin allows you to import simple products from Holded to WooCommerce. 
+
+It creates a new menu in WooCommerce > Products > Import products from NEO.
+
+You can import simple products, and it will create new products if it does not find the SKU code from your WooCommerce. If the SKU exists, it will import all data except title and description from the product. The stock will be imported as well.
+
+¡We have a Premium version!
+These are the features:
+- Import categories from NEO.
+- Import attributes as brands or others.
+- Import variable products.
+- Automate the syncronization.
+
+[You could buy it here](https://checkout.freemius.com/mode/dialog/plugin/5133/plan/8469/)
+
+Made by [Closemarketing](https://www.closemarketing.es/)
+
+== Installation ==
+
+Extract the zip file and just drop the contents in the wp-content/plugins/ directory of your
+WordPress installation and then activate the Plugin from Plugins page.
+
+
+== Developers ==
+
+== Changelog ==
+= 1.2 =
+*   First released.
+
+== Links ==
+
+*   [Closemarketing](https://www.closemarketing.net/)
