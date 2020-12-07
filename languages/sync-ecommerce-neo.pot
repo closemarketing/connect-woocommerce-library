@@ -1,0 +1,365 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"Project-Id-Version: Import Holded for WooCommerce or Easy Digital Downloads\n"
+"POT-Creation-Date: 2020-11-21 11:35+0100\n"
+"PO-Revision-Date: 2020-11-21 11:35+0100\n"
+"Last-Translator: David <david@closemarketing.es>\n"
+"Language-Team: David <david@closemarketing.es>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.4.2\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-Flags-xgettext: --add-comments=translators:\n"
+"X-Poedit-WPHeader: import-holded-products-woocommerce.php\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;"
+"esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;"
+"_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: *.min.js\n"
+"X-Poedit-SearchPathExcluded-1: vendor\n"
+
+#: import-holded-products-woocommerce.php:117
+msgid "Every 5 Minutes"
+msgstr ""
+
+#: import-holded-products-woocommerce.php:121
+msgid "Every 15 minutes"
+msgstr ""
+
+#: import-holded-products-woocommerce.php:125
+msgid "Every 30 Minutes"
+msgstr ""
+
+#: import-holded-products-woocommerce.php:129
+msgid "Every 1 Hour"
+msgstr ""
+
+#: import-holded-products-woocommerce.php:133
+msgid "Every 3 Hours"
+msgstr ""
+
+#: import-holded-products-woocommerce.php:137
+msgid "Every 6 Hours"
+msgstr ""
+
+#: import-holded-products-woocommerce.php:141
+msgid "Every 12 Hours"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:56
+msgid "(ONLY PREMIUM VERSION)"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:93
+msgid "Default price"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:109
+msgid "Import from Holded to eCommerces"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:110
+msgid "Import from Holded"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:128
+msgid "Holded Product Importing Settings"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:135
+msgid "Manual Synchronization"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:136 includes/class-wcpimh-admin.php:292
+msgid "Automate"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:137
+msgid "Settings"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:149
+msgid "Save settings"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:162
+msgid "Save automate"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:187
+msgid "Settings for Importing in Easy Digital Downloads"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:189
+msgid "Settings for Importing in WooCommerce"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:201
+msgid "Holded API Key"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:210
+msgid "Import stock?"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:219
+msgid "Default status for new products?"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:228
+msgid "Virtual products?"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:236
+msgid "Allow backorders?"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:243
+msgid "Category separator"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:257
+msgid "Filter products by tag?"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:263
+msgid "Product price rate for this eCommerce"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:264
+msgid "Copy and paste the ID of the rates for publishing in the web"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:276
+msgid "Import category only in new products?"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:297
+msgid "When do you want to sync?"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:308
+msgid "How many products do you want to sync each time?"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:321
+msgid "Do you want to receive an email when all products are synced?"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:412
+#, php-format
+msgid "<a href=\"%s\">Get Pro version</a> to enable"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:433
+msgid "Make your settings to automate the sync."
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:435
+msgid "Section only for Premium version"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:447
+#, php-format
+msgid ""
+"Put the connection API key settings in order to connect and sync products. "
+"You can go here <a href = \"%s\" target = \"_blank\">App Holded API</a>. "
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:465 includes/class-wcpimh-admin.php:493
+#: includes/class-wcpimh-admin.php:504 includes/class-wcpimh-admin.php:551
+#: includes/class-wcpimh-admin.php:612
+msgid "Yes"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:467 includes/class-wcpimh-admin.php:491
+#: includes/class-wcpimh-admin.php:502 includes/class-wcpimh-admin.php:553
+#: includes/class-wcpimh-admin.php:567 includes/class-wcpimh-admin.php:614
+msgid "No"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:476
+msgid "Draft"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:478
+msgid "Publish"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:480
+msgid "Pending"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:482
+msgid "Private"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:506
+msgid "Notify"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:570
+msgid "Every day"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:573
+msgid "Every twelve hours"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:576
+msgid "Every six hours"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:579
+msgid "Every three hours"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:582
+msgid "Every hour"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:585
+msgid "Every thirty minutes"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:588
+msgid "Every fifteen minutes"
+msgstr ""
+
+#: includes/class-wcpimh-admin.php:591
+msgid "Every five minutes"
+msgstr ""
+
+#: includes/class-wcpimh-import.php:520
+msgid "Variation error: "
+msgstr ""
+
+#: includes/class-wcpimh-import.php:806
+msgid "Product created: "
+msgstr ""
+
+#: includes/class-wcpimh-import.php:807
+msgid "Product synced: "
+msgstr ""
+
+#: includes/class-wcpimh-import.php:857 includes/class-wcpimh-import.php:861
+#: includes/class-wcpimh-import.php:998 includes/class-wcpimh-import.php:1000
+msgid "No products to import"
+msgstr ""
+
+#: includes/class-wcpimh-import.php:895 includes/class-wcpimh-import.php:899
+msgid "There was an error while inserting new product!"
+msgstr ""
+
+#: includes/class-wcpimh-import.php:928 includes/class-wcpimh-import.php:1280
+msgid "Product not imported becouse any variant has got SKU: "
+msgstr ""
+
+#: includes/class-wcpimh-import.php:941
+msgid "Product filtered to not import: "
+msgstr ""
+
+#: includes/class-wcpimh-import.php:944
+msgid "SKU not finded in Simple product. Product not imported: "
+msgstr ""
+
+#: includes/class-wcpimh-import.php:950
+msgid "SKU not finded in Simple product. Product not imported. "
+msgstr ""
+
+#: includes/class-wcpimh-import.php:954 includes/class-wcpimh-import.php:960
+msgid "Product type not supported. Product not imported: "
+msgstr ""
+
+#: includes/class-wcpimh-import.php:969
+msgid "products. "
+msgstr ""
+
+#: includes/class-wcpimh-import.php:971
+msgid "All caught up!"
+msgstr ""
+
+#: includes/class-wcpimh-import.php:1022
+msgid "Error:"
+msgstr ""
+
+#: includes/class-wcpimh-import.php:1023
+msgid "SKU:"
+msgstr ""
+
+#: includes/class-wcpimh-import.php:1024
+msgid "Name:"
+msgstr ""
+
+#: includes/class-wcpimh-import.php:1026
+msgid "Edit:"
+msgstr ""
+
+#: includes/class-wcpimh-import.php:1031
+msgid "Error in Products Synced in"
+msgstr ""
+
+#: includes/class-wcpimh-import.php:1130
+msgid "Import Products from Holded"
+msgstr ""
+
+#: includes/class-wcpimh-import.php:1130
+msgid ""
+"After you fillup the API settings, use the button below to import the "
+"products. The importing process may take a while and you need to keep this "
+"page open to complete it."
+msgstr ""
+
+#: includes/class-wcpimh-import.php:1130
+msgid "Start Import"
+msgstr ""
+
+#: includes/class-wcpimh-import.php:1130
+msgid "Log"
+msgstr ""
+
+#: includes/class-wcpimh-import.php:1293
+msgid "SKU not finded in Simple product. Product not imported "
+msgstr ""
+
+#: includes/class-wcpimh-import.php:1303
+msgid "Product type not supported. Product not imported "
+msgstr ""
+
+#: includes/class-wcpimh-import.php:1441
+msgid "All products synced with Holded"
+msgstr ""
+
+#: includes/class-wcpimh-import.php:1443
+msgid "Total products:"
+msgstr ""
+
+#: includes/class-wcpimh-import.php:1445
+msgid "Time:"
+msgstr ""
+
+#. Plugin Name of the plugin/theme
+msgid "Import Holded for WooCommerce or Easy Digital Downloads"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "https://www.closemarketing.es"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid ""
+"Imports Products and data from Holded to WooCommerce or Easy Digital "
+"Downloads."
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "closemarketing"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "https://www.closemarketing.es/"
+msgstr ""
