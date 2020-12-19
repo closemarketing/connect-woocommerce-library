@@ -10,6 +10,21 @@
 
 defined( 'ABSPATH' ) || exit;
 
+if ( ! function_exists( 'error_admin_message' ) ) {
+	/**
+	 * Shows in WordPress error message
+	 *
+	 * @param string $code Code of error.
+	 * @param string $message Message.
+	 * @return void
+	 */
+	function error_admin_message( $code, $message ) {
+		echo '<div class="error">';
+		echo '<p><strong>API ' . $code . ': </strong> ' . $message . '</p>';
+		echo '</div>';
+	}
+}
+
 /**
  * Check if is active ecommerce plugin
  *
@@ -27,42 +42,75 @@ function sync_is_active_ecommerce( $plugin ) {
 }
 
 /**
+ * Gets token of API NEO
+ *
+ * @return string Array of products imported via API.
+ */
+function sync_get_token( $renew_token = false ) {
+	$sync_settings = get_option( PLUGIN_OPTIONS );
+	$token         = get_transient( PLUGIN_PREFIX . 'token' );
+
+	if ( ! $token || ! $renew_token ) {
+		$idcentre = isset( $sync_settings[ PLUGIN_PREFIX . 'idcentre' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'idcentre' ] : false;
+		$api      = isset( $sync_settings[ PLUGIN_PREFIX . 'api' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'api' ] : false;
+
+		if ( false === $idcentre || false === $api ) {
+			return false;
+		}
+
+		$args = array(
+			'body' => array(
+				'Centro' => $idcentre,
+				'APIKey' => $api,
+			),
+		);
+
+		$response      = wp_remote_post( 'https://apis.bartolomeconsultores.com/pedidosweb/gettoken.php', $args );
+		$body          = wp_remote_retrieve_body( $response );
+		$body_response = json_decode( $body, true );
+
+		if ( isset( $body_response['result'] ) && 'error' === $body_response['result'] ) {
+			error_admin_message( 'ERROR', $body_response['message'] );
+			return false;
+		}
+		if ( ! isset( $body_response['token'] ) ) {
+			error_admin_message( 'ERROR', $body_response['message'] );
+			return false;
+		}
+		set_transient( PLUGIN_PREFIX . 'token', $body_response['token'], EXPIRE_TOKEN );
+		return $body_response['token'];
+	} else {
+		return $token;
+	}
+}
+
+/**
  * Gets information from Holded products
  *
  * @param string $id Id of product to get information.
  * @return array Array of products imported via API.
  */
 function sync_get_products( $id = null, $page = null ) {
-	$imh_settings = get_option( 'wcsen' );
-	if ( ! isset( $imh_settings['wcsen_api'] ) ) {
-		return false;
-	}
-	$apikey       = $imh_settings['wcsen_api'];
-	$args         = array(
-		'headers' => array(
-			'key' => $apikey,
+	$sync_settings = get_option( PLUGIN_OPTIONS );
+	$token         = sync_get_token();
+
+	$args = array(
+		'body' => array(
+			'token' => $token,
 		),
-		'timeout' => 10,
+		'timeout' => 100,
 	);
-	$url = '';
-	if ( $page > 1 ) {
-		$url = '?page=' . $page;
-	}
 
-	if ( $id ) {
-		$url = '/' . $id;
-	}
-
-	$response      = wp_remote_get( 'https://api.holded.com/api/invoicing/v1/products' . $url, $args );
+	$response      = wp_remote_post( 'https://apis.bartolomeconsultores.com/pedidosweb/verarticulos2.php', $args );
 	$body          = wp_remote_retrieve_body( $response );
 	$body_response = json_decode( $body, true );
 
-	if ( isset( $body_response['errors'] ) ) {
-		error_admin_message( 'ERROR', $body_response['errors'][0]['message'] . ' <br/> Api Call: /' );
+	if ( isset( $body_response['result'] ) && 'error' === $body_response['result'] ) {
+		error_admin_message( 'ERROR', $body_response['message'] );
 		return false;
 	}
 
-	return $body_response;
+	return $body_response['articulos'];
 }
 
 /**
@@ -78,8 +126,8 @@ function sync_put_product_image( $holded_id, $product_id ) {
 		return false;
 	}
 
-	$imh_settings = get_option( 'wcsen' );
-	$apikey       = $imh_settings['wcsen_api'];
+	$sync_settings = get_option( 'wcsen' );
+	$apikey       = $sync_settings['wcsen_api'];
 	$args         = array(
 		'headers' => array(
 			'key' => $apikey,

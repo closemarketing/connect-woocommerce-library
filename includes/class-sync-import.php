@@ -697,11 +697,11 @@ class SYNC_Import {
 	 */
 	public function sync_import_method_products() {
 		extract( $_REQUEST );
-		$not_sapi_cli = substr( php_sapi_name(), 0, 3 ) != 'cli' ? true : false;
-		$doing_ajax   = defined( 'DOING_AJAX' ) && DOING_AJAX;
+		$not_sapi_cli  = substr( php_sapi_name(), 0, 3 ) != 'cli' ? true : false;
+		$doing_ajax    = defined( 'DOING_AJAX' ) && DOING_AJAX;
 		$sync_settings = get_option( PLUGIN_OPTIONS );
-		$apikey       = $sync_settings[ PLUGIN_PREFIX . 'api'];
- 		$prod_status    = ( isset( $sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) && $sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'prodst' ] : 'draft';
+		$apikey        = $sync_settings[ PLUGIN_PREFIX . 'api' ];
+		$prod_status   = ( isset( $sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) && $sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'prodst' ] : 'draft';
 
 		if ( $this->is_woocommerce_active ) {
 			$post_type = 'product';
@@ -714,8 +714,8 @@ class SYNC_Import {
 		$syncLoop     = isset( $syncLoop ) ? $syncLoop : 0;
 
 		// Translations.
-		$msg_product_created = __( 'Product created: ', PLUGIN_SLUG );
-		$msg_product_synced  = __( 'Product synced: ', PLUGIN_SLUG );
+		$msg_product_created = __( 'Product created: ', 'sync-ecommerce-neo' );
+		$msg_product_synced  = __( 'Product synced: ', 'sync-ecommerce-neo' );
 
 		// Start.
 		if ( ! isset( $this->products ) ) {
@@ -726,7 +726,7 @@ class SYNC_Import {
 
 			while ( $next ) {
 				$this->write_log( 'Page: ' . $page );
-				$output   = $this->get_products( null, $page );
+				$output   = sync_get_products( null, $page );
 				$products = array_merge( $products, $output );
 
 				if ( count( $output ) === WCSEN_MAX_LIMIT_NEO_API ) {
@@ -930,16 +930,16 @@ class SYNC_Import {
 			return;
 		}
 		foreach ( $this->error_product_import as $error ) {
-			$error_content .= ' ' . __( 'Error:', PLUGIN_SLUG ) . $error['error'];
-			$error_content .= ' ' . __( 'SKU:', PLUGIN_SLUG ) . $error['sku'];
-			$error_content .= ' ' . __( 'Name:', PLUGIN_SLUG ) . $error['name'];
+			$error_content .= ' ' . __( 'Error:', 'sync-ecommerce-neo' ) . $error['error'];
+			$error_content .= ' ' . __( 'SKU:', 'sync-ecommerce-neo' ) . $error['sku'];
+			$error_content .= ' ' . __( 'Name:', 'sync-ecommerce-neo' ) . $error['name'];
 			$error_content .= ' <a href="https://app.holded.com/products/' . $error['id_holded'] . '">';
-			$error_content .= __( 'Edit:', PLUGIN_SLUG ) . '</a>';
+			$error_content .= __( 'Edit:', 'sync-ecommerce-neo' ) . '</a>';
 			$error_content .= '<br/>';
 		}
 		// Sends an email to admin.
 		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
-		wp_mail( get_option( 'admin_email' ), __( 'Error in Products Synced in', PLUGIN_SLUG ) . ' ' . get_option( 'blogname' ), $error_content, $headers );
+		wp_mail( get_option( 'admin_email' ), __( 'Error in Products Synced in', 'sync-ecommerce-neo' ) . ' ' . get_option( 'blogname' ), $error_content, $headers );
 	}
 
 	public function attach_image( $post_id, $img_string ) {
@@ -1030,7 +1030,7 @@ class SYNC_Import {
 		$screen  = get_current_screen();
 		$get_tab = isset( $_GET['tab'] ) ? $_GET['tab'] : 'sync';
 
-		if ( 'toplevel_page_import_neo' === $screen->base && 'sync' === $get_tab ) {
+		if ( 'toplevel_page_import_' . PLUGIN_SLUG === $screen->base && 'sync' === $get_tab ) {
 		?>
 		<style>
 			.spinner{ float: none; }
@@ -1038,7 +1038,7 @@ class SYNC_Import {
 		<script type="text/javascript">
 			var loop=0;
 			jQuery(function($){
-				$(document).find('#sync-neo-engine').after('<div class="sync-wrapper"><h2><?php _e( 'Import Products from Holded', PLUGIN_SLUG ); ?></h2><p><?php _e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', PLUGIN_SLUG ); ?><br/></p><button id="start-sync" class="button button-primary"<?php if ( false === $this->check_can_sync() ) { echo ' disabled'; } ?>><?php _e( 'Start Import', PLUGIN_SLUG ); ?></button></div><fieldset id="logwrapper"><legend><?php _e( 'Log', PLUGIN_SLUG ); ?></legend><div id="loglist"></div></fieldset>');
+				$(document).find('#sync-neo-engine').after('<div class="sync-wrapper"><h2><?php _e( 'Import Products from Holded', 'sync-ecommerce-neo' ); ?></h2><p><?php _e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', 'sync-ecommerce-neo' ); ?><br/></p><button id="start-sync" class="button button-primary"<?php if ( false === $this->check_can_sync() ) { echo ' disabled'; } ?>><?php _e( 'Start Import', 'sync-ecommerce-neo' ); ?></button></div><fieldset id="logwrapper"><legend><?php _e( 'Log', 'sync-ecommerce-neo' ); ?></legend><div id="loglist"></div></fieldset>');
 				$(document).find('#start-sync').on('click', function(){
 					$(this).attr('disabled','disabled');
 					$(this).after('<span class="spinner is-active"></span>');
@@ -1050,7 +1050,7 @@ class SYNC_Import {
 							url: "<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>",
 							dataType: "json",
 							data: {
-								action: "wcsen_import_products",
+								action: "sync_import_products",
 								syncLoop: x
 							},
 							success: function(results) {
@@ -1118,9 +1118,9 @@ class SYNC_Import {
 			$this->fill_table_sync();
 		} else {
 			foreach ( $products_sync as $product_sync ) {
-				$product_id = $product_sync['neo_prodid'];
+				$product_id = $product_sync['sync_prodid'];
 
-				$holded_product = $this->get_products( $product_id );
+				$holded_product = sync_get_products( $product_id );
 				$this->create_sync_product( $holded_product );
 				$this->save_product_sync( $product_id );
 			}
@@ -1188,7 +1188,7 @@ class SYNC_Import {
 				}
 			}
 			if ( false === $any_variant_sku ) {
-				$this->ajax_msg .= __( 'Product not imported becouse any variant has got SKU: ', PLUGIN_SLUG ) . $item['name'] . '(' . $item['kind'] . ') <br/>';
+				$this->ajax_msg .= __( 'Product not imported becouse any variant has got SKU: ', 'sync-ecommerce-neo' ) . $item['name'] . '(' . $item['kind'] . ') <br/>';
 			} else {
 				// Update meta for product.
 				$this->sync_product( $item, $post_parent, 'variable' );
@@ -1201,7 +1201,7 @@ class SYNC_Import {
 			}
 		} elseif ( '' === $item['sku'] && 'simple' === $item['kind'] ) {
 			$this->send_email_errors(
-				__( 'SKU not finded in Simple product. Product not imported ', PLUGIN_SLUG ),
+				__( 'SKU not finded in Simple product. Product not imported ', 'sync-ecommerce-neo' ),
 				array(
 					'Product id:' . $item['id'],
 					'Product name:' . $item['name'],
@@ -1237,7 +1237,7 @@ class SYNC_Import {
 		$products = array();
 
 		while ( $next ) {
-			$output   = $this->get_products( null, $page );
+			$output   = sync_get_products( null, $page );
 			if ( false === $output ) {
 				return false;
 			}
@@ -1254,7 +1254,7 @@ class SYNC_Import {
 
 			if ( ! $is_filtered_product ) {
 				$db_values = array(
-					'neo_prodid' => $product['id'],
+					'sync_prodid' => $product['id'],
 					'synced'        => false,
 				);
 				if ( ! $this->check_exist_valuedb( $product['id'] ) ) {
@@ -1275,9 +1275,9 @@ class SYNC_Import {
 	private function get_products_sync() {
 		global $wpdb;
 		$sync_settings = get_option( PLUGIN_OPTIONS );
-		$limit        = isset( $sync_settings[ PLUGIN_PREFIX . 'sync_nu m'] ) ? $sync_settings[ PLUGIN_PREFIX . 'sync_nu m'] : WCESN_MAX_SYNC_LOOP;
+		$limit        = isset( $sync_settings[ PLUGIN_PREFIX . 'sync_num'] ) ? $sync_settings[ PLUGIN_PREFIX . 'sync_num'] : WCESN_MAX_SYNC_LOOP;
 
-		$results = $wpdb->get_results( "SELECT neo_prodid FROM $this->table_sync WHERE synced = 0 LIMIT $limit", ARRAY_A );
+		$results = $wpdb->get_results( "SELECT sync_prodid FROM $this->table_sync WHERE synced = 0 LIMIT $limit", ARRAY_A );
 
 		if ( count( $results ) > 0 ) {
 			return $results;
@@ -1297,7 +1297,7 @@ class SYNC_Import {
 		if ( ! isset( $gid ) ) {
 			return false;
 		}
-		$results = $wpdb->get_row( "SELECT neo_prodid FROM $this->table_sync WHERE neo_prodid = '$gid'" );
+		$results = $wpdb->get_row( "SELECT sync_prodid FROM $this->table_sync WHERE sync_prodid = '$gid'" );
 
 		if ( $results ) {
 			return true;
@@ -1315,14 +1315,14 @@ class SYNC_Import {
 	private function save_product_sync( $product_id ) {
 		global $wpdb;
 		$db_values = array(
-			'neo_prodid' => $product_id,
+			'sync_prodid' => $product_id,
 			'synced'        => true,
 		);
 		$update = $wpdb->update(
 			$this->table_sync,
 			$db_values,
 			array(
-				'neo_prodid' => $product_id,
+				'sync_prodid' => $product_id,
 			)
 		);
 		if ( ! $update && $wpdb->last_error ) {
@@ -1346,7 +1346,7 @@ class SYNC_Import {
 		$sync_settings = get_option( PLUGIN_OPTIONS );
 		$send_email   = isset( $sync_settings[ PLUGIN_PREFIX . 'sync_em ail'] ) ? strval( $sync_settings[ PLUGIN_PREFIX . 'sync_em ail'] ) : 'yes';
 
-		$results = $wpdb->get_results( "SELECT neo_prodid FROM $this->table_sync WHERE synced = 1", ARRAY_A );
+		$results = $wpdb->get_results( "SELECT sync_prodid FROM $this->table_sync WHERE synced = 1", ARRAY_A );
 
 		if ( count( $results ) > 0 && 'yes' === $send_email ) {
 			$subject = __( 'All products synced with Holded', PLUGIN_SLUG );

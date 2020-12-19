@@ -86,19 +86,21 @@ class SYNC_Admin {
 	 * @return void
 	 */
 	public function create_admin_page() {
-		$this->sync_settings = get_option( PLUGIN_OPTIONS ); ?>
+		$this->sync_settings = get_option( PLUGIN_OPTIONS );
+		$this->test_connection();
+		?>
 
 		<div class="wrap">
-			<h2><?php esc_html_e( 'NEO Product Importing Settings', PLUGIN_SLUG ); ?></h2>
+			<h2><?php esc_html_e( 'NEO Product Importing Settings', 'sync-ecommerce-neo' ); ?></h2>
 			<p></p>
 			<?php settings_errors(); ?>
 
 			<?php $active_tab = isset( $_GET['tab'] ) ? strval( $_GET['tab'] ) : 'sync'; ?>
 
 			<h2 class="nav-tab-wrapper">
-				<a href="?page=<?php echo 'import_' . PLUGIN_SLUG; ?>&tab=sync" class="nav-tab <?php echo 'sync' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Manual Synchronization', PLUGIN_SLUG ); ?></a>
-				<a href="?page=<?php echo 'import_' . PLUGIN_SLUG; ?>&tab=automate" class="nav-tab <?php echo 'automate' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Automate', PLUGIN_SLUG ); ?></a>
-				<a href="?page=<?php echo 'import_' . PLUGIN_SLUG; ?>&tab=settings" class="nav-tab <?php echo 'settings' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Settings', PLUGIN_SLUG ); ?></a>
+				<a href="?page=<?php echo 'import_' . esc_html( PLUGIN_SLUG ); ?>&tab=sync" class="nav-tab <?php echo 'sync' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Manual Synchronization', PLUGIN_SLUG ); ?></a>
+				<a href="?page=<?php echo 'import_' . esc_html( PLUGIN_SLUG ); ?>&tab=automate" class="nav-tab <?php echo 'automate' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Automate', PLUGIN_SLUG ); ?></a>
+				<a href="?page=<?php echo 'import_' . esc_html( PLUGIN_SLUG ); ?>&tab=settings" class="nav-tab <?php echo 'settings' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Settings', PLUGIN_SLUG ); ?></a>
 			</h2>
 
 			<?php	if ( 'sync' === $active_tab ) { ?>
@@ -110,7 +112,7 @@ class SYNC_Admin {
 						settings_fields( 'import_neo_settings' );
 						do_settings_sections( 'import-neo-admin' );
 						submit_button(
-							__( 'Save settings', 'wpautotranslate' ),
+							__( 'Save settings', 'sync-ecommerce-neo' ),
 							'primary',
 							'submit_settings'
 						);
@@ -123,7 +125,7 @@ class SYNC_Admin {
 						settings_fields( 'import_neo_settings' );
 						do_settings_sections( 'import-neo-automate' );
 						submit_button(
-							__( 'Save automate', 'wpautotranslate' ),
+							__( 'Save automate', 'sync-ecommerce-neo' ),
 							'primary',
 							'submit_automate'
 						);
@@ -132,6 +134,10 @@ class SYNC_Admin {
 			<?php } ?>
 		</div>
 		<?php
+	}
+
+	public function test_connection() {
+		$token = sync_get_token( true );
 	}
 
 	/**
@@ -148,9 +154,9 @@ class SYNC_Admin {
 		);
 
 		if ( $this->is_edd_active ) {
-			$settings_title = __( 'Settings for Importing in Easy Digital Downloads', PLUGIN_SLUG );
+			$settings_title = __( 'Settings for Importing in Easy Digital Downloads', 'sync-ecommerce-neo' );
 		} else {
-			$settings_title = __( 'Settings for Importing in WooCommerce', PLUGIN_SLUG );
+			$settings_title = __( 'Settings for Importing in WooCommerce', 'sync-ecommerce-neo' );
 		}
 
 		add_settings_section(
@@ -162,7 +168,7 @@ class SYNC_Admin {
 
 		add_settings_field(
 			PLUGIN_PREFIX . 'idcentre',
-			__( 'NEO ID Centre', PLUGIN_SLUG ),
+			__( 'NEO ID Centre', 'sync-ecommerce-neo' ),
 			array( $this, 'idcentre_callback' ),
 			'import-neo-admin',
 			'import_neo_setting_section'
@@ -170,7 +176,7 @@ class SYNC_Admin {
 
 		add_settings_field(
 			'wcsen_api',
-			__( 'NEO API Key', PLUGIN_SLUG ),
+			__( 'NEO API Key', 'sync-ecommerce-neo' ),
 			array( $this, 'api_callback' ),
 			'import-neo-admin',
 			'import_neo_setting_section'
@@ -179,7 +185,7 @@ class SYNC_Admin {
 		if ( $this->is_woocommerce_active ) {
 			add_settings_field(
 				'wcsen_stock',
-				__( 'Import stock?', PLUGIN_SLUG ),
+				__( 'Import stock?', 'sync-ecommerce-neo' ),
 				array( $this, 'wcsen_stock_callback' ),
 				'import-neo-admin',
 				'import_neo_setting_section'
@@ -188,7 +194,7 @@ class SYNC_Admin {
 
 		add_settings_field(
 			'wcsen_prodst',
-			__( 'Default status for new products?', PLUGIN_SLUG ),
+			__( 'Default status for new products?', 'sync-ecommerce-neo' ),
 			array( $this, 'wcsen_prodst_callback' ),
 			'import-neo-admin',
 			'import_neo_setting_section'
@@ -197,7 +203,7 @@ class SYNC_Admin {
 		if ( $this->is_woocommerce_active ) {
 			add_settings_field(
 				'wcsen_virtual',
-				__( 'Virtual products?', PLUGIN_SLUG ),
+				__( 'Virtual products?', 'sync-ecommerce-neo' ),
 				array( $this, 'wcsen_virtual_callback' ),
 				'import-neo-admin',
 				'import_neo_setting_section'
@@ -205,14 +211,14 @@ class SYNC_Admin {
 
 			add_settings_field(
 				'wcsen_backorders',
-				__( 'Allow backorders?', PLUGIN_SLUG ),
+				__( 'Allow backorders?', 'sync-ecommerce-neo' ),
 				array( $this, 'wcsen_backorders_callback' ),
 				'import-neo-admin',
 				'import_neo_setting_section'
 			);
 		}
 
-		$label_cat = __( 'Category separator', PLUGIN_SLUG );
+		$label_cat = __( 'Category separator', 'sync-ecommerce-neo' );
 		if ( cmk_fs()->is_not_paying() ) {
 			$label_cat .= ' ' . $this->label_premium;
 		}
@@ -226,7 +232,7 @@ class SYNC_Admin {
 
 		add_settings_field(
 			'wcsen_filter',
-			__( 'Filter products by tag?', PLUGIN_SLUG ),
+			__( 'Filter products by tag?', 'sync-ecommerce-neo' ),
 			array( $this, 'wcsen_filter_callback' ),
 			'import-neo-admin',
 			'import_neo_setting_section'
@@ -350,9 +356,10 @@ class SYNC_Admin {
 				$sanitary_values[ PLUGIN_PREFIX . 'catnp'] = $input[ PLUGIN_PREFIX . 'catnp' ];
 			}
 			// Other tab.
-			$sanitary_values[ PLUGIN_PREFIX . 'sync']     = isset( $sync_settings[ PLUGIN_PREFIX . 'sync' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'sync'] : 'no';
-			$sanitary_values[ PLUGIN_PREFIX . 'sync_num'] = isset( $sync_settings[ PLUGIN_PREFIX . 'sync_num'] ) ? $sync_settings[ PLUGIN_PREFIX . 'sync_num'] : 5;
-			$sanitary_values[ PLUGIN_PREFIX . 'sync_email'] = isset( $sync_settings[ PLUGIN_PREFIX . 'sync_email'] ) ? $sync_settings[ PLUGIN_PREFIX . 'sync_email'] : 'yes';
+			$sanitary_values[ PLUGIN_PREFIX . 'sync' ]     = isset( $sync_settings[ PLUGIN_PREFIX . 'sync' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'sync' ] : 'no';
+			$sanitary_values[ PLUGIN_PREFIX . 'sync_num' ] = isset( $sync_settings[ PLUGIN_PREFIX . 'sync_num' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'sync_num' ] : 5;
+			$sanitary_values[ PLUGIN_PREFIX . 'sync_email' ] = isset( $sync_settings[ PLUGIN_PREFIX . 'sync_email' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'sync_email' ] : 'yes';
+
 		} elseif ( isset( $_POST['submit_automate'] ) ) {
 			if ( isset( $input[ PLUGIN_PREFIX . 'sync'] ) ) {
 				$sanitary_values[ PLUGIN_PREFIX . 'sync'] = $input[ PLUGIN_PREFIX . 'sync'];

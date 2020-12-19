@@ -22,6 +22,7 @@ define( 'WCSEN_TABLE_SYNC', 'wcsen_product_sync' );
 define( 'PLUGIN_SLUG', 'sync-ecommerce-neo' );
 define( 'PLUGIN_PREFIX', 'wcsync_' );
 define( 'PLUGIN_OPTIONS', 'sync_ecommerce_neo' );
+define( 'EXPIRE_TOKEN', 259200 );
 
 // Loads translation.
 add_action( 'init', 'wcsen_load_textdomain' );
@@ -191,9 +192,9 @@ function wcsen_create_db() {
 
 	// DB Tasks.
 	$sql = "CREATE TABLE $table_name (
-	    neo_prodid varchar(255) NOT NULL,
+	    sync_prodid varchar(255) NOT NULL,
 	    synced boolean,
-          UNIQUE KEY neo_prodid (neo_prodid)
+          UNIQUE KEY sync_prodid (sync_prodid)
     	) $charset_collate;";
 
 	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
