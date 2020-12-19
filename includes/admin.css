@@ -1,30 +1,30 @@
-.wcsen-plugin #logwrapper {
+.sync-ecommerce-neo-plugin #logwrapper {
 	border: 1px solid #aaa;
 	margin: 10px auto;
 }
-.wcsen-plugin fieldset {
+.sync-ecommerce-neo-plugin fieldset {
 	padding: 20px;
 	width: auto;
 }
-.wcsen-plugin #loglist {
+.sync-ecommerce-neo-plugin #loglist {
 	border: 1px solid #AAAAAA;
 	height: 380px;
 	overflow: auto;
 }
-.wcsen-plugin #loglist > p {
+.sync-ecommerce-neo-plugin #loglist > p {
 	margin: 0;
 	padding: 3px 5px;
 }
-.wcsen-plugin #loglist > p.odd {
+.sync-ecommerce-neo-plugin #loglist > p.odd {
 	background: #dfdfdf;
 }
-.wcsen-plugin #loglist > p.finish {
+.sync-ecommerce-neo-plugin #loglist > p.finish {
 	background: #76d771;
 }
-.wcsen-plugin .error {
+.sync-ecommerce-neo-plugin .error {
 	color: red;
 }
 
-.wcsen-plugin .warning {
+.sync-ecommerce-neo-plugin .warning {
 	color: orange;
 }

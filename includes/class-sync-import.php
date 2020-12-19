@@ -23,7 +23,7 @@ define( 'WCSEN_MAX_LIMIT_NEO_API', 500 );
  * @copyright  2019 Closemarketing
  * @version    0.1
  */
-class WCSEN_Import {
+class SYNC_Import {
 	/**
 	 * The plugin file
 	 *
@@ -66,8 +66,8 @@ class WCSEN_Import {
 		global $wpdb;
 		$this->table_sync = $wpdb->prefix . WCSEN_TABLE_SYNC;
 
-		add_action( 'admin_print_footer_scripts', array( $this, 'wcsen_admin_print_footer_scripts' ), 11, 1 );
-		add_action( 'wp_ajax_wcsen_import_products', array( $this, 'wcsen_import_products' ) );
+		add_action( 'admin_print_footer_scripts', array( $this, 'sync_admin_print_footer_scripts' ), 11, 1 );
+		add_action( 'wp_ajax_sync_import_products', array( $this, 'sync_import_products' ) );
 
 		// Admin Styles.
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_styles' ) );
@@ -77,14 +77,14 @@ class WCSEN_Import {
 		if ( WP_DEBUG ) {
 			// add_action( 'admin_head', array( $this, 'cron_sync_products' ), 20 );
 		}
-		$imh_settings = get_option( 'wcsen' );
-		$sync_period  = isset( $imh_settings['wcsen_sync'] ) ? strval( $imh_settings['wcsen_sync'] ) : 'no';
+		$sync_settings = get_option( PLUGIN_OPTIONS );
+		$sync_period   = isset( $sync_settings[ PLUGIN_PREFIX . 'sync' ] ) ? (int) $sync_settings[ PLUGIN_PREFIX . 'sync' ] : 'no';
 
 		if ( $sync_period && 'no' !== $sync_period ) {
 			add_action( $sync_period, array( $this, 'cron_sync_products' ) );
 		}
-		$this->is_woocommerce_active = wcsen_is_active_ecommerce( 'woocommerce' ) ? true : false;
-		$this->is_edd_active         = wcsen_is_active_ecommerce( 'edd' ) ? true : false;
+		$this->is_woocommerce_active = sync_is_active_ecommerce( 'woocommerce' ) ? true : false;
+		$this->is_edd_active         = sync_is_active_ecommerce( 'edd' ) ? true : false;
 	}
 
 	/**
@@ -95,7 +95,7 @@ class WCSEN_Import {
 	 * @return String          Altered body classes.
 	 */
 	public function admin_body_class( $classes ) {
-		return "$classes wcsen-plugin";
+		return $classes . ' ' . PLUGIN_SLUG . '-plugin';
 	}
 
 	/**
@@ -104,112 +104,16 @@ class WCSEN_Import {
 	 * @return void
 	 */
 	public function admin_styles() {
-		wp_enqueue_style( 'sync-ecommerce-neo', plugins_url( 'admin.css', __FILE__ ), array(), WCSEN_VERSION );
+		wp_enqueue_style( PLUGIN_SLUG, plugins_url( 'admin.css', __FILE__ ), array(), WCSEN_VERSION );
 	}
 	/**
 	 * Imports products from Holded
 	 *
 	 * @return void
 	 */
-	public function wcsen_import_products() {
+	public function sync_import_products() {
 		// Imports products.
-		$this->wcsen_import_method_products();
-	}
-
-	/**
-	 * Gets information from Holded products
-	 *
-	 * @param string $id Id of product to get information.
-	 * @return array Array of products imported via API.
-	 */
-	private function get_products( $id = null, $page = null ) {
-		$imh_settings = get_option( 'wcsen' );
-		if ( ! isset( $imh_settings['wcsen_api'] ) ) {
-			return false;
-		}
-		$apikey       = $imh_settings['wcsen_api'];
-		$args         = array(
-			'headers' => array(
-				'key' => $apikey,
-			),
-			'timeout' => 10,
-		);
-		$url = '';
-		if ( $page > 1 ) {
-			$url = '?page=' . $page;
-		}
-
-		if ( $id ) {
-			$url = '/' . $id;
-		}
-
-		$response      = wp_remote_get( 'https://api.holded.com/api/invoicing/v1/products' . $url, $args );
-		$body          = wp_remote_retrieve_body( $response );
-		$body_response = json_decode( $body, true );
-
-		if ( isset( $body_response['errors'] ) ) {
-			error_admin_message( 'ERROR', $body_response['errors'][0]['message'] . ' <br/> Api Call: /' );
-			return false;
-		}
-
-		return $body_response;
-	}
-
-	/**
-	 * Gets image from Holded products
-	 *
-	 * @param string $id Id of product to get information.
-	 * @return array Array of products imported via API.
-	 */
-	private function put_product_image( $holded_id, $product_id ) {
-
-		// Don't import if there is thumbnail.
-		if ( has_post_thumbnail( $product_id ) ) {
-			return false;
-		}
-
-		$imh_settings = get_option( 'wcsen' );
-		$apikey       = $imh_settings['wcsen_api'];
-		$args         = array(
-			'headers' => array(
-				'key' => $apikey,
-			),
-			'timeout' => 10,
-		);
-
-		$response   = wp_remote_get( 'https://api.holded.com/api/invoicing/v1/products/' . $holded_id . '/image/', $args );
-		$body       = wp_remote_retrieve_body( $response );
-		$body_array = json_decode( $body, true );
-
-		if ( isset( $body_array['status'] ) && 0 == $body_array['status'] ) {
-			return false;
-		}
-
-		$headers = (array) $response['headers'];
-		foreach ( $headers as $header ) {
-			$content_type = $header['content-type'];
-			break;
-		}
-		$extension = explode( '/', $content_type, 2 )[1];
-		$filename  = get_the_title( $product_id ) . '.' . $extension;
-		$upload    = wp_upload_bits( $filename, null, $body );
-
-		$attachment = array(
-			'guid'           => $upload['url'],
-			'post_mime_type' => $content_type,
-			'post_title'     => get_the_title( $product_id ),
-			'post_content'   => '',
-			'post_status'    => 'inherit',
-		);
-		$attach_id  = wp_insert_attachment( $attachment, $upload['file'], 0 );
-		add_post_meta( $product_id, '_thumbnail_id', $attach_id, true );
-
-		if ( isset( $body_response['errors'] ) ) {
-			error_admin_message( 'ERROR', $body_response['errors'][0]['message'] . ' <br/> Api Call: /' );
-			return false;
-		}
-
-		return $attach_id;
+		$this->sync_import_method_products();
 	}
 
 	/**
@@ -450,10 +354,10 @@ class WCSEN_Import {
 	 * @return void.
 	 */
 	private function sync_product_edd( $item, $product_id = 0, $type ) {
-		$imh_settings   = get_option( 'wcsen' );
-		$rate_id        = $imh_settings['wcsen_rates'];
-		$post_status    = ( isset( $imh_settings['wcsen_prodst'] ) && $imh_settings['wcsen_prodst'] ) ? $imh_settings['wcsen_prodst'] : 'draft';
-		$tax_included   = get_option( 'wcsen_taxinc' );
+		$sync_settings  = get_option( PLUGIN_OPTIONS );
+		$rate_id        = $sync_settings[ PLUGIN_PREFIX . 'rates' ] ;
+		$post_status    = ( isset( $sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) && $sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'prodst' ] : 'draft';
+		$tax_included   = get_option(  PLUGIN_PREFIX . 'taxinc'  );
 		$is_new_product = ( 0 === $product_id || false === $product_id ) ? true : false;
 
 		if ( $is_new_product ) {
@@ -477,8 +381,8 @@ class WCSEN_Import {
 
 		if ( cmk_fs()->is__premium_only() ) {
 			// Category Holded.
-			$category_newp = isset( $imh_settings['wcsen_catnp'] ) ? $imh_settings['wcsen_catnp'] : 'yes';
-			$category_sep  = isset( $imh_settings['wcsen_catsep'] ) ? $imh_settings['wcsen_catsep'] : '';
+			$category_newp = isset( $sync_settings[ PLUGIN_PREFIX . 'catnp' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'catnp' ] : 'yes';
+			$category_sep  = isset( $sync_settings[ PLUGIN_PREFIX . 'catsep' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'catsep' ] : '';
 			if ( ( $item['type'] && 'yes' === $category_newp && $is_new_product ) ||
 				( $item['type'] && 'no' === $category_newp && false === $is_new_product )
 			) {
@@ -515,16 +419,16 @@ class WCSEN_Import {
 	 * @return void.
 	 */
 	private function sync_product_woocommerce( $item, $product_id = 0, $type ) {
-		$imh_settings     = get_option( 'wcsen' );
-		$import_stock     = isset( $imh_settings['wcsen_stock'] ) ? $imh_settings['wcsen_stock'] : 'no';
-		$is_virtual       = ( isset( $imh_settings['wcsen_virtual'] ) && 'yes' === $imh_settings['wcsen_virtual'] ) ? true : false;
-		$allow_backorders = isset( $imh_settings['wcsen_backorders'] ) ? $imh_settings['wcsen_backorders'] : 'yes';
-		$rate_id          = isset( $imh_settings['wcsen_rates'] ) ? $imh_settings['wcsen_rates'] : 'default';
-		$post_status      = ( isset( $imh_settings['wcsen_prodst'] ) && $imh_settings['wcsen_prodst'] ) ? $imh_settings['wcsen_prodst'] : 'draft';
+		$sync_settings     = get_option( PLUGIN_OPTIONS );
+		$import_stock     = isset( $sync_settings[ PLUGIN_PREFIX . 'stock']  ) ? $sync_settings[ PLUGIN_PREFIX . 'stock']  : 'no';
+		$is_virtual       = ( isset( $sync_settings[ PLUGIN_PREFIX . 'virtual '] ) && 'yes' === $sync_settings[ PLUGIN_PREFIX . 'virtual '] ) ? true : false;
+		$allow_backorders = isset( $sync_settings[ PLUGIN_PREFIX . 'backord ers'] ) ? $sync_settings[ PLUGIN_PREFIX . 'backord ers'] : 'yes';
+		$rate_id          = isset( $sync_settings[ PLUGIN_PREFIX . 'rates']  ) ? $sync_settings[ PLUGIN_PREFIX . 'rates']  : 'default';
+		$post_status      = ( isset( $sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) && $sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'prodst' ] : 'draft';
 		$is_new_product   = ( 0 === $product_id || false === $product_id ) ? true : false;
 
 		// Translations.
-		$msg_variation_error = __( 'Variation error: ', 'sync-ecommerce-neo' );
+		$msg_variation_error = __( 'Variation error: ', PLUGIN_SLUG );
 
 		/**
 		 * # Updates info for the product
@@ -747,8 +651,8 @@ class WCSEN_Import {
 
 		if ( cmk_fs()->is__premium_only() ) {
 			// Category Holded.
-			$category_newp = isset( $imh_settings['wcsen_catnp'] ) ? $imh_settings['wcsen_catnp'] : 'yes';
-			$category_sep  = isset( $imh_settings['wcsen_catsep'] ) ? $imh_settings['wcsen_catsep'] : '';
+			$category_newp = isset( $sync_settings[ PLUGIN_PREFIX . 'catnp']  ) ? $sync_settings[ PLUGIN_PREFIX . 'catnp']  : 'yes';
+			$category_sep  = isset( $sync_settings[ PLUGIN_PREFIX . 'catsep' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'catsep' ] : '';
 			if ( ( isset( $item['type'] ) && $item['type'] && 'yes' === $category_newp && $is_new_product ) ||
 				( isset( $item['type'] ) && $item['type'] && 'no' === $category_newp && false === $is_new_product )
 			) {
@@ -778,8 +682,8 @@ class WCSEN_Import {
 	 * @return boolean True to not get the product, false to get it.
 	 */
 	private function filter_product( $tag_product ) {
-		$imh_settings       = get_option( 'wcsen' );
-		$tag_product_option = isset( $imh_settings['wcsen_filter'] ) ? $imh_settings['wcsen_filter'] : '';
+		$sync_settings       = get_option( PLUGIN_OPTIONS );
+		$tag_product_option = isset( $sync_settings[ PLUGIN_PREFIX . 'filter' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'filter' ] : '';
 		if ( $tag_product_option && ! in_array( $tag_product_option, $tag_product, true ) ) {
 			return true;
 		} else {
@@ -791,13 +695,13 @@ class WCSEN_Import {
 	 *
 	 * @return void
 	 */
-	public function wcsen_import_method_products() {
+	public function sync_import_method_products() {
 		extract( $_REQUEST );
 		$not_sapi_cli = substr( php_sapi_name(), 0, 3 ) != 'cli' ? true : false;
 		$doing_ajax   = defined( 'DOING_AJAX' ) && DOING_AJAX;
-		$imh_settings = get_option( 'wcsen' );
-		$apikey       = $imh_settings['wcsen_api'];
-		$prod_status    = ( isset( $imh_settings['wcsen_prodst'] ) && $imh_settings['wcsen_prodst'] ) ? $imh_settings['wcsen_prodst'] : 'draft';
+		$sync_settings = get_option( PLUGIN_OPTIONS );
+		$apikey       = $sync_settings[ PLUGIN_PREFIX . 'api'];
+ 		$prod_status    = ( isset( $sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) && $sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'prodst' ] : 'draft';
 
 		if ( $this->is_woocommerce_active ) {
 			$post_type = 'product';
@@ -810,8 +714,8 @@ class WCSEN_Import {
 		$syncLoop     = isset( $syncLoop ) ? $syncLoop : 0;
 
 		// Translations.
-		$msg_product_created = __( 'Product created: ', 'sync-ecommerce-neo' );
-		$msg_product_synced  = __( 'Product synced: ', 'sync-ecommerce-neo' );
+		$msg_product_created = __( 'Product created: ', PLUGIN_SLUG );
+		$msg_product_synced  = __( 'Product synced: ', PLUGIN_SLUG );
 
 		// Start.
 		if ( ! isset( $this->products ) ) {
@@ -861,11 +765,11 @@ class WCSEN_Import {
 					if ( $doing_ajax ) {
 						wp_send_json_error(
 							array(
-								'msg' => __( 'No products to import', 'sync-ecommerce-neo' ),
+								'msg' => __( 'No products to import', PLUGIN_SLUG ),
 							)
 						);
 					} else {
-						die( esc_html( __( 'No products to import', 'sync-ecommerce-neo' ) ) );
+						die( esc_html( __( 'No products to import', PLUGIN_SLUG ) ) );
 					}
 				} else {
 					$is_new_product      = false;
@@ -899,11 +803,11 @@ class WCSEN_Import {
 							if ( $doing_ajax ) {
 								wp_send_json_error(
 									array(
-										'msg' => __( 'There was an error while inserting new product!', 'sync-ecommerce-neo' ) . ' ' . $item['name'],
+										'msg' => __( 'There was an error while inserting new product!', PLUGIN_SLUG ) . ' ' . $item['name'],
 									)
 								);
 							} else {
-								die( esc_html( __( 'There was an error while inserting new product!', 'sync-ecommerce-neo' ) ) );
+								die( esc_html( __( 'There was an error while inserting new product!', PLUGIN_SLUG ) ) );
 							}
 						}
 						if ( ! $post_id ) {
@@ -932,7 +836,7 @@ class WCSEN_Import {
 							}
 						}
 						if ( false === $any_variant_sku ) {
-							$this->ajax_msg .= __( 'Product not imported becouse any variant has got SKU: ', 'sync-ecommerce-neo' ) . $item['name'] . '(' . $item['kind'] . ') <br/>';
+							$this->ajax_msg .= __( 'Product not imported becouse any variant has got SKU: ', PLUGIN_SLUG ) . $item['name'] . '(' . $item['kind'] . ') <br/>';
 						} else {
 							// Update meta for product.
 							$this->sync_product( $item, $post_parent, 'variable' );
@@ -945,26 +849,26 @@ class WCSEN_Import {
 						}
 					} elseif ( $is_filtered_product ) {
 						// Product not synced without SKU.
-						$this->ajax_msg .= '<span class="warning">' . __( 'Product filtered to not import: ', 'sync-ecommerce-neo' ) . $item['name'] . '(' . $item['kind'] . ') </span></br>';
+						$this->ajax_msg .= '<span class="warning">' . __( 'Product filtered to not import: ', PLUGIN_SLUG ) . $item['name'] . '(' . $item['kind'] . ') </span></br>';
 					} elseif ( '' === $item['sku'] && 'simple' === $item['kind'] ) {
 						// Product not synced without SKU.
-						$this->ajax_msg .= __( 'SKU not finded in Simple product. Product not imported: ', 'sync-ecommerce-neo' ) . $item['name'] . '(' . $item['kind'] . ')</br>';
+						$this->ajax_msg .= __( 'SKU not finded in Simple product. Product not imported: ', PLUGIN_SLUG ) . $item['name'] . '(' . $item['kind'] . ')</br>';
 
 						$this->error_product_import[] = array(
 							'id_holded' => $item['id'],
 							'name'      => $item['name'],
 							'sku'       => $item['sku'],
-							'error'     => __( 'SKU not finded in Simple product. Product not imported. ', 'sync-ecommerce-neo' ),
+							'error'     => __( 'SKU not finded in Simple product. Product not imported. ', PLUGIN_SLUG ),
 						);
 					} elseif ( 'simple' !== $item['kind'] ) {
 						// Product not synced without SKU.
-						$this->ajax_msg .= __( 'Product type not supported. Product not imported: ', 'sync-ecommerce-neo' ) . $item['name'] . '(' . $item['kind'] . ')</br>';
+						$this->ajax_msg .= __( 'Product type not supported. Product not imported: ', PLUGIN_SLUG ) . $item['name'] . '(' . $item['kind'] . ')</br>';
 
 						$this->error_product_import[] = array(
 							'id_holded' => $item['id'],
 							'name'      => $item['name'],
 							'sku'       => $item['sku'],
-							'error'     => __( 'Product type not supported. Product not imported: ', 'sync-ecommerce-neo' ),
+							'error'     => __( 'Product type not supported. Product not imported: ', PLUGIN_SLUG ),
 						);
 					}
 				}
@@ -973,9 +877,9 @@ class WCSEN_Import {
 					$products_synced = $syncLoop + 1;
 
 					if ( $products_synced <= $products_count ) {
-						$this->ajax_msg = '[' . date_i18n( 'H:i:s' ) . '] ' . $products_synced . '/' . $products_count . ' ' . __( 'products. ', 'sync-ecommerce-neo' ) . $this->ajax_msg;
+						$this->ajax_msg = '[' . date_i18n( 'H:i:s' ) . '] ' . $products_synced . '/' . $products_count . ' ' . __( 'products. ', PLUGIN_SLUG ) . $this->ajax_msg;
 						if ( $products_synced == $products_count ) {
-							$this->ajax_msg .= '<p class="finish">' . __( 'All caught up!', 'sync-ecommerce-neo' ) . '</p>';
+							$this->ajax_msg .= '<p class="finish">' . __( 'All caught up!', PLUGIN_SLUG ) . '</p>';
 						}
 
 						$args = array(
@@ -1002,9 +906,9 @@ class WCSEN_Import {
 				}
 			} else {
 				if ( $doing_ajax ) {
-					wp_send_json_error( array( 'msg' => __( 'No products to import', 'sync-ecommerce-neo' ) ) );
+					wp_send_json_error( array( 'msg' => __( 'No products to import', PLUGIN_SLUG ) ) );
 				} else {
-					die( esc_html( __( 'No products to import', 'sync-ecommerce-neo' ) ) );
+					die( esc_html( __( 'No products to import', PLUGIN_SLUG ) ) );
 				}
 			}
 		}
@@ -1026,16 +930,16 @@ class WCSEN_Import {
 			return;
 		}
 		foreach ( $this->error_product_import as $error ) {
-			$error_content .= ' ' . __( 'Error:', 'sync-ecommerce-neo' ) . $error['error'];
-			$error_content .= ' ' . __( 'SKU:', 'sync-ecommerce-neo' ) . $error['sku'];
-			$error_content .= ' ' . __( 'Name:', 'sync-ecommerce-neo' ) . $error['name'];
+			$error_content .= ' ' . __( 'Error:', PLUGIN_SLUG ) . $error['error'];
+			$error_content .= ' ' . __( 'SKU:', PLUGIN_SLUG ) . $error['sku'];
+			$error_content .= ' ' . __( 'Name:', PLUGIN_SLUG ) . $error['name'];
 			$error_content .= ' <a href="https://app.holded.com/products/' . $error['id_holded'] . '">';
-			$error_content .= __( 'Edit:', 'sync-ecommerce-neo' ) . '</a>';
+			$error_content .= __( 'Edit:', PLUGIN_SLUG ) . '</a>';
 			$error_content .= '<br/>';
 		}
 		// Sends an email to admin.
 		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
-		wp_mail( get_option( 'admin_email' ), __( 'Error in Products Synced in', 'sync-ecommerce-neo' ) . ' ' . get_option( 'blogname' ), $error_content, $headers );
+		wp_mail( get_option( 'admin_email' ), __( 'Error in Products Synced in', PLUGIN_SLUG ) . ' ' . get_option( 'blogname' ), $error_content, $headers );
 	}
 
 	public function attach_image( $post_id, $img_string ) {
@@ -1122,7 +1026,7 @@ class WCSEN_Import {
 	 *
 	 * @return void
 	 */
-	public function wcsen_admin_print_footer_scripts() {
+	public function sync_admin_print_footer_scripts() {
 		$screen  = get_current_screen();
 		$get_tab = isset( $_GET['tab'] ) ? $_GET['tab'] : 'sync';
 
@@ -1134,7 +1038,7 @@ class WCSEN_Import {
 		<script type="text/javascript">
 			var loop=0;
 			jQuery(function($){
-				$(document).find('#sync-neo-engine').after('<div class="sync-wrapper"><h2><?php _e( 'Import Products from Holded', 'sync-ecommerce-neo' ); ?></h2><p><?php _e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', 'sync-ecommerce-neo' ); ?><br/></p><button id="start-sync" class="button button-primary"<?php if ( false === $this->check_can_sync() ) { echo ' disabled'; } ?>><?php _e( 'Start Import', 'sync-ecommerce-neo' ); ?></button></div><fieldset id="logwrapper"><legend><?php _e( 'Log', 'sync-ecommerce-neo' ); ?></legend><div id="loglist"></div></fieldset>');
+				$(document).find('#sync-neo-engine').after('<div class="sync-wrapper"><h2><?php _e( 'Import Products from Holded', PLUGIN_SLUG ); ?></h2><p><?php _e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', PLUGIN_SLUG ); ?><br/></p><button id="start-sync" class="button button-primary"<?php if ( false === $this->check_can_sync() ) { echo ' disabled'; } ?>><?php _e( 'Start Import', PLUGIN_SLUG ); ?></button></div><fieldset id="logwrapper"><legend><?php _e( 'Log', PLUGIN_SLUG ); ?></legend><div id="loglist"></div></fieldset>');
 				$(document).find('#start-sync').on('click', function(){
 					$(this).attr('disabled','disabled');
 					$(this).after('<span class="spinner is-active"></span>');
@@ -1191,8 +1095,8 @@ class WCSEN_Import {
 	 * @return boolean
 	 */
 	private function check_can_sync() {
-		$imh_settings = get_option( 'wcsen' );
-		if ( ! isset( $imh_settings['wcsen_api'] ) ) {
+		$sync_settings = get_option( PLUGIN_OPTIONS );
+		if ( ! isset( $sync_settings[ PLUGIN_PREFIX . 'api'] )  ) {
 			return false;
 		}
 		return true;
@@ -1229,8 +1133,8 @@ class WCSEN_Import {
 	 * @return void
 	 */
 	private function create_sync_product( $item ) {
-		$imh_settings = get_option( 'wcsen' );
-		$prod_status    = ( isset( $imh_settings['wcsen_prodst'] ) && $imh_settings['wcsen_prodst'] ) ? $imh_settings['wcsen_prodst'] : 'draft';
+		$sync_settings = get_option( PLUGIN_OPTIONS );
+		$prod_status    = ( isset( $sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) && $sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'prodst' ] : 'draft';
 
 		if ( $this->is_woocommerce_active ) {
 			$post_type = 'product';
@@ -1284,7 +1188,7 @@ class WCSEN_Import {
 				}
 			}
 			if ( false === $any_variant_sku ) {
-				$this->ajax_msg .= __( 'Product not imported becouse any variant has got SKU: ', 'sync-ecommerce-neo' ) . $item['name'] . '(' . $item['kind'] . ') <br/>';
+				$this->ajax_msg .= __( 'Product not imported becouse any variant has got SKU: ', PLUGIN_SLUG ) . $item['name'] . '(' . $item['kind'] . ') <br/>';
 			} else {
 				// Update meta for product.
 				$this->sync_product( $item, $post_parent, 'variable' );
@@ -1297,7 +1201,7 @@ class WCSEN_Import {
 			}
 		} elseif ( '' === $item['sku'] && 'simple' === $item['kind'] ) {
 			$this->send_email_errors(
-				__( 'SKU not finded in Simple product. Product not imported ', 'sync-ecommerce-neo' ),
+				__( 'SKU not finded in Simple product. Product not imported ', PLUGIN_SLUG ),
 				array(
 					'Product id:' . $item['id'],
 					'Product name:' . $item['name'],
@@ -1307,7 +1211,7 @@ class WCSEN_Import {
 			);
 		} elseif ( 'simple' !== $item['kind'] && isset( $item['id'] ) ) {
 			$this->send_email_errors(
-				__( 'Product type not supported. Product not imported ', 'sync-ecommerce-neo' ),
+				__( 'Product type not supported. Product not imported ', PLUGIN_SLUG ),
 				array(
 					'Product id:' . $item['id'],
 					'Product name:' . $item['name'],
@@ -1370,8 +1274,8 @@ class WCSEN_Import {
 	 */
 	private function get_products_sync() {
 		global $wpdb;
-		$imh_settings = get_option( 'wcsen' );
-		$limit        = isset( $imh_settings['wcsen_sync_num'] ) ? $imh_settings['wcsen_sync_num'] : WCESN_MAX_SYNC_LOOP;
+		$sync_settings = get_option( PLUGIN_OPTIONS );
+		$limit        = isset( $sync_settings[ PLUGIN_PREFIX . 'sync_nu m'] ) ? $sync_settings[ PLUGIN_PREFIX . 'sync_nu m'] : WCESN_MAX_SYNC_LOOP;
 
 		$results = $wpdb->get_results( "SELECT neo_prodid FROM $this->table_sync WHERE synced = 0 LIMIT $limit", ARRAY_A );
 
@@ -1439,17 +1343,17 @@ class WCSEN_Import {
 	 */
 	private function send_sync_ended_products() {
 		global $wpdb;
-		$imh_settings = get_option( 'wcsen' );
-		$send_email   = isset( $imh_settings['wcsen_sync_email'] ) ? strval( $imh_settings['wcsen_sync_email'] ) : 'yes';
+		$sync_settings = get_option( PLUGIN_OPTIONS );
+		$send_email   = isset( $sync_settings[ PLUGIN_PREFIX . 'sync_em ail'] ) ? strval( $sync_settings[ PLUGIN_PREFIX . 'sync_em ail'] ) : 'yes';
 
 		$results = $wpdb->get_results( "SELECT neo_prodid FROM $this->table_sync WHERE synced = 1", ARRAY_A );
 
 		if ( count( $results ) > 0 && 'yes' === $send_email ) {
-			$subject = __( 'All products synced with Holded', 'sync-ecommerce-neo' );
+			$subject = __( 'All products synced with Holded', PLUGIN_SLUG );
 			$headers = array( 'Content-Type: text/html; charset=UTF-8' );
-			$body    = '<br/><strong>' . __( 'Total products:', 'sync-ecommerce-neo' ) . '</strong> ';
+			$body    = '<br/><strong>' . __( 'Total products:', PLUGIN_SLUG ) . '</strong> ';
 			$body   .= count( $results );
-			$body   .= '<br/><strong>' . __( 'Time:', 'sync-ecommerce-neo' ) . '</strong> ';
+			$body   .= '<br/><strong>' . __( 'Time:', PLUGIN_SLUG ) . '</strong> ';
 			$body   .= date_i18n( 'Y-m-d H:i:s', current_time( 'timestamp') );
 			wp_mail( get_option( 'admin_email' ), $subject, $body, $headers );
 		}
@@ -1472,4 +1376,4 @@ class WCSEN_Import {
 
 global $wcpsh_import;
 
-$wcpsh_import = new WCSEN_Import();
+$wcpsh_import = new SYNC_Import();

@@ -19,6 +19,9 @@ defined( 'ABSPATH' ) || exit;
 define( 'WCSEN_VERSION', '1.2b4' );
 define( 'WCSEN_ECOMMERCE', array( 'woocommerce', 'edd' ) );
 define( 'WCSEN_TABLE_SYNC', 'wcsen_product_sync' );
+define( 'PLUGIN_SLUG', 'sync-ecommerce-neo' );
+define( 'PLUGIN_PREFIX', 'wcsync_' );
+define( 'PLUGIN_OPTIONS', 'sync_ecommerce_neo' );
 
 // Loads translation.
 add_action( 'init', 'wcsen_load_textdomain' );
@@ -26,13 +29,13 @@ add_action( 'init', 'wcsen_load_textdomain' );
  * Load plugin textdomain.
  */
 function wcsen_load_textdomain() {
-	load_plugin_textdomain( 'sync-ecommerce-neo', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+	load_plugin_textdomain( PLUGIN_SLUG, false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 }
 
 // Includes files.
 require_once dirname( __FILE__ ) . '/includes/helpers-functions.php';
-require_once dirname( __FILE__ ) . '/includes/class-wcsen-admin.php';
-require_once dirname( __FILE__ ) . '/includes/class-wcsen-import.php';
+require_once dirname( __FILE__ ) . '/includes/class-sync-admin.php';
+require_once dirname( __FILE__ ) . '/includes/class-sync-import.php';
 
 
 if ( function_exists( 'cmk_fs' ) ) {
@@ -55,7 +58,7 @@ if ( function_exists( 'cmk_fs' ) ) {
 				$cmk_fs = fs_dynamic_init(
 					array(
 						'id'                  => '5133',
-						'slug'                => 'sync-ecommerce-neo',
+						'slug'                => PLUGIN_SLUG,
 						'premium_slug'        => 'import-holded-woocommerce-premium',
 						'type'                => 'plugin',
 						'public_key'          => 'pk_248ed62e4388ec19335accdf1822c',
@@ -99,31 +102,31 @@ function wcsen_add_cron_recurrence_interval( $schedules ) {
 
 	$schedules['every_five_minutes'] = array(
 		'interval' => 450,
-		'display'  => __( 'Every 5 Minutes', 'sync-ecommerce-neo' ),
+		'display'  => __( 'Every 5 Minutes', PLUGIN_SLUG ),
 	);
 	$schedules['every_fifteen_minutes'] = array(
 		'interval' => 900,
-		'display'  => __( 'Every 15 minutes', 'sync-ecommerce-neo' ),
+		'display'  => __( 'Every 15 minutes', PLUGIN_SLUG ),
 	);
 	$schedules['every_thirty_minutes'] = array(
 		'interval' => 1800,
-		'display'  => __( 'Every 30 Minutes', 'sync-ecommerce-neo' ),
+		'display'  => __( 'Every 30 Minutes', PLUGIN_SLUG ),
 	);
 	$schedules['every_one_hour'] = array(
 		'interval' => 3600,
-		'display'  => __( 'Every 1 Hour', 'sync-ecommerce-neo' ),
+		'display'  => __( 'Every 1 Hour', PLUGIN_SLUG ),
 	);
 	$schedules['every_three_hours'] = array(
 		'interval' => 10800,
-		'display'  => __( 'Every 3 Hours', 'sync-ecommerce-neo' ),
+		'display'  => __( 'Every 3 Hours', PLUGIN_SLUG ),
 	);
 	$schedules['every_six_hours'] = array(
 		'interval' => 21600,
-		'display'  => __( 'Every 6 Hours', 'sync-ecommerce-neo' ),
+		'display'  => __( 'Every 6 Hours', PLUGIN_SLUG ),
 	);
 	$schedules['every_twelve_hours'] = array(
 		'interval' => 43200,
-		'display'  => __( 'Every 12 Hours', 'sync-ecommerce-neo' ),
+		'display'  => __( 'Every 12 Hours', PLUGIN_SLUG ),
 	);
 
 	return $schedules;
