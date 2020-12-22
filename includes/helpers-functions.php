@@ -42,6 +42,70 @@ function sync_is_active_ecommerce( $plugin ) {
 }
 
 /**
+ * Converts product from API to SYNC
+ *
+ * @param array $products_original API NEO Product
+ * @return void
+ */
+function sync_convert_products( $products_original ) {
+	$products_converted = array();
+	$i                  = 0;
+
+	foreach ( $products_original as $product ) {
+		$product_array = array();
+		$key           = array_search( $product['CodigoTextil'], array_column( $products_converted, 'sku' ) );
+		$product_array = array(
+			'sku'   => $product['Codigo'],
+			'name'  => $product['Nombre'],
+			'desc'  => $product['DescripcionArticulo'],
+			'stock' => $product['StockActual'],
+		);
+
+		if ( is_numeric( $key ) ) {
+			// Variant product.
+			if ( isset( $products_converted[ $key ]['type'] ) && 'Textil' === $products_converted[ $key ]['type'] ) {
+				// For Textil products.
+				$product_array['categoryFields'][] = array(
+					'name'      => 'Talla',
+					'field'     => $product['NomTalla'],
+					'variation' => true,
+				);
+				$product_array['categoryFields'][] = array(
+					'name'      => 'Marca',
+					'field'     => $product['NomMarca'],
+					'variation' => false,
+				);
+				if ( isset( $product['NomColor'] ) && $product['NomColor'] ) {
+					$product_array['categoryFields'][] = array(
+						'name'      => 'Color',
+						'field'     => $product['NomColor'],
+						'variation' => false,
+					);
+				}
+				if ( ! empty( $product['Propiedades'] ) ) {
+					foreach ( $product['Propiedades'] as $property ) {
+						$product_array['categoryFields'][] = array(
+							'name'      => $property['Propiedad'],
+							'field'     => $property['Valor'],
+							'variation' => false,
+						);
+					}
+				}
+			}
+			$products_converted[ $key ]['kind']       = 'variants';
+			$products_converted[ $key ]['variants'][] = $product_array;
+		} else {
+			$products_converted[ $i ]         = $product_array;
+			$products_converted[ $i ]['type'] = $product['Tipo'];
+			$products_converted[ $i ]['kind'] = 'simple';
+			$i++;
+		}
+	}
+
+	return $products_converted;
+}
+
+/**
  * Gets token of API NEO
  *
  * @return string Array of products imported via API.

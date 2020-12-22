@@ -719,23 +719,7 @@ class SYNC_Import {
 
 		// Start.
 		if ( ! isset( $this->products ) ) {
-			$next     = true;
-			$page     = 1;
-			$output   = array();
-			$products = array();
-
-			while ( $next ) {
-				$this->write_log( 'Page: ' . $page );
-				$output   = sync_get_products( null, $page );
-				$products = array_merge( $products, $output );
-
-				if ( count( $output ) === WCSEN_MAX_LIMIT_NEO_API ) {
-					$page++;
-				} else {
-					$next = false;
-				}
-			}
-			$this->products = $products;
+			$this->products = sync_get_products( null, $page );
 		}
 
 		if ( false === $this->products ) {
@@ -745,7 +729,7 @@ class SYNC_Import {
 				die();
 			}
 		} else {
-			$products_array           = $this->products;
+			$products_array           = sync_convert_products( $this->products );
 			$products_count           = count( $products_array );
 			$item                     = $products_array[ $syncLoop ];
 			$error_products_html      = '';
