@@ -83,8 +83,6 @@ class SYNC_Import {
 		if ( $sync_period && 'no' !== $sync_period ) {
 			add_action( $sync_period, array( $this, 'cron_sync_products' ) );
 		}
-		$this->is_woocommerce_active = sync_is_active_ecommerce( 'woocommerce' ) ? true : false;
-		$this->is_edd_active         = sync_is_active_ecommerce( 'edd' ) ? true : false;
 	}
 
 	/**
@@ -258,13 +256,8 @@ class SYNC_Import {
 	 */
 	private function find_product( $sku ) {
 		global $wpdb;
-		if ( $this->is_woocommerce_active ) {
-			$post_type = 'product';
-			$meta_key  = '_sku';
-		} elseif ( $this->is_edd_active ) {
-			$post_type = 'download';
-			$meta_key  = 'edd_sku';
-		}
+		$post_type   = 'product';
+		$meta_key     = '_sku';
 		$result_query = $wpdb->get_var( $wpdb->prepare( "SELECT P.ID FROM $wpdb->posts AS P LEFT JOIN $wpdb->postmeta AS PM ON PM.post_id = P.ID WHERE P.post_type = '$post_type' AND PM.meta_key='$meta_key' AND PM.meta_value=%s AND P.post_status != 'trash' LIMIT 1", $sku ) );
 
 		return $result_query;
@@ -297,7 +290,7 @@ class SYNC_Import {
 		$level    = 0;
 		$cats_ids = array();
 
-		$product_cat = $this->is_woocommerce_active ? 'product_cat' : 'download_category';
+		$product_cat = 'product_cat';
 
 		foreach ( $product_cat_names as $product_cat_name ) {
 			$cat_slug    = sanitize_title( $product_cat_name );
@@ -338,11 +331,7 @@ class SYNC_Import {
 	 * @return void.
 	 */
 	private function sync_product( $item, $product_id = 0, $type ) {
-		if ( $this->is_woocommerce_active ) {
-			$this->sync_product_woocommerce( $item, $product_id, $type );
-		} elseif ( $this->is_edd_active ) {
-			$this->sync_product_edd( $item, $product_id, $type );
-		}
+		$this->sync_product_woocommerce( $item, $product_id, $type );
 	}
 
 	/**
@@ -703,14 +692,8 @@ class SYNC_Import {
 		$apikey        = $sync_settings[ PLUGIN_PREFIX . 'api' ];
 		$prod_status   = ( isset( $sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) && $sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'prodst' ] : 'draft';
 
-		if ( $this->is_woocommerce_active ) {
-			$post_type = 'product';
-			$sku_key   = '_sku';
-		} elseif ( $this->is_edd_active ) {
-			$post_type = 'download';
-			$sku_key   = 'edd_sku';
-		}
-
+		$post_type    = 'product';
+		$sku_key      = '_sku';
 		$syncLoop     = isset( $syncLoop ) ? $syncLoop : 0;
 
 		// Translations.
@@ -776,10 +759,7 @@ class SYNC_Import {
 							}
 						}
 						if ( $post_id && $item['sku'] && 'simple' == $item['kind'] ) {
-
-							if ( $this->is_woocommerce_active ) {
-								wp_set_object_terms( $post_id, 'simple', 'product_type' );
-							}
+							wp_set_object_terms( $post_id, 'simple', 'product_type' );
 
 							// Update meta for product.
 							$this->sync_product( $item, $post_id, 'simple' );
@@ -800,7 +780,7 @@ class SYNC_Import {
 							$this->ajax_msg .= $msg_product_synced;
 						}
 						$this->ajax_msg .= $item['name'] . '. SKU: ' . $item['sku'] . ' (' . $item['kind'] . ')';
-					} elseif ( ! $is_filtered_product && 'variants' === $item['kind'] && cmk_fs()->is__premium_only() && $this->is_woocommerce_active ) {
+					} elseif ( ! $is_filtered_product && 'variants' === $item['kind'] && cmk_fs()->is__premium_only() ) {
 						// Variable product.
 						// Check if any variants exists.
 						$post_parent = 0;
@@ -1120,13 +1100,8 @@ class SYNC_Import {
 		$sync_settings = get_option( PLUGIN_OPTIONS );
 		$prod_status    = ( isset( $sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) && $sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'prodst' ] : 'draft';
 
-		if ( $this->is_woocommerce_active ) {
-			$post_type = 'product';
-			$sku_key   = '_sku';
-		} elseif ( $this->is_edd_active ) {
-			$post_type = 'download';
-			$sku_key   = 'edd_sku';
-		}
+		$post_type = 'product';
+		$sku_key   = '_sku';
 
 		if ( $item['sku'] && 'simple' === $item['kind'] ) {
 			$post_id = $this->find_product( $item['sku'] );
@@ -1145,14 +1120,12 @@ class SYNC_Import {
 			}
 			if ( $post_id && $item['sku'] && 'simple' == $item['kind'] ) {
 
-				if ( $this->is_woocommerce_active ) {
-					wp_set_object_terms( $post_id, 'simple', 'product_type' );
-				}
+				wp_set_object_terms( $post_id, 'simple', 'product_type' );
 
 				// Update meta for product.
 				$this->sync_product( $item, $post_id, 'simple' );
 			}
-		} elseif ( 'variants' === $item['kind'] && cmk_fs()->is__premium_only() && $this->is_woocommerce_active ) {
+		} elseif ( 'variants' === $item['kind'] && cmk_fs()->is__premium_only() ) {
 			// Variable product.
 			// Check if any variants exists.
 			$post_parent = 0;

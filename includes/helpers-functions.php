@@ -26,22 +26,6 @@ if ( ! function_exists( 'error_admin_message' ) ) {
 }
 
 /**
- * Check if is active ecommerce plugin
- *
- * @param sring $plugin Plugin to check.
- * @return boolean
- */
-function sync_is_active_ecommerce( $plugin ) {
-	if ( 'woocommerce' === $plugin && in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
-		return true;
-	}
-	if ( 'edd' === $plugin && in_array( 'easy-digital-downloads/easy-digital-downloads.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
-		return true;
-	}
-	return false;
-}
-
-/**
  * Converts product from API to SYNC
  *
  * @param array $products_original API NEO Product
