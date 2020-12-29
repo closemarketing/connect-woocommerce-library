@@ -354,7 +354,7 @@ class SYNC_Import {
 		$is_new_product   = ( 0 === $product_id || false === $product_id ) ? true : false;
 
 		// Translations.
-		$msg_variation_error = __( 'Variation error: ', PLUGIN_SLUG );
+		$msg_variation_error = __( 'Variation error: ', 'sync-ecommerce-neo' );
 
 		/**
 		 * # Updates info for the product
@@ -668,11 +668,11 @@ class SYNC_Import {
 					if ( $doing_ajax ) {
 						wp_send_json_error(
 							array(
-								'msg' => __( 'No products to import', PLUGIN_SLUG ),
+								'msg' => __( 'No products to import', 'sync-ecommerce-neo' ),
 							)
 						);
 					} else {
-						die( esc_html( __( 'No products to import', PLUGIN_SLUG ) ) );
+						die( esc_html( __( 'No products to import', 'sync-ecommerce-neo' ) ) );
 					}
 				} else {
 					$is_new_product      = false;
@@ -703,11 +703,11 @@ class SYNC_Import {
 							if ( $doing_ajax ) {
 								wp_send_json_error(
 									array(
-										'msg' => __( 'There was an error while inserting new product!', PLUGIN_SLUG ) . ' ' . $item['name'],
+										'msg' => __( 'There was an error while inserting new product!', 'sync-ecommerce-neo' ) . ' ' . $item['name'],
 									)
 								);
 							} else {
-								die( esc_html( __( 'There was an error while inserting new product!', PLUGIN_SLUG ) ) );
+								die( esc_html( __( 'There was an error while inserting new product!', 'sync-ecommerce-neo' ) ) );
 							}
 						}
 						if ( ! $post_id ) {
@@ -736,7 +736,7 @@ class SYNC_Import {
 							}
 						}
 						if ( false === $any_variant_sku ) {
-							$this->ajax_msg .= __( 'Product not imported becouse any variant has got SKU: ', PLUGIN_SLUG ) . $item['name'] . '(' . $item['kind'] . ') <br/>';
+							$this->ajax_msg .= __( 'Product not imported becouse any variant has got SKU: ', 'sync-ecommerce-neo' ) . $item['name'] . '(' . $item['kind'] . ') <br/>';
 						} else {
 							// Update meta for product.
 							$this->sync_product( $item, $post_parent, 'variable' );
@@ -749,26 +749,26 @@ class SYNC_Import {
 						}
 					} elseif ( $is_filtered_product ) {
 						// Product not synced without SKU.
-						$this->ajax_msg .= '<span class="warning">' . __( 'Product filtered to not import: ', PLUGIN_SLUG ) . $item['name'] . '(' . $item['kind'] . ') </span></br>';
+						$this->ajax_msg .= '<span class="warning">' . __( 'Product filtered to not import: ', 'sync-ecommerce-neo' ) . $item['name'] . '(' . $item['kind'] . ') </span></br>';
 					} elseif ( '' === $item['sku'] && 'simple' === $item['kind'] ) {
 						// Product not synced without SKU.
-						$this->ajax_msg .= __( 'SKU not finded in Simple product. Product not imported: ', PLUGIN_SLUG ) . $item['name'] . '(' . $item['kind'] . ')</br>';
+						$this->ajax_msg .= __( 'SKU not finded in Simple product. Product not imported: ', 'sync-ecommerce-neo' ) . $item['name'] . '(' . $item['kind'] . ')</br>';
 
 						$this->error_product_import[] = array(
 							'id_holded' => $item['id'],
 							'name'      => $item['name'],
 							'sku'       => $item['sku'],
-							'error'     => __( 'SKU not finded in Simple product. Product not imported. ', PLUGIN_SLUG ),
+							'error'     => __( 'SKU not finded in Simple product. Product not imported. ', 'sync-ecommerce-neo' ),
 						);
 					} elseif ( 'simple' !== $item['kind'] ) {
 						// Product not synced without SKU.
-						$this->ajax_msg .= __( 'Product type not supported. Product not imported: ', PLUGIN_SLUG ) . $item['name'] . '(' . $item['kind'] . ')</br>';
+						$this->ajax_msg .= __( 'Product type not supported. Product not imported: ', 'sync-ecommerce-neo' ) . $item['name'] . '(' . $item['kind'] . ')</br>';
 
 						$this->error_product_import[] = array(
 							'id_holded' => $item['id'],
 							'name'      => $item['name'],
 							'sku'       => $item['sku'],
-							'error'     => __( 'Product type not supported. Product not imported: ', PLUGIN_SLUG ),
+							'error'     => __( 'Product type not supported. Product not imported: ', 'sync-ecommerce-neo' ),
 						);
 					}
 				}
@@ -777,9 +777,9 @@ class SYNC_Import {
 					$products_synced = $syncLoop + 1;
 
 					if ( $products_synced <= $products_count ) {
-						$this->ajax_msg = '[' . date_i18n( 'H:i:s' ) . '] ' . $products_synced . '/' . $products_count . ' ' . __( 'products. ', PLUGIN_SLUG ) . $this->ajax_msg;
+						$this->ajax_msg = '[' . date_i18n( 'H:i:s' ) . '] ' . $products_synced . '/' . $products_count . ' ' . __( 'products. ', 'sync-ecommerce-neo' ) . $this->ajax_msg;
 						if ( $products_synced == $products_count ) {
-							$this->ajax_msg .= '<p class="finish">' . __( 'All caught up!', PLUGIN_SLUG ) . '</p>';
+							$this->ajax_msg .= '<p class="finish">' . __( 'All caught up!', 'sync-ecommerce-neo' ) . '</p>';
 						}
 
 						$args = array(
@@ -806,9 +806,9 @@ class SYNC_Import {
 				}
 			} else {
 				if ( $doing_ajax ) {
-					wp_send_json_error( array( 'msg' => __( 'No products to import', PLUGIN_SLUG ) ) );
+					wp_send_json_error( array( 'msg' => __( 'No products to import', 'sync-ecommerce-neo' ) ) );
 				} else {
-					die( esc_html( __( 'No products to import', PLUGIN_SLUG ) ) );
+					die( esc_html( __( 'No products to import', 'sync-ecommerce-neo' ) ) );
 				}
 			}
 		}
@@ -1104,7 +1104,7 @@ class SYNC_Import {
 			);
 		} elseif ( 'simple' !== $item['kind'] && isset( $item['id'] ) ) {
 			$this->send_email_errors(
-				__( 'Product type not supported. Product not imported ', PLUGIN_SLUG ),
+				__( 'Product type not supported. Product not imported ', 'sync-ecommerce-neo' ),
 				array(
 					'Product id:' . $item['id'],
 					'Product name:' . $item['name'],
@@ -1242,11 +1242,11 @@ class SYNC_Import {
 		$results = $wpdb->get_results( "SELECT sync_prodid FROM $this->table_sync WHERE synced = 1", ARRAY_A );
 
 		if ( count( $results ) > 0 && 'yes' === $send_email ) {
-			$subject = __( 'All products synced with Holded', PLUGIN_SLUG );
+			$subject = __( 'All products synced with Holded', 'sync-ecommerce-neo' );
 			$headers = array( 'Content-Type: text/html; charset=UTF-8' );
-			$body    = '<br/><strong>' . __( 'Total products:', PLUGIN_SLUG ) . '</strong> ';
+			$body    = '<br/><strong>' . __( 'Total products:', 'sync-ecommerce-neo' ) . '</strong> ';
 			$body   .= count( $results );
-			$body   .= '<br/><strong>' . __( 'Time:', PLUGIN_SLUG ) . '</strong> ';
+			$body   .= '<br/><strong>' . __( 'Time:', 'sync-ecommerce-neo' ) . '</strong> ';
 			$body   .= date_i18n( 'Y-m-d H:i:s', current_time( 'timestamp') );
 			wp_mail( get_option( 'admin_email' ), $subject, $body, $headers );
 		}
