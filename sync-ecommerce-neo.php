@@ -5,7 +5,7 @@
  * Description: Imports Products and data from NEO to WooCommerce or Easy Digital Downloads.
  * Author: closemarketing
  * Author URI: https://www.closemarketing.es/
- * Version: 1.2b4
+ * Version: 1.0b1
  *
  * @package WordPress
  * Text Domain: sync-ecommerce-neo
@@ -16,7 +16,10 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WCSEN_VERSION', '1.2b4' );
+define( 'WCSEN_VERSION', '1.0b1' );
+define( 'WCSEN_PLUGIN', __FILE__ );
+define( 'WCSEN_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'WCSEN_PLUGIN_DIR', untrailingslashit( dirname( WCSEN_PLUGIN ) ) );
 define( 'WCSEN_ECOMMERCE', array( 'woocommerce', 'edd' ) );
 define( 'WCSEN_TABLE_SYNC', 'wcsen_product_sync' );
 define( 'PLUGIN_SLUG', 'sync-ecommerce-neo' );
@@ -63,7 +66,7 @@ if ( function_exists( 'cmk_fs' ) ) {
 						'premium_slug'        => 'sync-ecommerce-neo-premium',
 						'type'                => 'plugin',
 						'public_key'          => 'pk_383663f6536abd96fc0baa8081b21',
-						'is_premium'          => false,
+						'is_premium'          => true,
 						'premium_suffix'      => '',
 						// If your plugin is a serviceware, set this option to false.
 						'has_premium_version' => true,

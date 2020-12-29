@@ -49,29 +49,25 @@ function sync_convert_products( $products_original ) {
 			// Variant product.
 			if ( isset( $products_converted[ $key ]['type'] ) && 'Textil' === $products_converted[ $key ]['type'] ) {
 				// For Textil products.
-				$product_array['categoryFields'][] = array(
-					'name'      => 'Talla',
-					'field'     => $product['NomTalla'],
-					'variation' => true,
+				$products_converted[ $key ]['attributes'][] = array(
+					'name'  => 'Marca',
+					'value' => $product['NomMarca'],
 				);
 				$product_array['categoryFields'][] = array(
-					'name'      => 'Marca',
-					'field'     => $product['NomMarca'],
-					'variation' => false,
+					'name'  => 'Talla',
+					'field' => $product['NomTalla'],
 				);
 				if ( isset( $product['NomColor'] ) && $product['NomColor'] ) {
 					$product_array['categoryFields'][] = array(
-						'name'      => 'Color',
-						'field'     => $product['NomColor'],
-						'variation' => false,
+						'name'  => 'Color',
+						'field' => $product['NomColor'],
 					);
 				}
 				if ( ! empty( $product['Propiedades'] ) ) {
 					foreach ( $product['Propiedades'] as $property ) {
 						$product_array['categoryFields'][] = array(
-							'name'      => $property['Propiedad'],
-							'field'     => $property['Valor'],
-							'variation' => false,
+							'name'  => $property['Propiedad'],
+							'field' => $property['Valor'],
 						);
 					}
 				}
@@ -139,6 +135,7 @@ function sync_get_token( $renew_token = false ) {
  * @return array Array of products imported via API.
  */
 function sync_get_products( $id = null, $page = null ) {
+	/*
 	$sync_settings = get_option( PLUGIN_OPTIONS );
 	$token         = sync_get_token();
 
@@ -150,15 +147,18 @@ function sync_get_products( $id = null, $page = null ) {
 	);
 
 	$response      = wp_remote_post( 'https://apis.bartolomeconsultores.com/pedidosweb/verarticulos2.php', $args );
-	$body          = wp_remote_retrieve_body( $response );
-	$body_response = json_decode( $body, true );
+	$body          = wp_remote_retrieve_body( $response );*/
+	$response = wp_remote_get(WCSEN_PLUGIN_URL . 'includes/products.json');
+	$response_body = wp_remote_retrieve_body( $response );
+	$body_response = json_decode( $response_body, true );
 
 	if ( isset( $body_response['result'] ) && 'error' === $body_response['result'] ) {
 		error_admin_message( 'ERROR', $body_response['message'] );
 		return false;
 	}
 
-	return $body_response['articulos'];
+	//return $body_response['articulos'];
+	return $body_response;
 }
 
 /**
