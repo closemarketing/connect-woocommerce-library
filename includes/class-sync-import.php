@@ -489,10 +489,7 @@ class SYNC_Import {
 				}
 				// Get all Attributes for the product.
 				foreach ( $variant['categoryFields'] as $category_fields ) {
-					echo '<pre>categoryfields:';
-					print_r($categoryfields);
-					echo '</pre>';
-					if ( ! isset( $category_fields['field'] ) && $category_fields ) {
+					if ( isset( $category_fields['field'] ) && $category_fields ) {
 						if ( ! in_array( $category_fields['field'], $attributes[ $category_fields['name'] ], true ) ) {
 							$attributes[ $category_fields['name'] ][] = $category_fields['field'];
 						}
@@ -546,7 +543,8 @@ class SYNC_Import {
 				}
 				$variation->save();
 			}
-			$product_props['attributes'] = $this->make_attributes( $attributes, true );
+			$variation_attributes        = $this->make_attributes( $attributes, true );
+			$product_props['attributes'] = $variation_attributes;
 			$data_store = $product->get_data_store();
 			$data_store->sort_all_product_variations( $product_id );
 
@@ -561,20 +559,18 @@ class SYNC_Import {
 					);
 				}
 			}
+			/**
+			 * ## Attributes
+			 * --------------------------- */
 			$attributes      = array();
 			$attributes_prod = array();
-
-			foreach ( $item['attributes'] as $attribute){
+			foreach ( $item['attributes'] as $attribute ){
 				if ( ! in_array( $attribute['value'], $attributes[ $attribute['name'] ], true ) ) {
 					$attributes[ $attribute['name'] ][] = $attribute['value'];
 				}
-
-				$attribute_name = wc_sanitize_taxonomy_name( $attribute['name'] );
-				$attributes_prod[ 'attribute_pa_' . $attribute_name ] = wc_sanitize_taxonomy_name( $attribute['value'] );
-
 				$att_props = $this->make_attributes( $attributes, false );
 			}
-			$product_props['attributes'] = array_merge( $var_prop, $att_props );
+			$product_props['attributes'] = array_merge( $att_props, $variation_attributes );
 		}
 
 		if ( cmk_fs()->is__premium_only() ) {

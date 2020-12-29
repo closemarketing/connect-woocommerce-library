@@ -49,7 +49,7 @@ function sync_convert_products( $products_original ) {
 			// Variant product.
 			if ( isset( $products_converted[ $key ]['type'] ) && 'Textil' === $products_converted[ $key ]['type'] ) {
 				// For Textil products.
-				$products_converted[ $key ]['attributes'][] = array(
+				$products_converted[ $key ]['attributes'][0] = array(
 					'name'  => 'Marca',
 					'value' => $product['NomMarca'],
 				);
