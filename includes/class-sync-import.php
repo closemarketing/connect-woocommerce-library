@@ -335,69 +335,6 @@ class SYNC_Import {
 	}
 
 	/**
-	 * Update product meta with the object included in Easy Digital Downloads
-	 *
-	 * @param object $item Item Object from holded.
-	 * @param string $product_id Product ID. If is null, is new product.
-	 * @param string $type Type of the product.
-	 * @return void.
-	 */
-	private function sync_product_edd( $item, $product_id = 0, $type ) {
-		$sync_settings  = get_option( PLUGIN_OPTIONS );
-		$rate_id        = $sync_settings[ PLUGIN_PREFIX . 'rates' ] ;
-		$post_status    = ( isset( $sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) && $sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'prodst' ] : 'draft';
-		$tax_included   = get_option(  PLUGIN_PREFIX . 'taxinc'  );
-		$is_new_product = ( 0 === $product_id || false === $product_id ) ? true : false;
-
-		if ( $is_new_product ) {
-			$post_meta = array(
-				'post_title'   => wp_strip_all_tags( $item['name'] ),
-				'post_content' => $item['desc'],
-				'post_status'  => $post_status,
-			);
-
-			// Insert the post into the database.
-			$product_id = wp_insert_post( $post_meta );
-		}
-		if ( 'simple' === $type ) {
-			if ( 'yes' === $tax_included ) {
-				update_post_meta( $product_id, 'edd_price', $item['total'] );
-			} else {
-				update_post_meta( $product_id, 'edd_price', $item['price'] );
-			}
-			update_post_meta( $product_id, 'edd_sku', $item['sku'] );
-		}
-
-		if ( cmk_fs()->is__premium_only() ) {
-			// Category Holded.
-			$category_newp = isset( $sync_settings[ PLUGIN_PREFIX . 'catnp' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'catnp' ] : 'yes';
-			$category_sep  = isset( $sync_settings[ PLUGIN_PREFIX . 'catsep' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'catsep' ] : '';
-			if ( ( $item['type'] && 'yes' === $category_newp && $is_new_product ) ||
-				( $item['type'] && 'no' === $category_newp && false === $is_new_product )
-			) {
-				foreach ( $item['type'] as $category ) {
-					if ( $category_sep ) {
-						$category_array = explode( $category_sep, $category['name'] );
-					} else {
-						$category_array = array( $category['name'] );
-					}
-					wp_set_post_terms(
-						$product_id,
-						$this->find_categories_ids( $category_array ),
-						'download_category'
-					);
-				}
-			}
-		}
-
-		if ( cmk_fs()->is__premium_only() ) {
-			// Imports image.
-			$this->put_product_image( $item['id'], $product_id );
-		}
-
-	}
-
-	/**
 	 * Update product meta with the object included in WooCommerce
 	 *
 	 * Coded inspired from: https://github.com/woocommerce/wc-smooth-generator/blob/master/includes/Generator/Product.php
@@ -533,7 +470,6 @@ class SYNC_Import {
 				$variations       = $product->get_available_variations();
 				$variations_array = wp_list_pluck( $variations, 'sku', 'variation_id' );
 			}
-
 			foreach ( $item['variants'] as $variant ) {
 				$variation_id = 0; // default value.
 				if ( ! $is_new_product ) {
@@ -553,6 +489,9 @@ class SYNC_Import {
 				}
 				// Get all Attributes for the product.
 				foreach ( $variant['categoryFields'] as $category_fields ) {
+					echo '<pre>categoryfields:';
+					print_r($categoryfields);
+					echo '</pre>';
 					if ( ! isset( $category_fields['field'] ) && $category_fields ) {
 						if ( ! in_array( $category_fields['field'], $attributes[ $category_fields['name'] ], true ) ) {
 							$attributes[ $category_fields['name'] ][] = $category_fields['field'];
@@ -655,11 +594,11 @@ class SYNC_Import {
 				}
 			}
 		}
-
+		/*
 		if ( cmk_fs()->is__premium_only() ) {
 			// Imports image.
-			$this->put_product_image( $item['id'], $product_id );
-		}
+			put_product_image( $item['id'], $product_id );
+		}*/
 		// Set properties and save.
 		$product->set_props( $product_props );
 		$product->save();
@@ -691,6 +630,7 @@ class SYNC_Import {
 		$sync_settings = get_option( PLUGIN_OPTIONS );
 		$apikey        = $sync_settings[ PLUGIN_PREFIX . 'api' ];
 		$prod_status   = ( isset( $sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) && $sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'prodst' ] : 'draft';
+		$page = 1;
 
 		$post_type    = 'product';
 		$sku_key      = '_sku';

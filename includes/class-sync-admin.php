@@ -36,20 +36,6 @@ class SYNC_Admin {
 	private $label_premium;
 
 	/**
-	 * Is Woocommerce active?
-	 *
-	 * @var boolean
-	 */
-	private $is_woocommerce_active;
-
-	/**
-	 * Is EDD active?
-	 *
-	 * @var boolean
-	 */
-	private $is_edd_active;
-
-	/**
 	 * Construct of class
 	 */
 	public function __construct() {
@@ -57,9 +43,6 @@ class SYNC_Admin {
 		add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
 		add_action( 'admin_init', array( $this, 'page_init' ) );
 		add_action( 'admin_head', array( $this, 'custom_css' ) );
-
-		$this->is_woocommerce_active = sync_is_active_ecommerce( 'woocommerce' ) ? true : false;
-		$this->is_edd_active         = sync_is_active_ecommerce( 'edd' ) ? true : false;
 	}
 
 	/**
@@ -98,9 +81,9 @@ class SYNC_Admin {
 			<?php $active_tab = isset( $_GET['tab'] ) ? strval( $_GET['tab'] ) : 'sync'; ?>
 
 			<h2 class="nav-tab-wrapper">
-				<a href="?page=<?php echo 'import_' . esc_html( PLUGIN_SLUG ); ?>&tab=sync" class="nav-tab <?php echo 'sync' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Manual Synchronization', PLUGIN_SLUG ); ?></a>
-				<a href="?page=<?php echo 'import_' . esc_html( PLUGIN_SLUG ); ?>&tab=automate" class="nav-tab <?php echo 'automate' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Automate', PLUGIN_SLUG ); ?></a>
-				<a href="?page=<?php echo 'import_' . esc_html( PLUGIN_SLUG ); ?>&tab=settings" class="nav-tab <?php echo 'settings' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Settings', PLUGIN_SLUG ); ?></a>
+				<a href="?page=<?php echo 'import_' . esc_html( PLUGIN_SLUG ); ?>&tab=sync" class="nav-tab <?php echo 'sync' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Manual Synchronization', 'sync-ecommerce-neo' ); ?></a>
+				<a href="?page=<?php echo 'import_' . esc_html( 'sync-ecommerce-neo' ); ?>&tab=automate" class="nav-tab <?php echo 'automate' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Automate', 'sync-ecommerce-neo' ); ?></a>
+				<a href="?page=<?php echo 'import_' . esc_html( 'sync-ecommerce-neo' ); ?>&tab=settings" class="nav-tab <?php echo 'settings' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Settings', 'sync-ecommerce-neo' ); ?></a>
 			</h2>
 
 			<?php	if ( 'sync' === $active_tab ) { ?>
@@ -153,11 +136,7 @@ class SYNC_Admin {
 			array( $this, 'sanitize_fields' )
 		);
 
-		if ( $this->is_edd_active ) {
-			$settings_title = __( 'Settings for Importing in Easy Digital Downloads', 'sync-ecommerce-neo' );
-		} else {
-			$settings_title = __( 'Settings for Importing in WooCommerce', 'sync-ecommerce-neo' );
-		}
+		$settings_title = __( 'Settings for Importing in WooCommerce', 'sync-ecommerce-neo' );
 
 		add_settings_section(
 			'import_neo_setting_section',
@@ -182,15 +161,13 @@ class SYNC_Admin {
 			'import_neo_setting_section'
 		);
 
-		if ( $this->is_woocommerce_active ) {
-			add_settings_field(
-				'wcsen_stock',
-				__( 'Import stock?', 'sync-ecommerce-neo' ),
-				array( $this, 'wcsen_stock_callback' ),
-				'import-neo-admin',
-				'import_neo_setting_section'
-			);
-		}
+		add_settings_field(
+			'wcsen_stock',
+			__( 'Import stock?', 'sync-ecommerce-neo' ),
+			array( $this, 'wcsen_stock_callback' ),
+			'import-neo-admin',
+			'import_neo_setting_section'
+		);
 
 		add_settings_field(
 			'wcsen_prodst',
@@ -200,23 +177,21 @@ class SYNC_Admin {
 			'import_neo_setting_section'
 		);
 
-		if ( $this->is_woocommerce_active ) {
-			add_settings_field(
-				'wcsen_virtual',
-				__( 'Virtual products?', 'sync-ecommerce-neo' ),
-				array( $this, 'wcsen_virtual_callback' ),
-				'import-neo-admin',
-				'import_neo_setting_section'
-			);
+		add_settings_field(
+			'wcsen_virtual',
+			__( 'Virtual products?', 'sync-ecommerce-neo' ),
+			array( $this, 'wcsen_virtual_callback' ),
+			'import-neo-admin',
+			'import_neo_setting_section'
+		);
 
-			add_settings_field(
-				'wcsen_backorders',
-				__( 'Allow backorders?', 'sync-ecommerce-neo' ),
-				array( $this, 'wcsen_backorders_callback' ),
-				'import-neo-admin',
-				'import_neo_setting_section'
-			);
-		}
+		add_settings_field(
+			'wcsen_backorders',
+			__( 'Allow backorders?', 'sync-ecommerce-neo' ),
+			array( $this, 'wcsen_backorders_callback' ),
+			'import-neo-admin',
+			'import_neo_setting_section'
+		);
 
 		$label_cat = __( 'Category separator', 'sync-ecommerce-neo' );
 		if ( cmk_fs()->is_not_paying() ) {
