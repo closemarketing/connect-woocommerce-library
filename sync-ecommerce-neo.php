@@ -66,7 +66,7 @@ if ( function_exists( 'cmk_fs' ) ) {
 						'premium_slug'        => 'sync-ecommerce-neo-premium',
 						'type'                => 'plugin',
 						'public_key'          => 'pk_383663f6536abd96fc0baa8081b21',
-						'is_premium'          => false,
+						'is_premium'          => true,
 						'premium_suffix'      => '',
 						// If your plugin is a serviceware, set this option to false.
 						'has_premium_version' => true,

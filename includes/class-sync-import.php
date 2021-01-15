@@ -653,11 +653,11 @@ class SYNC_Import {
 			$item                     = $products_array[ $syncLoop ];
 			$error_products_html      = '';
 			$this->msg_error_products = array();
-
+			/*
 			if ( function_exists( 'wp_get_environment_type' ) && 'local' === wp_get_environment_type() && $products_count > WCSEN_MAX_LOCAL_LOOP ) {
 				// Import less products in local environment.
 				$products_count = WCSEN_MAX_LOCAL_LOOP;
-			}
+			}*/
 
 			if ( $products_count ) {
 				if ( ( $doing_ajax ) || $not_sapi_cli ) {
