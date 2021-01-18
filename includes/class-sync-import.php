@@ -638,15 +638,17 @@ class SYNC_Import {
 
 		// Start.
 
-		$products_api = get_transient( 'syncec_api_products' );
-		$products_api = json_decode( $products_api, true );
-		if ( ! $products_api_transient || empty( $products_api ) ) {
+		$products_api_tran = get_transient( 'syncec_api_products' );
+		$products_api      = json_decode( $products_api_tran, true );
+
+		if ( empty( $products_api ) ) {
 			$products_api_neo = sync_get_products( null, $page );
-			$products_api     = json_encode( sync_convert_products( $products_api_neo ) );
+			$products_api     = wp_json_encode( sync_convert_products( $products_api_neo ) );
 
 			set_transient( 'syncec_api_products', $products_api, 900 ); // 15 minutes
+			$products_api = json_decode( $products_api, true );
 		}
-		if ( false === $products_api ) {
+		if ( empty( $products_api ) ) {
 			if ( $doing_ajax ) {
 				wp_send_json_error( array( 'msg' => 'Error' ) );
 			} else {
