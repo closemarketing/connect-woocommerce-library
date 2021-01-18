@@ -943,6 +943,8 @@ class SYNC_Import {
 					$(this).attr('disabled','disabled');
 					$(this).after('<span class="spinner is-active"></span>');
 					var class_task = 'odd';
+					$(document).find('#logwrapper #loglist').append( '<p class="'+class_task+'"><?php echo '[' . date_i18n( 'H:i:s' ) . '] ' . __( 'Connecting with NEO and syncing Products ...', 'sync-ecommerce-neo' ); ?></p>');
+					class_task = 'even';
 
 					var syncAjaxCall = function(x){
 						$.ajax({
