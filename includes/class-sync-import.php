@@ -216,6 +216,7 @@ class SYNC_Import {
 	 */
 	private function make_attributes( $attributes, $for_variation = true ) {
 		$position = 0;
+		$attributes_return = array();
 		foreach ( $attributes as $attr_name => $attr_values ) {
 			$attribute = new \WC_Product_Attribute();
 			$attribute->set_id( 0 );
@@ -491,7 +492,7 @@ class SYNC_Import {
 				// Get all Attributes for the product.
 				foreach ( $variant['categoryFields'] as $category_fields ) {
 					if ( isset( $category_fields['field'] ) && $category_fields ) {
-						if ( ! in_array( $category_fields['field'], $attributes[ $category_fields['name'] ], true ) ) {
+						if ( isset( $attributes[ $category_fields['name'] ] ) && ! in_array( $category_fields['field'], $attributes[ $category_fields['name'] ], true ) ) {
 							$attributes[ $category_fields['name'] ][] = $category_fields['field'];
 						}
 						$attribute_name = wc_sanitize_taxonomy_name( $category_fields['name'] );
@@ -983,6 +984,7 @@ class SYNC_Import {
 									} else {
 										class_task = 'odd';
 									}
+									$(".sync-ecommerce-neo-plugin #loglist").animate({ scrollTop: $(".sync-ecommerce-neo-plugin #loglist")[0].scrollHeight}, 1000);
 								},
 								error: function (xhr, text_status, error_thrown) {
 									$(document).find('#start-sync').removeAttr('disabled');
