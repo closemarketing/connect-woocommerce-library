@@ -5,7 +5,7 @@
  * Description: Imports Products and data from NEO to WooCommerce or Easy Digital Downloads.
  * Author: closemarketing
  * Author URI: https://www.closemarketing.es/
- * Version: 1.0b1
+ * Version: 1.0b2
  *
  * @package WordPress
  * Text Domain: sync-ecommerce-neo
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WCSEN_VERSION', '1.0b1' );
+define( 'WCSEN_VERSION', '1.0b2' );
 define( 'WCSEN_PLUGIN', __FILE__ );
 define( 'WCSEN_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'WCSEN_PLUGIN_DIR', untrailingslashit( dirname( WCSEN_PLUGIN ) ) );

@@ -112,13 +112,15 @@ function sync_get_token( $renew_token = false ) {
 		$response      = wp_remote_post( 'https://apis.bartolomeconsultores.com/pedidosweb/gettoken.php', $args );
 		$body          = wp_remote_retrieve_body( $response );
 		$body_response = json_decode( $body, true );
-
-		if ( isset( $body_response['result'] ) && 'error' === $body_response['result'] ) {
-			error_admin_message( 'ERROR', $body_response['message'] );
-			return false;
-		}
-		if ( ! isset( $body_response['token'] ) ) {
-			error_admin_message( 'ERROR', $body_response['message'] );
+ 
+		if ( ( isset( $body_response['result'] ) && 'error' === $body_response['result'] ) || 
+			! isset( $body_response['token'] )
+		) {
+			wp_send_json_error(
+				array(
+					'msg' => '[' . date_i18n( 'H:i:s' ) . '] ' . '<span style="color:red;">Error: ' . $body_response['message'] . '</span>',
+				)
+			);
 			return false;
 		}
 		set_transient( PLUGIN_PREFIX . 'token', $body_response['token'], EXPIRE_TOKEN );
@@ -150,7 +152,11 @@ function sync_get_products( $id = null, $page = null ) {
 	$body_response = json_decode( $response_body, true );
 
 	if ( isset( $body_response['result'] ) && 'error' === $body_response['result'] ) {
-		error_admin_message( 'ERROR', $body_response['message'] );
+		wp_send_json_error(
+			array(
+				'msg' => '[' . date_i18n( 'H:i:s' ) . '] ' . '<span style="color:red;">Error: ' . $body_response['message'] . '</span>',
+			)
+		);
 		return false;
 	}
 

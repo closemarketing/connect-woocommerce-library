@@ -4,8 +4,8 @@ Tags: neo erp, woocommerce
 Donate link: https://www.closemarketing.es/go/donate/
 Requires at least: 3.0
 Tested up to: 5.6
-Stable tag: 1.0b1
-Version: 1.0b1
+Stable tag: 1.0b2
+Version: 1.0b2
 
 Imports Products and data from NEO software to WooCommerce or Easy Digital Downloads.
 

@@ -216,6 +216,7 @@ class SYNC_Import {
 	 */
 	private function make_attributes( $attributes, $for_variation = true ) {
 		$position = 0;
+		$attributes_return = array();
 		foreach ( $attributes as $attr_name => $attr_values ) {
 			$attribute = new \WC_Product_Attribute();
 			$attribute->set_id( 0 );
@@ -366,11 +367,12 @@ class SYNC_Import {
 		} elseif ( 'variable' === $type && cmk_fs()->is__premium_only() ) {
 			$product = new \WC_Product_Variable( $product_id );
 		}
+		$price = isset( $item['price'] ) ? $item['price'] : 0;
 		// Common and default properties.
 		$product_props     = array(
 			'stock_status'  => 'instock',
 			'backorders'    => $allow_backorders,
-			'regular_price' => $item['price'],
+			'regular_price' => $price,
 		);
 		$product_props_new = array();
 		if ( $is_new_product ) {
@@ -490,7 +492,7 @@ class SYNC_Import {
 				// Get all Attributes for the product.
 				foreach ( $variant['categoryFields'] as $category_fields ) {
 					if ( isset( $category_fields['field'] ) && $category_fields ) {
-						if ( ! in_array( $category_fields['field'], $attributes[ $category_fields['name'] ], true ) ) {
+						if ( isset( $attributes[ $category_fields['name'] ] ) && ! in_array( $category_fields['field'], $attributes[ $category_fields['name'] ], true ) ) {
 							$attributes[ $category_fields['name'] ][] = $category_fields['field'];
 						}
 						$attribute_name = wc_sanitize_taxonomy_name( $category_fields['name'] );
@@ -637,20 +639,26 @@ class SYNC_Import {
 		$msg_product_synced  = __( 'Product synced: ', 'sync-ecommerce-neo' );
 
 		// Start.
-		if ( ! isset( $this->products ) ) {
-			$this->products = sync_get_products( null, $page );
-		}
 
-		if ( false === $this->products ) {
+		$products_api_tran = get_transient( 'syncec_api_products' );
+		$products_api      = json_decode( $products_api_tran, true );
+
+		if ( empty( $products_api ) ) {
+			$products_api_neo = sync_get_products( null, $page );
+			$products_api     = wp_json_encode( sync_convert_products( $products_api_neo ) );
+
+			set_transient( 'syncec_api_products', $products_api, 3600 ); // 1 hour
+			$products_api = json_decode( $products_api, true );
+		}
+		if ( empty( $products_api ) ) {
 			if ( $doing_ajax ) {
 				wp_send_json_error( array( 'msg' => 'Error' ) );
 			} else {
 				die();
 			}
 		} else {
-			$products_array           = sync_convert_products( $this->products );
-			$products_count           = count( $products_array );
-			$item                     = $products_array[ $syncLoop ];
+			$products_count           = count( $products_api );
+			$item                     = $products_api[ $syncLoop ];
 			$error_products_html      = '';
 			$this->msg_error_products = array();
 			/*
@@ -677,7 +685,8 @@ class SYNC_Import {
 				} else {
 					$is_new_product      = false;
 					$post_id             = 0;
-					$is_filtered_product = $this->filter_product( $item['tags'] );
+					$product_tags        = isset( $item['tags'] ) ? $item['tags'] : '';
+					$is_filtered_product = $this->filter_product( $product_tags );
 
 					if ( ! $is_filtered_product && $item['sku'] && 'simple' === $item['kind'] ) {
 						$post_id = $this->find_product( $item['sku'] );
@@ -931,55 +940,59 @@ class SYNC_Import {
 		$get_tab = isset( $_GET['tab'] ) ? $_GET['tab'] : 'sync';
 
 		if ( 'toplevel_page_import_' . PLUGIN_SLUG === $screen->base && 'sync' === $get_tab ) {
-		?>
-		<style>
-			.spinner{ float: none; }
-		</style>
-		<script type="text/javascript">
-			var loop=0;
-			jQuery(function($){
-				$(document).find('#sync-neo-engine').after('<div class="sync-wrapper"><h2><?php _e( 'Import Products from Holded', 'sync-ecommerce-neo' ); ?></h2><p><?php _e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', 'sync-ecommerce-neo' ); ?><br/></p><button id="start-sync" class="button button-primary"<?php if ( false === $this->check_can_sync() ) { echo ' disabled'; } ?>><?php _e( 'Start Import', 'sync-ecommerce-neo' ); ?></button></div><fieldset id="logwrapper"><legend><?php _e( 'Log', 'sync-ecommerce-neo' ); ?></legend><div id="loglist"></div></fieldset>');
-				$(document).find('#start-sync').on('click', function(){
-					$(this).attr('disabled','disabled');
-					$(this).after('<span class="spinner is-active"></span>');
-					var class_task = 'odd';
+			?>
+			<style>
+				.spinner{ float: none; }
+			</style>
+			<script type="text/javascript">
+				var loop=0;
+				jQuery(function($){
+					$(document).find('#sync-neo-engine').after('<div class="sync-wrapper"><h2><?php _e( 'Import Products from Holded', 'sync-ecommerce-neo' ); ?></h2><p><?php _e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', 'sync-ecommerce-neo' ); ?><br/></p><button id="start-sync" class="button button-primary"<?php if ( false === $this->check_can_sync() ) { echo ' disabled'; } ?>><?php _e( 'Start Import', 'sync-ecommerce-neo' ); ?></button></div><fieldset id="logwrapper"><legend><?php _e( 'Log', 'sync-ecommerce-neo' ); ?></legend><div id="loglist"></div></fieldset>');
+					$(document).find('#start-sync').on('click', function(){
+						$(this).attr('disabled','disabled');
+						$(this).after('<span class="spinner is-active"></span>');
+						var class_task = 'odd';
+						$(document).find('#logwrapper #loglist').append( '<p class="'+class_task+'"><?php echo '[' . date_i18n( 'H:i:s' ) . '] ' . __( 'Connecting with NEO and syncing Products ...', 'sync-ecommerce-neo' ); ?></p>');
+						class_task = 'even';
 
-					var syncAjaxCall = function(x){
-						$.ajax({
-							type: "POST",
-							url: "<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>",
-							dataType: "json",
-							data: {
-								action: "sync_import_products",
-								syncLoop: x
-							},
-							success: function(results) {
-								if(results.success){
-									if(results.data.loop){
-										syncAjaxCall(results.data.loop);
-									}else{
+						var syncAjaxCall = function(x){
+							$.ajax({
+								type: "POST",
+								url: "<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>",
+								dataType: "json",
+								data: {
+									action: "sync_import_products",
+									syncLoop: x
+								},
+								success: function(results) {
+									if(results.success){
+										if(results.data.loop){
+											syncAjaxCall(results.data.loop);
+										}else{
+											$(document).find('#start-sync').removeAttr('disabled');
+											$(document).find('.sync-wrapper .spinner').remove();
+										}
+									} else {
 										$(document).find('#start-sync').removeAttr('disabled');
 										$(document).find('.sync-wrapper .spinner').remove();
 									}
-								} else {
+									if( results.data.msg != undefined ){
+										$(document).find('#logwrapper #loglist').append( '<p class="'+class_task+'">'+results.data.msg+'</p>');
+									}
+									if ( class_task == 'odd' ) {
+										class_task = 'even';
+									} else {
+										class_task = 'odd';
+									}
+									$(".sync-ecommerce-neo-plugin #loglist").animate({ scrollTop: $(".sync-ecommerce-neo-plugin #loglist")[0].scrollHeight}, 1000);
+								},
+								error: function (xhr, text_status, error_thrown) {
 									$(document).find('#start-sync').removeAttr('disabled');
 									$(document).find('.sync-wrapper .spinner').remove();
-								}
-								if( results.data.msg != undefined ){
-									$(document).find('#logwrapper #loglist').append( '<p class="'+class_task+'">'+results.data.msg+'</p>');
-								}
-								if ( class_task == 'odd' ) {
-									class_task = 'even';
-								} else {
-									class_task = 'odd';
-								}
-							},
-							error: function (xhr, text_status, error_thrown) {
-								$(document).find('#start-sync').removeAttr('disabled');
-								$(document).find('.sync-wrapper .spinner').remove();
-								$(document).find('.sync-wrapper').append('<div class="progress">There was an Error! '+xhr.responseText+' '+text_status+': '+error_thrown+'</div>');
-							}
-								});
+									$(document).find('.sync-wrapper').append('<div class="progress">There was an Error! '+xhr.responseText+' '+text_status+': '+error_thrown+'</div>');
+								},
+								timeout: 0,
+							});
 						}
 						syncAjaxCall(window.loop);
 					});
