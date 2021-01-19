@@ -366,11 +366,12 @@ class SYNC_Import {
 		} elseif ( 'variable' === $type && cmk_fs()->is__premium_only() ) {
 			$product = new \WC_Product_Variable( $product_id );
 		}
+		$price = isset( $item['price'] ) ? $item['price'] : 0;
 		// Common and default properties.
 		$product_props     = array(
 			'stock_status'  => 'instock',
 			'backorders'    => $allow_backorders,
-			'regular_price' => $item['price'],
+			'regular_price' => $price,
 		);
 		$product_props_new = array();
 		if ( $is_new_product ) {
@@ -645,7 +646,7 @@ class SYNC_Import {
 			$products_api_neo = sync_get_products( null, $page );
 			$products_api     = wp_json_encode( sync_convert_products( $products_api_neo ) );
 
-			set_transient( 'syncec_api_products', $products_api, 900 ); // 15 minutes
+			set_transient( 'syncec_api_products', $products_api, 3600 ); // 1 hour
 			$products_api = json_decode( $products_api, true );
 		}
 		if ( empty( $products_api ) ) {
@@ -683,7 +684,8 @@ class SYNC_Import {
 				} else {
 					$is_new_product      = false;
 					$post_id             = 0;
-					$is_filtered_product = $this->filter_product( $item['tags'] );
+					$product_tags        = isset( $item['tags'] ) ? $item['tags'] : '';
+					$is_filtered_product = $this->filter_product( $product_tags );
 
 					if ( ! $is_filtered_product && $item['sku'] && 'simple' === $item['kind'] ) {
 						$post_id = $this->find_product( $item['sku'] );
