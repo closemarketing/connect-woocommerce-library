@@ -54,7 +54,7 @@ class SYNC_Admin {
 
 		add_menu_page(
 			__( 'Import from NEO to eCommerce', PLUGIN_SLUG ),
-			__( 'Import from NEO', PLUGIN_SLUG ),
+			__( 'Import NEO', PLUGIN_SLUG ),
 			'manage_options',
 			'import_' . PLUGIN_SLUG,
 			array( $this, 'create_admin_page' ),
@@ -201,18 +201,6 @@ class SYNC_Admin {
 			'import_neo_setting_section'
 		);
 
-		$label_cat = __( 'Category separator', 'sync-ecommerce-neo' );
-		if ( cmk_fs()->is_not_paying() ) {
-			$label_cat .= ' ' . $this->label_premium;
-		}
-		add_settings_field(
-			'wcsen_catsep',
-			$label_cat,
-			array( $this, 'wcsen_catsep_callback' ),
-			'import-neo-admin',
-			'import_neo_setting_section'
-		);
-
 		add_settings_field(
 			'wcsen_filter',
 			__( 'Filter products by tag?', 'sync-ecommerce-neo' ),
@@ -327,10 +315,6 @@ class SYNC_Admin {
 				$sanitary_values[ PLUGIN_PREFIX . 'tax'] = $input[ PLUGIN_PREFIX . 'tax'];
 			}
 
-			if ( isset( $input[ PLUGIN_PREFIX . 'catsep'] ) ) {
-				$sanitary_values[ PLUGIN_PREFIX . 'catsep'] = sanitize_text_field( $input[ PLUGIN_PREFIX . 'catsep'] );
-			}
-
 			if ( isset( $input[ PLUGIN_PREFIX . 'filter'] ) ) {
 				$sanitary_values[ PLUGIN_PREFIX . 'filter'] = sanitize_text_field( $input[ PLUGIN_PREFIX . 'filter'] );
 			}
@@ -367,7 +351,6 @@ class SYNC_Admin {
 			$sanitary_values[ PLUGIN_PREFIX . 'virtual']    = isset( $sync_settings[ PLUGIN_PREFIX . 'virtual'] ) ? $sync_settings[ PLUGIN_PREFIX . 'virtual']      : 'no';
 			$sanitary_values[ PLUGIN_PREFIX . 'backorders'] = isset( $sync_settings[ PLUGIN_PREFIX . 'backorders'] ) ? $sync_settings[ PLUGIN_PREFIX . 'backorders']: 'no';
 			$sanitary_values[ PLUGIN_PREFIX . 'tax'] = isset( $sync_settings[ PLUGIN_PREFIX . 'tax'] ) ? $sync_settings[ PLUGIN_PREFIX . 'tax']: 'no';
-			$sanitary_values[ PLUGIN_PREFIX . 'catsep']     = isset( $sync_settings[ PLUGIN_PREFIX . 'catsep'] ) ? $sync_settings[ PLUGIN_PREFIX . 'catsep']        : '';
 			$sanitary_values[ PLUGIN_PREFIX . 'filter']     = isset( $sync_settings[ PLUGIN_PREFIX . 'filter'] ) ? $sync_settings[ PLUGIN_PREFIX . 'filter']        : '';
 			$sanitary_values[ PLUGIN_PREFIX . 'rates']      = isset( $sync_settings[ PLUGIN_PREFIX . 'rates'] ) ? $sync_settings[ PLUGIN_PREFIX . 'rates']          : 'default';
 			$sanitary_values[ PLUGIN_PREFIX . 'catnp']      = isset( $sync_settings[ PLUGIN_PREFIX . 'catnp'] ) ? $sync_settings[ PLUGIN_PREFIX . 'catnp']          :  'yes';
@@ -499,18 +482,6 @@ class SYNC_Admin {
 		<?php
 	}
 
-	/**
-	 * Call back for category separation
-	 *
-	 * @return void
-	 */
-	public function wcsen_catsep_callback() {
-		printf(
-			'<input class="regular-text" type="text" name="' . PLUGIN_OPTIONS . '[' . PLUGIN_PREFIX . 'catsep]" id="wcsen_catsep" value="%s">',
-			isset( $this->sync_settings[ PLUGIN_PREFIX . 'catsep'] ) ? esc_attr( $this->sync_settings[ PLUGIN_PREFIX . 'catsep'] ) : ''
-		);
-	}
-
 	public function wcsen_filter_callback() {
 		printf(
 			'<input class="regular-text" type="text" name="' . PLUGIN_OPTIONS . '[' . PLUGIN_PREFIX . 'filter]" id="wcsen_filter" value="%s">',
@@ -621,8 +592,7 @@ class SYNC_Admin {
 				color: #b4b9be;
 			}
 			.wp-admin.sync-ecommerce-neo-plugin #' . PLUGIN_PREFIX . 'catnp,
-			.wp-admin.sync-ecommerce-neo-plugin #' . PLUGIN_PREFIX . 'stock,
-			.wp-admin.sync-ecommerce-neo-plugin #' . PLUGIN_PREFIX . 'catsep {
+			.wp-admin.sync-ecommerce-neo-plugin #' . PLUGIN_PREFIX . 'stock {
 				width: 70px;
 			}
 			.wp-admin.sync-ecommerce-neo-plugin #' . PLUGIN_PREFIX . 'idcentre,
@@ -638,7 +608,7 @@ class SYNC_Admin {
 			}';
 		// Not premium version.
 		if ( cmk_fs()->is_not_paying() ) {
-			echo '.wp-admin.sync-ecommerce-neo-plugin #' . PLUGIN_PREFIX . 'catsep, .wp-admin.sync-ecommerce-neo-plugin #' . PLUGIN_PREFIX . 'filter, .wp-admin.sync-ecommerce-neo-plugin #' . PLUGIN_PREFIX . 'sync  {
+			echo '.wp-admin.sync-ecommerce-neo-plugin #' . PLUGIN_PREFIX . 'filter, .wp-admin.sync-ecommerce-neo-plugin #' . PLUGIN_PREFIX . 'sync  {
 				pointer-events:none;
 			}';
 		}
