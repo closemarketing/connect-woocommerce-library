@@ -2,9 +2,9 @@
 msgid ""
 msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
-"Project-Id-Version: Import Holded for WooCommerce or Easy Digital Downloads\n"
-"POT-Creation-Date: 2020-11-21 11:35+0100\n"
-"PO-Revision-Date: 2020-11-21 11:35+0100\n"
+"Project-Id-Version: Sync eCommerce NEO\n"
+"POT-Creation-Date: 2021-01-28 16:04+0100\n"
+"PO-Revision-Date: 2021-01-28 16:02+0100\n"
 "Last-Translator: David <david@closemarketing.es>\n"
 "Language-Team: David <david@closemarketing.es>\n"
 "MIME-Version: 1.0\n"
@@ -13,337 +13,333 @@ msgstr ""
 "X-Generator: Poedit 2.4.2\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-Flags-xgettext: --add-comments=translators:\n"
-"X-Poedit-WPHeader: import-holded-products-woocommerce.php\n"
+"X-Poedit-WPHeader: sync-ecommerce-neo.php\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;"
-"esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;"
-"_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
+"esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;"
+"_n_noop:1,2;_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: *.min.js\n"
 "X-Poedit-SearchPathExcluded-1: vendor\n"
 
-#: import-holded-products-woocommerce.php:117
-msgid "Every 5 Minutes"
-msgstr ""
-
-#: import-holded-products-woocommerce.php:121
-msgid "Every 15 minutes"
-msgstr ""
-
-#: import-holded-products-woocommerce.php:125
-msgid "Every 30 Minutes"
-msgstr ""
-
-#: import-holded-products-woocommerce.php:129
-msgid "Every 1 Hour"
-msgstr ""
-
-#: import-holded-products-woocommerce.php:133
-msgid "Every 3 Hours"
-msgstr ""
-
-#: import-holded-products-woocommerce.php:137
-msgid "Every 6 Hours"
-msgstr ""
-
-#: import-holded-products-woocommerce.php:141
-msgid "Every 12 Hours"
-msgstr ""
-
-#: includes/class-wcpimh-admin.php:56
+#: includes/class-sync-admin.php:42
 msgid "(ONLY PREMIUM VERSION)"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:93
-msgid "Default price"
+#: includes/class-sync-admin.php:56
+msgid "Import from NEO to eCommerce"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:109
-msgid "Import from Holded to eCommerces"
+#: includes/class-sync-admin.php:57
+msgid "Import NEO"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:110
-msgid "Import from Holded"
+#: includes/class-sync-admin.php:77
+msgid "NEO Product Importing Settings"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:128
-msgid "Holded Product Importing Settings"
-msgstr ""
-
-#: includes/class-wcpimh-admin.php:135
+#: includes/class-sync-admin.php:84
 msgid "Manual Synchronization"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:136 includes/class-wcpimh-admin.php:292
+#: includes/class-sync-admin.php:85 includes/class-sync-admin.php:241
 msgid "Automate"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:137
+#: includes/class-sync-admin.php:86
 msgid "Settings"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:149
+#: includes/class-sync-admin.php:98
 msgid "Save settings"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:162
+#: includes/class-sync-admin.php:111
 msgid "Save automate"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:187
-msgid "Settings for Importing in Easy Digital Downloads"
-msgstr ""
-
-#: includes/class-wcpimh-admin.php:189
+#: includes/class-sync-admin.php:139
 msgid "Settings for Importing in WooCommerce"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:201
-msgid "Holded API Key"
+#: includes/class-sync-admin.php:150
+msgid "NEO ID Centre"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:210
+#: includes/class-sync-admin.php:158
+msgid "NEO API Key"
+msgstr ""
+
+#: includes/class-sync-admin.php:166
 msgid "Import stock?"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:219
+#: includes/class-sync-admin.php:174
 msgid "Default status for new products?"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:228
+#: includes/class-sync-admin.php:182
 msgid "Virtual products?"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:236
+#: includes/class-sync-admin.php:190
 msgid "Allow backorders?"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:243
-msgid "Category separator"
+#: includes/class-sync-admin.php:198
+msgid "Get prices with Tax?"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:257
+#: includes/class-sync-admin.php:206
 msgid "Filter products by tag?"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:263
-msgid "Product price rate for this eCommerce"
-msgstr ""
-
-#: includes/class-wcpimh-admin.php:264
-msgid "Copy and paste the ID of the rates for publishing in the web"
-msgstr ""
-
-#: includes/class-wcpimh-admin.php:276
+#: includes/class-sync-admin.php:225
 msgid "Import category only in new products?"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:297
+#: includes/class-sync-admin.php:246
 msgid "When do you want to sync?"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:308
+#: includes/class-sync-admin.php:257
 msgid "How many products do you want to sync each time?"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:321
+#: includes/class-sync-admin.php:270
 msgid "Do you want to receive an email when all products are synced?"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:412
+#: includes/class-sync-admin.php:367
 #, php-format
 msgid "<a href=\"%s\">Get Pro version</a> to enable"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:433
+#: includes/class-sync-admin.php:388
 msgid "Make your settings to automate the sync."
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:435
+#: includes/class-sync-admin.php:390
 msgid "Section only for Premium version"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:447
+#: includes/class-sync-admin.php:402
 #, php-format
 msgid ""
 "Put the connection API key settings in order to connect and sync products. "
-"You can go here <a href = \"%s\" target = \"_blank\">App Holded API</a>. "
+"You can go here <a href = \"%s\" target = \"_blank\">App NEO API</a>. "
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:465 includes/class-wcpimh-admin.php:493
-#: includes/class-wcpimh-admin.php:504 includes/class-wcpimh-admin.php:551
-#: includes/class-wcpimh-admin.php:612
+#: includes/class-sync-admin.php:427 includes/class-sync-admin.php:455
+#: includes/class-sync-admin.php:466 includes/class-sync-admin.php:513
+#: includes/class-sync-admin.php:574
 msgid "Yes"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:467 includes/class-wcpimh-admin.php:491
-#: includes/class-wcpimh-admin.php:502 includes/class-wcpimh-admin.php:553
-#: includes/class-wcpimh-admin.php:567 includes/class-wcpimh-admin.php:614
+#: includes/class-sync-admin.php:429 includes/class-sync-admin.php:453
+#: includes/class-sync-admin.php:464 includes/class-sync-admin.php:515
+#: includes/class-sync-admin.php:529 includes/class-sync-admin.php:576
 msgid "No"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:476
+#: includes/class-sync-admin.php:438
 msgid "Draft"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:478
+#: includes/class-sync-admin.php:440
 msgid "Publish"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:480
+#: includes/class-sync-admin.php:442
 msgid "Pending"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:482
+#: includes/class-sync-admin.php:444
 msgid "Private"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:506
+#: includes/class-sync-admin.php:468
 msgid "Notify"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:570
+#: includes/class-sync-admin.php:477
+msgid "Yes, tax included"
+msgstr ""
+
+#: includes/class-sync-admin.php:480
+msgid "No, tax not included"
+msgstr ""
+
+#: includes/class-sync-admin.php:532
 msgid "Every day"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:573
+#: includes/class-sync-admin.php:535
 msgid "Every twelve hours"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:576
+#: includes/class-sync-admin.php:538
 msgid "Every six hours"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:579
+#: includes/class-sync-admin.php:541
 msgid "Every three hours"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:582
+#: includes/class-sync-admin.php:544
 msgid "Every hour"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:585
+#: includes/class-sync-admin.php:547
 msgid "Every thirty minutes"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:588
+#: includes/class-sync-admin.php:550
 msgid "Every fifteen minutes"
 msgstr ""
 
-#: includes/class-wcpimh-admin.php:591
+#: includes/class-sync-admin.php:553
 msgid "Every five minutes"
 msgstr ""
 
-#: includes/class-wcpimh-import.php:520
+#: includes/class-sync-import.php:358
 msgid "Variation error: "
 msgstr ""
 
-#: includes/class-wcpimh-import.php:806
+#: includes/class-sync-import.php:638
 msgid "Product created: "
 msgstr ""
 
-#: includes/class-wcpimh-import.php:807
+#: includes/class-sync-import.php:639
 msgid "Product synced: "
 msgstr ""
 
-#: includes/class-wcpimh-import.php:857 includes/class-wcpimh-import.php:861
-#: includes/class-wcpimh-import.php:998 includes/class-wcpimh-import.php:1000
+#: includes/class-sync-import.php:679 includes/class-sync-import.php:683
+#: includes/class-sync-import.php:818 includes/class-sync-import.php:820
 msgid "No products to import"
 msgstr ""
 
-#: includes/class-wcpimh-import.php:895 includes/class-wcpimh-import.php:899
+#: includes/class-sync-import.php:715 includes/class-sync-import.php:719
 msgid "There was an error while inserting new product!"
 msgstr ""
 
-#: includes/class-wcpimh-import.php:928 includes/class-wcpimh-import.php:1280
+#: includes/class-sync-import.php:748 includes/class-sync-import.php:1097
 msgid "Product not imported becouse any variant has got SKU: "
 msgstr ""
 
-#: includes/class-wcpimh-import.php:941
+#: includes/class-sync-import.php:761
 msgid "Product filtered to not import: "
 msgstr ""
 
-#: includes/class-wcpimh-import.php:944
+#: includes/class-sync-import.php:764
 msgid "SKU not finded in Simple product. Product not imported: "
 msgstr ""
 
-#: includes/class-wcpimh-import.php:950
+#: includes/class-sync-import.php:770
 msgid "SKU not finded in Simple product. Product not imported. "
 msgstr ""
 
-#: includes/class-wcpimh-import.php:954 includes/class-wcpimh-import.php:960
+#: includes/class-sync-import.php:774 includes/class-sync-import.php:780
 msgid "Product type not supported. Product not imported: "
 msgstr ""
 
-#: includes/class-wcpimh-import.php:969
+#: includes/class-sync-import.php:789
 msgid "products. "
 msgstr ""
 
-#: includes/class-wcpimh-import.php:971
+#: includes/class-sync-import.php:791
 msgid "All caught up!"
 msgstr ""
 
-#: includes/class-wcpimh-import.php:1022
+#: includes/class-sync-import.php:842
 msgid "Error:"
 msgstr ""
 
-#: includes/class-wcpimh-import.php:1023
+#: includes/class-sync-import.php:843
 msgid "SKU:"
 msgstr ""
 
-#: includes/class-wcpimh-import.php:1024
+#: includes/class-sync-import.php:844
 msgid "Name:"
 msgstr ""
 
-#: includes/class-wcpimh-import.php:1026
+#: includes/class-sync-import.php:846
 msgid "Edit:"
 msgstr ""
 
-#: includes/class-wcpimh-import.php:1031
+#: includes/class-sync-import.php:851
 msgid "Error in Products Synced in"
 msgstr ""
 
-#: includes/class-wcpimh-import.php:1130
+#: includes/class-sync-import.php:950
 msgid "Import Products from Holded"
 msgstr ""
 
-#: includes/class-wcpimh-import.php:1130
+#: includes/class-sync-import.php:950
 msgid ""
 "After you fillup the API settings, use the button below to import the "
 "products. The importing process may take a while and you need to keep this "
 "page open to complete it."
 msgstr ""
 
-#: includes/class-wcpimh-import.php:1130
+#: includes/class-sync-import.php:950
 msgid "Start Import"
 msgstr ""
 
-#: includes/class-wcpimh-import.php:1130
+#: includes/class-sync-import.php:950
 msgid "Log"
 msgstr ""
 
-#: includes/class-wcpimh-import.php:1293
+#: includes/class-sync-import.php:955
+msgid "Connecting with NEO and syncing Products ..."
+msgstr ""
+
+#: includes/class-sync-import.php:1110
 msgid "SKU not finded in Simple product. Product not imported "
 msgstr ""
 
-#: includes/class-wcpimh-import.php:1303
+#: includes/class-sync-import.php:1120
 msgid "Product type not supported. Product not imported "
 msgstr ""
 
-#: includes/class-wcpimh-import.php:1441
+#: includes/class-sync-import.php:1258
 msgid "All products synced with Holded"
 msgstr ""
 
-#: includes/class-wcpimh-import.php:1443
+#: includes/class-sync-import.php:1260
 msgid "Total products:"
 msgstr ""
 
-#: includes/class-wcpimh-import.php:1445
+#: includes/class-sync-import.php:1262
 msgid "Time:"
 msgstr ""
 
+#: sync-ecommerce-neo.php:107
+msgid "Every 15 minutes"
+msgstr ""
+
+#: sync-ecommerce-neo.php:111
+msgid "Every 30 Minutes"
+msgstr ""
+
+#: sync-ecommerce-neo.php:115
+msgid "Every 1 Hour"
+msgstr ""
+
+#: sync-ecommerce-neo.php:119
+msgid "Every 3 Hours"
+msgstr ""
+
+#: sync-ecommerce-neo.php:123
+msgid "Every 6 Hours"
+msgstr ""
+
+#: sync-ecommerce-neo.php:127
+msgid "Every 12 Hours"
+msgstr ""
+
 #. Plugin Name of the plugin/theme
-msgid "Import Holded for WooCommerce or Easy Digital Downloads"
+msgid "Sync eCommerce NEO"
 msgstr ""
 
 #. Plugin URI of the plugin/theme
@@ -351,9 +347,7 @@ msgid "https://www.closemarketing.es"
 msgstr ""
 
 #. Description of the plugin/theme
-msgid ""
-"Imports Products and data from Holded to WooCommerce or Easy Digital "
-"Downloads."
+msgid "Imports Products and data from NEO to WooCommerce."
 msgstr ""
 
 #. Author of the plugin/theme
