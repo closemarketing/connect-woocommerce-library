@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
 
 define( 'WCSEN_MAX_LOCAL_LOOP', 45 );
 define( 'WCESN_MAX_SYNC_LOOP', 5 );
-define( 'WCSEN_MAX_LIMIT_NEO_API', 500 );
+define( 'WCSEN_MAX_LIMIT_NEO_API', 10 );
 /**
  * Library for WooCommerce Settings
  *
@@ -376,6 +376,8 @@ class SYNC_Import {
 		);
 		$product_props_new = array();
 		if ( $is_new_product ) {
+			$weight  = isset( $item['weight'] ) ? $item['weight'] : '';
+			$barcode = isset( $item['barcode'] ) ? $item['barcode'] : '';
 			$product_props_new = array(
 				'menu_order'         => 0,
 				'name'               => $item['name'],
@@ -392,11 +394,11 @@ class SYNC_Import {
 				'manage_stock'       => false,
 				'stock_quantity'     => null,
 				'sold_individually'  => false,
-				'weight'             => $is_virtual ? '' : $item['weight'],
+				'weight'             => $is_virtual ? '' : $weight,
 				'length'             => '',
 				'width'              => '',
 				'height'             => '',
-				'barcode'            => $item['barcode'],
+				'barcode'            => $barcode,
 				'upsell_ids'         => '',
 				'cross_sell_ids'     => '',
 				'parent_id'          => 0,
@@ -409,6 +411,7 @@ class SYNC_Import {
 				'shipping_class_id'  => 0,
 				'image_id'           => '',
 				'gallery_image_ids'  => '',
+				'sku'                => $item['sku'],
 				'status'             => $post_status,
 			);
 		}
@@ -420,8 +423,6 @@ class SYNC_Import {
 		$product_id = $product->get_id();
 
 		if ( 'simple' === $type ) {
-			// Values for simple products.
-			$product_props['sku'] = $item['sku'];
 			// Check if the product can be sold.
 			if ( 'no' === $import_stock && $item['price'] > 0 ) {
 				$product_props['stock_status']       = 'instock';
@@ -481,7 +482,7 @@ class SYNC_Import {
 
 				if ( ! isset( $variant['categoryFields'] ) ) {
 					$this->error_product_import[] = array(
-						'id_holded' => $item['id'],
+						'prod_id'   => $item['id'],
 						'name'      => $item['name'],
 						'sku'       => $variant['sku'],
 						'error'     => $msg_variation_error,
@@ -492,7 +493,13 @@ class SYNC_Import {
 				// Get all Attributes for the product.
 				foreach ( $variant['categoryFields'] as $category_fields ) {
 					if ( isset( $category_fields['field'] ) && $category_fields ) {
-						if ( isset( $attributes[ $category_fields['name'] ] ) && ! in_array( $category_fields['field'], $attributes[ $category_fields['name'] ], true ) ) {
+						if (
+							! isset( $attributes[ $category_fields['name'] ] ) ||
+							(
+							isset( $attributes[ $category_fields['name'] ] ) && 
+							! in_array( $category_fields['field'], $attributes[ $category_fields['name'] ], true )
+							)
+						) {
 							$attributes[ $category_fields['name'] ][] = $category_fields['field'];
 						}
 						$attribute_name = wc_sanitize_taxonomy_name( $category_fields['name'] );
@@ -500,17 +507,13 @@ class SYNC_Import {
 						$attributes_prod[ 'attribute_pa_' . $attribute_name ] = wc_sanitize_taxonomy_name( $category_fields['field'] );
 					}
 				}
-				// Make Variations.
-				if ( 'default' === $rate_id || '' === $rate_id ) {
-					if ( isset( $variant['price'] ) && $variant['price'] ) {
-						$variation_price = $variant['price'];
-					} else {
-						$variation_price = 0;
-					}
+				// Make price.
+				if ( isset( $variant['price'] ) && $variant['price'] ) {
+					$variation_price = $variant['price'];
 				} else {
-					$variant_price_key = array_search( $rate_id, array_column( $variant['rates'], 'id' ) );
-					$variation_price = $variant['rates'][ $variant_price_key ]['subtotal'];
+					$variation_price = 0;
 				}
+
 				$variation_props = array(
 					'parent_id'     => $product_id,
 					'attributes'    => $attributes_prod,
@@ -547,7 +550,7 @@ class SYNC_Import {
 			}
 			$variation_attributes        = $this->make_attributes( $attributes, true );
 			$product_props['attributes'] = $variation_attributes;
-			$data_store = $product->get_data_store();
+			$data_store                  = $product->get_data_store();
 			$data_store->sort_all_product_variations( $product_id );
 
 			// Check if WooCommerce Variations have more than Holded and unset.
@@ -564,39 +567,37 @@ class SYNC_Import {
 			/**
 			 * ## Attributes
 			 * --------------------------- */
-			$attributes      = array();
-			$attributes_prod = array();
-			foreach ( $item['attributes'] as $attribute ){
-				if ( ! in_array( $attribute['value'], $attributes[ $attribute['name'] ], true ) ) {
-					$attributes[ $attribute['name'] ][] = $attribute['value'];
+			$att_props = array();
+			if ( isset( $item['attributes'] ) ) {
+				$attributes      = array();
+				$attributes_prod = array();
+				foreach ( $item['attributes'] as $attribute ){
+					if (
+						isset( $attributes[ $attribute['name'] ] ) && (
+						null === $attributes[ $attribute['name'] ] ||
+						! in_array( $attribute['value'], $attributes[ $attribute['name'] ], true ) )
+					) {
+						$attributes[ $attribute['name'] ][] = $attribute['value'];
+					}
+					$att_props = $this->make_attributes( $attributes, false );
 				}
-				$att_props = $this->make_attributes( $attributes, false );
 			}
 			$product_props['attributes'] = array_merge( $att_props, $variation_attributes );
 		}
-
+		/*
 		if ( cmk_fs()->is__premium_only() ) {
 			// Category Holded.
 			$category_newp = isset( $sync_settings[ PLUGIN_PREFIX . 'catnp']  ) ? $sync_settings[ PLUGIN_PREFIX . 'catnp']  : 'yes';
-			$category_sep  = isset( $sync_settings[ PLUGIN_PREFIX . 'catsep' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'catsep' ] : '';
 			if ( ( isset( $item['type'] ) && $item['type'] && 'yes' === $category_newp && $is_new_product ) ||
 				( isset( $item['type'] ) && $item['type'] && 'no' === $category_newp && false === $is_new_product )
 			) {
 				foreach ( $item['type'] as $category ) {
-					if ( $category_sep ) {
-						$category_array = explode( $category_sep, $category['name'] );
-					} else {
-						$category_array = array( $category['name'] );
-					}
+					$category_array = array( $category['name'] );
 					$product_props['category_ids'] = $this->find_categories_ids( $category_array );
 				}
 			}
 		}
-		/*
-		if ( cmk_fs()->is__premium_only() ) {
-			// Imports image.
-			put_product_image( $item['id'], $product_id );
-		}*/
+		*/
 		// Set properties and save.
 		$product->set_props( $product_props );
 		$product->save();
@@ -661,11 +662,13 @@ class SYNC_Import {
 			$item                     = $products_api[ $syncLoop ];
 			$error_products_html      = '';
 			$this->msg_error_products = array();
+
 			/*
 			if ( function_exists( 'wp_get_environment_type' ) && 'local' === wp_get_environment_type() && $products_count > WCSEN_MAX_LOCAL_LOOP ) {
 				// Import less products in local environment.
 				$products_count = WCSEN_MAX_LOCAL_LOOP;
-			}*/
+			}
+			*/
 
 			if ( $products_count ) {
 				if ( ( $doing_ajax ) || $not_sapi_cli ) {

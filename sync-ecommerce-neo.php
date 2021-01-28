@@ -2,10 +2,10 @@
 /**
  * Plugin Name: Sync eCommerce NEO
  * Plugin URI: https://www.closemarketing.es
- * Description: Imports Products and data from NEO to WooCommerce or Easy Digital Downloads.
+ * Description: Imports Products and data from NEO to WooCommerce.
  * Author: closemarketing
  * Author URI: https://www.closemarketing.es/
- * Version: 1.0b2
+ * Version: 1.0b3
  *
  * @package WordPress
  * Text Domain: sync-ecommerce-neo
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WCSEN_VERSION', '1.0b2' );
+define( 'WCSEN_VERSION', '1.0b3' );
 define( 'WCSEN_PLUGIN', __FILE__ );
 define( 'WCSEN_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'WCSEN_PLUGIN_DIR', untrailingslashit( dirname( WCSEN_PLUGIN ) ) );
@@ -189,8 +189,8 @@ function wcsen_create_db() {
 
 	// DB Tasks.
 	$sql = "CREATE TABLE $table_name (
-	    sync_prodid varchar(255) NOT NULL,
-	    synced boolean,
+	    sync_prodid INT NOT NULL,
+	    synced bit(1) NOT NULL DEFAULT b'0',
           UNIQUE KEY sync_prodid (sync_prodid)
     	) $charset_collate;";
 
