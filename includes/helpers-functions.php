@@ -55,10 +55,12 @@ function sync_convert_products( $products_original ) {
 					'name'  => 'Marca',
 					'value' => $product['NomMarca'],
 				);
-				$product_array['categoryFields'][] = array(
-					'name'  => 'Talla',
-					'field' => $product['NomTalla'],
-				);
+				if ( isset( $product['NomTalla'] ) && $product['NomTalla'] ) {
+					$product_array['categoryFields'][] = array(
+						'name'  => 'Talla',
+						'field' => $product['NomTalla'],
+					);
+				}
 				if ( isset( $product['NomColor'] ) && $product['NomColor'] ) {
 					$product_array['categoryFields'][] = array(
 						'name'  => 'Color',
@@ -140,7 +142,7 @@ function sync_get_token( $renew_token = false ) {
  * @param string $id Id of product to get information.
  * @return array Array of products imported via API.
  */
-function sync_get_products( $id = null, $page = null ) {
+function sync_get_products( $id = null, $page = null, $period = null ) {
 	$sync_settings = get_option( PLUGIN_OPTIONS );
 	$token         = sync_get_token();
 
@@ -150,6 +152,10 @@ function sync_get_products( $id = null, $page = null ) {
 		),
 		'timeout' => 3000,
 	);
+
+	if ( $period ) {
+		$args['body']['fecha'] = $period;
+	}
 
 	$response      = wp_remote_post( 'https://apis.bartolomeconsultores.com/pedidosweb/verarticulos2.php', $args );
 	$response_body = wp_remote_retrieve_body( $response );
