@@ -102,18 +102,6 @@ add_filter( 'cron_schedules', 'wcsen_add_cron_recurrence_interval' );
  */
 function wcsen_add_cron_recurrence_interval( $schedules ) {
 
-	$schedules['every_fifteen_minutes'] = array(
-		'interval' => 900,
-		'display'  => __( 'Every 15 minutes', 'sync-ecommerce-neo' ),
-	);
-	$schedules['every_thirty_minutes']  = array(
-		'interval' => 1800,
-		'display'  => __( 'Every 30 Minutes', 'sync-ecommerce-neo' ),
-	);
-	$schedules['every_one_hour']        = array(
-		'interval' => 3600,
-		'display'  => __( 'Every 1 Hour', 'sync-ecommerce-neo' ),
-	);
 	$schedules['every_three_hours']     = array(
 		'interval' => 10800,
 		'display'  => __( 'Every 3 Hours', 'sync-ecommerce-neo' ),
