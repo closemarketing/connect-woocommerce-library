@@ -230,7 +230,7 @@ class SYNC_Admin {
 			'import-neo-automate'
 		);
 		if ( cmk_fs()->is__premium_only() ) {
-			$name_sync = __( 'When do you want to sync?', PLUGIN_SLUG );
+			$name_sync = __( 'When do you want to sync?', 'sync-ecommerce-neo' );
 
 			add_settings_field(
 				'wcsen_sync',
@@ -241,7 +241,7 @@ class SYNC_Admin {
 			);
 			add_settings_field(
 				'wcsen_sync_email',
-				__( 'Do you want to receive an email when all products are synced?', PLUGIN_SLUG ),
+				__( 'Do you want to receive an email when all products are synced?', 'sync-ecommerce-neo' ),
 				array( $this, 'wcsen_sync_email_callback' ),
 				'import-neo-automate',
 				'import_neo_setting_automate'
@@ -492,25 +492,25 @@ class SYNC_Admin {
 	 */
 	public function wcsen_sync_callback() {
 		?>
-		<select name="' . PLUGIN_OPTIONS . '[' . PLUGIN_PREFIX . 'sync]" id="wcsen_sync">
+		<select name="<?php echo PLUGIN_OPTIONS . '[' . PLUGIN_PREFIX . 'sync]'; ?>" id="<?php echo PLUGIN_PREFIX; ?>sync">
 			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'sync'] ) && 'no' === $this->sync_settings[ PLUGIN_PREFIX . 'sync'] ) ? 'selected' : ''; ?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', PLUGIN_SLUG ); ?></option>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'sync-ecommerce-neo' ); ?></option>
 
 			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'sync'] ) &&  PLUGIN_PREFIX . 'cron_daily' === $this->sync_settings[ PLUGIN_PREFIX . 'sync'] ) ? 'selected' : ''; ?>
-			<option value="wcsen_cron_daily" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Every day', PLUGIN_SLUG ); ?></option>
+			<option value="<?php echo PLUGIN_PREFIX; ?>cron_daily" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Every day', 'sync-ecommerce-neo' ); ?></option>
 
 			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'sync'] ) &&  PLUGIN_PREFIX . 'cron_twelve_hours' === $this->sync_settings[ PLUGIN_PREFIX . 'sync'] ) ? 'selected' : ''; ?>
-			<option value="wcsen_cron_twelve_hours" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Every twelve hours', PLUGIN_SLUG ); ?></option>
+			<option value="<?php echo PLUGIN_PREFIX; ?>cron_twelve_hours" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Every twelve hours', 'sync-ecommerce-neo' ); ?></option>
 
 			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'sync'] ) &&  PLUGIN_PREFIX . 'cron_six_hours' === $this->sync_settings[ PLUGIN_PREFIX . 'sync'] ) ? 'selected' : ''; ?>
-			<option value="wcsen_cron_six_hours" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Every six hours', PLUGIN_SLUG ); ?></option>
+			<option value="<?php echo PLUGIN_PREFIX; ?>cron_six_hours" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Every six hours', 'sync-ecommerce-neo' ); ?></option>
 		</select>
 		<?php
 	}
 
 	public function wcsen_sync_email_callback() {
 		?>
-		<select name="' . PLUGIN_OPTIONS . '[' . PLUGIN_PREFIX . 'sync_email]" id="wcsen_sync_email">
+		<select name="<?php echo PLUGIN_OPTIONS . '[' . PLUGIN_PREFIX . 'sync_email]'; ?>" id="wcsen_sync_email">
 			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'sync_email'] ) && $this->sync_settings[ PLUGIN_PREFIX . 'sync_email'] === 'yes' ) ? 'selected' : ''; ?>
 			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'sync-ecommerce-neo' ); ?></option>
 			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'sync_email'] ) && $this->sync_settings[ PLUGIN_PREFIX . 'sync_email'] === 'no' ) ? 'selected' : ''; ?>
