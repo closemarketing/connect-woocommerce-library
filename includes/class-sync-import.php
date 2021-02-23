@@ -75,10 +75,10 @@ class SYNC_Import {
 
 		// Cron jobs.
 		if ( WP_DEBUG ) {
-			// add_action( 'admin_head', array( $this, 'cron_sync_products' ), 20 );
+			//add_action( 'admin_head', array( $this, 'cron_sync_products' ), 20 );
 		}
 		$sync_settings = get_option( PLUGIN_OPTIONS );
-		$sync_period   = isset( $sync_settings[ PLUGIN_PREFIX . 'sync' ] ) ? (int) $sync_settings[ PLUGIN_PREFIX . 'sync' ] : 'no';
+		$sync_period   = isset( $sync_settings[ PLUGIN_PREFIX . 'sync' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'sync' ] : 'no';
 
 		if ( $sync_period && 'no' !== $sync_period ) {
 			add_action( $sync_period, array( $this, 'cron_sync_products' ) );
@@ -640,7 +640,6 @@ class SYNC_Import {
 		$msg_product_synced  = __( 'Product synced: ', 'sync-ecommerce-neo' );
 
 		// Start.
-
 		$products_api_tran = get_transient( 'syncec_api_products' );
 		$products_api      = json_decode( $products_api_tran, true );
 
@@ -1026,19 +1025,32 @@ class SYNC_Import {
 		if ( ! cmk_fs()->is__premium_only() ) {
 			return false;
 		}
+		$sync_settings = get_option( PLUGIN_OPTIONS );
+		$sync_period   = isset( $sync_settings[ PLUGIN_PREFIX . 'sync' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'sync' ] : 'no';
 
-		$products_sync = $this->get_products_sync();
-
-		if ( false === $products_sync ) {
-			$this->send_sync_ended_products();
-			$this->fill_table_sync();
+		$hour_today = date( 'H' );
+		if ( 'wcsync_cron_daily' === $sync_period || ( 'wcsync_cron_twelve_hours' === $sync_period && $hour_today > 12 ) || ( 'wcsync_cron_six_hours' === $sync_period && $hour_today > 6 )
+		) {
+			$date_sync = date( 'Ymd', strtotime( '-1 days' ) );
 		} else {
-			foreach ( $products_sync as $product_sync ) {
-				$product_id = $product_sync['sync_prodid'];
+			$date_sync = date( 'Ymd', time() );
+		}
 
-				$holded_product = sync_get_products( $product_id );
-				$this->create_sync_product( $holded_product );
-				$this->save_product_sync( $product_id );
+		// Start.
+		$products_api_tran = get_transient( 'syncperiod_api_products' );
+		$products_api      = json_decode( $products_api_tran, true );
+
+		if ( empty( $products_api ) ) {
+			$products_api_neo = sync_get_products( null, null, $date_sync );
+			$products_api     = wp_json_encode( sync_convert_products( $products_api_neo ) );
+
+			set_transient( 'syncperiod_api_products', $products_api, 10800 ); // 3 hours
+			$products_api = json_decode( $products_api, true );
+		}
+
+		if ( ! empty( $products_api ) ) {
+			foreach ( $products_api as $product_sync ) {
+				$this->create_sync_product( $product_sync );
 			}
 		}
 	}
@@ -1097,16 +1109,18 @@ class SYNC_Import {
 				}
 			}
 			if ( false === $any_variant_sku ) {
-				$this->ajax_msg .= __( 'Product not imported becouse any variant has got SKU: ', 'sync-ecommerce-neo' ) . $item['name'] . '(' . $item['kind'] . ') <br/>';
+				$this->send_email_errors(
+					__( 'Product not imported becouse any variant has got SKU: ', 'sync-ecommerce-neo' ),
+					array(
+						'Product id:' . $item['id'],
+						'Product name:' . $item['name'],
+						'Product sku:' . $item['sku'],
+						'Product Kind:' . $item['kind'],
+					)
+				);
 			} else {
 				// Update meta for product.
 				$this->sync_product( $item, $post_parent, 'variable' );
-				if ( 0 === $post_parent || false === $post_parent ) {
-					$this->ajax_msg .= $msg_product_created;
-				} else {
-					$this->ajax_msg .= $msg_product_synced;
-				}
-				$this->ajax_msg .= $item['name'] . '. SKU: ' . $item['sku'] . '(' . $item['kind'] . ') <br/>';
 			}
 		} elseif ( '' === $item['sku'] && 'simple' === $item['kind'] ) {
 			$this->send_email_errors(
@@ -1126,120 +1140,6 @@ class SYNC_Import {
 					'Product name:' . $item['name'],
 					'Product sku:' . $item['sku'],
 					'Product Kind:' . $item['kind'],
-				)
-			);
-		}
-	}
-
-	/**
-	 * Fills table to sync
-	 *
-	 * @return void
-	 */
-	private function fill_table_sync() {
-		global $wpdb;
-		$wpdb->query( "TRUNCATE TABLE $this->table_sync;" );
-
-		$next     = true;
-		$page     = 1;
-		$output   = array();
-		$products = array();
-
-		while ( $next ) {
-			$output   = sync_get_products( null, $page );
-			if ( false === $output ) {
-				return false;
-			}
-			$products = array_merge( $products, $output );
-
-			if ( count( $output ) === WCSEN_MAX_LIMIT_NEO_API ) {
-				$page++;
-			} else {
-				$next = false;
-			}
-		}
-		foreach ( $products as $product ) {
-			$is_filtered_product = $this->filter_product( $product['tags'] );
-
-			if ( ! $is_filtered_product ) {
-				$db_values = array(
-					'sync_prodid' => $product['id'],
-					'synced'        => false,
-				);
-				if ( ! $this->check_exist_valuedb( $product['id'] ) ) {
-					$insert = $wpdb->insert(
-						$this->table_sync,
-						$db_values
-					);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Get products to sync
-	 *
-	 * @return array results;
-	 */
-	private function get_products_sync() {
-		global $wpdb;
-		$sync_settings = get_option( PLUGIN_OPTIONS );
-		$limit        = isset( $sync_settings[ PLUGIN_PREFIX . 'sync_num'] ) ? $sync_settings[ PLUGIN_PREFIX . 'sync_num'] : WCESN_MAX_SYNC_LOOP;
-
-		$results = $wpdb->get_results( "SELECT sync_prodid FROM $this->table_sync WHERE synced = 0 LIMIT $limit", ARRAY_A );
-
-		if ( count( $results ) > 0 ) {
-			return $results;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Checks if the value already exists in db
-	 *
-	 * @param  string $gid Task ID.
-	 * @return boolean Exist the value
-	 */
-	public function check_exist_valuedb( $gid ) {
-		global $wpdb;
-		if ( ! isset( $gid ) ) {
-			return false;
-		}
-		$results = $wpdb->get_row( "SELECT sync_prodid FROM $this->table_sync WHERE sync_prodid = '$gid'" );
-
-		if ( $results ) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * Saves synced products
-	 *
-	 * @param string $product_id Product ID that synced.
-	 * @return void
-	 */
-	private function save_product_sync( $product_id ) {
-		global $wpdb;
-		$db_values = array(
-			'sync_prodid' => $product_id,
-			'synced'        => true,
-		);
-		$update = $wpdb->update(
-			$this->table_sync,
-			$db_values,
-			array(
-				'sync_prodid' => $product_id,
-			)
-		);
-		if ( ! $update && $wpdb->last_error ) {
-			$this->send_email_errors(
-				'Holded Import Product Sync Error',
-				array(
-					'Product ID:' . $product_id,
-					'DB error:' . $wpdb->last_error,
 				)
 			);
 		}
