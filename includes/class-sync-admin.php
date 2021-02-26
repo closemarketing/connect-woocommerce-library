@@ -261,27 +261,27 @@ class SYNC_Admin {
 
 		if ( isset( $_POST['submit_settings'] ) ) {
 			if ( isset( $input[ PLUGIN_PREFIX . 'idcentre' ] ) ) {
-				$sanitary_values[ PLUGIN_PREFIX . 'idcentre' ] = sanitize_text_field( $input[ PLUGIN_PREFIX . 'idcentre'] );
+				$sanitary_values[ PLUGIN_PREFIX . 'idcentre' ] = sanitize_text_field( $input[ PLUGIN_PREFIX . 'idcentre' ] );
 			}
 
-			if ( isset( $input[ PLUGIN_PREFIX . 'api'] ) ) {
-				$sanitary_values[ PLUGIN_PREFIX . 'api'] = sanitize_text_field( $input[ PLUGIN_PREFIX . 'api'] );
+			if ( isset( $input[ PLUGIN_PREFIX . 'api' ] ) ) {
+				$sanitary_values[ PLUGIN_PREFIX . 'api' ] = sanitize_text_field( $input[ PLUGIN_PREFIX . 'api' ] );
 			}
 
-			if ( isset( $input[ PLUGIN_PREFIX . 'stock'] ) ) {
-				$sanitary_values[ PLUGIN_PREFIX . 'stock'] = $input[ PLUGIN_PREFIX . 'stock'];
+			if ( isset( $input[ PLUGIN_PREFIX . 'stock' ] ) ) {
+				$sanitary_values[ PLUGIN_PREFIX . 'stock' ] = $input[ PLUGIN_PREFIX . 'stock' ];
 			}
 
-			if ( isset( $input[ PLUGIN_PREFIX . 'prodst'] ) ) {
-				$sanitary_values[ PLUGIN_PREFIX . 'prodst'] = $input[ PLUGIN_PREFIX . 'prodst'];
+			if ( isset( $input[ PLUGIN_PREFIX . 'prodst' ] ) ) {
+				$sanitary_values[ PLUGIN_PREFIX . 'prodst' ] = $input[ PLUGIN_PREFIX . 'prodst' ];
 			}
 
 			if ( isset( $input[ PLUGIN_PREFIX . 'virtual' ] ) ) {
 				$sanitary_values[ PLUGIN_PREFIX . 'virtual' ] = $input[ PLUGIN_PREFIX . 'virtual' ];
 			}
 
-			if ( isset( $input[ PLUGIN_PREFIX . 'backorders'] ) ) {
-				$sanitary_values[ PLUGIN_PREFIX . 'backorders'] = $input[ PLUGIN_PREFIX . 'backorders'];
+			if ( isset( $input[ PLUGIN_PREFIX . 'backorders' ] ) ) {
+				$sanitary_values[ PLUGIN_PREFIX . 'backorders' ] = $input[ PLUGIN_PREFIX . 'backorders' ];
 			}
 
 			if ( isset( $input[ PLUGIN_PREFIX . 'tax' ] ) ) {
@@ -289,10 +289,10 @@ class SYNC_Admin {
 			}
 
 			if ( isset( $input[ PLUGIN_PREFIX . 'filter' ] ) ) {
-				$sanitary_values[ PLUGIN_PREFIX . 'filter' ] = sanitize_text_field( $input[ PLUGIN_PREFIX . 'filter'] );
+				$sanitary_values[ PLUGIN_PREFIX . 'filter' ] = sanitize_text_field( $input[ PLUGIN_PREFIX . 'filter' ] );
 			}
 
-			if ( isset( $input[ PLUGIN_PREFIX . 'rates'] ) ) {
+			if ( isset( $input[ PLUGIN_PREFIX . 'rates' ] ) ) {
 				$sanitary_values[ PLUGIN_PREFIX . 'rates' ] = $input[ PLUGIN_PREFIX . 'rates' ];
 			}
 
@@ -304,24 +304,24 @@ class SYNC_Admin {
 			$sanitary_values[ PLUGIN_PREFIX . 'sync_email' ] = isset( $sync_settings[ PLUGIN_PREFIX . 'sync_email' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'sync_email' ] : 'yes';
 
 		} elseif ( isset( $_POST['submit_automate'] ) ) {
-			if ( isset( $input[ PLUGIN_PREFIX . 'sync'] ) ) {
-				$sanitary_values[ PLUGIN_PREFIX . 'sync'] = $input[ PLUGIN_PREFIX . 'sync'];
+			if ( isset( $input[ PLUGIN_PREFIX . 'sync' ] ) ) {
+				$sanitary_values[ PLUGIN_PREFIX . 'sync' ] = $input[ PLUGIN_PREFIX . 'sync' ];
 			}
 
-			if ( isset( $input[ PLUGIN_PREFIX . 'sync_email'] ) ) {
-				$sanitary_values[ PLUGIN_PREFIX . 'sync_email'] = $input[ PLUGIN_PREFIX . 'sync_email'];
+			if ( isset( $input[ PLUGIN_PREFIX . 'sync_email' ] ) ) {
+				$sanitary_values[ PLUGIN_PREFIX . 'sync_email' ] = $input[ PLUGIN_PREFIX . 'sync_email' ];
 			}
 			// Other tab.
-			$sanitary_values[ PLUGIN_PREFIX . 'idcentre' ]        = isset( $sync_settings[ PLUGIN_PREFIX . 'idcentre' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'idcentre' ]              : '';
-			$sanitary_values[ PLUGIN_PREFIX . 'api' ]        = isset( $sync_settings[ PLUGIN_PREFIX . 'api' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'api' ]              : '';
-			$sanitary_values[ PLUGIN_PREFIX . 'stock' ]      = isset( $sync_settings[ PLUGIN_PREFIX . 'stock' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'stock' ]          : 'no';
-			$sanitary_values[ PLUGIN_PREFIX . 'prodst' ]     = isset( $sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'prodst' ]        : 'draft';
-			$sanitary_values[ PLUGIN_PREFIX . 'virtual' ]    = isset( $sync_settings[ PLUGIN_PREFIX . 'virtual' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'virtual' ]      : 'no';
-			$sanitary_values[ PLUGIN_PREFIX . 'backorders' ] = isset( $sync_settings[ PLUGIN_PREFIX . 'backorders' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'backorders' ]: 'no';
-			$sanitary_values[ PLUGIN_PREFIX . 'tax' ] = isset( $sync_settings[ PLUGIN_PREFIX . 'tax' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'tax' ]: 'no';
-			$sanitary_values[ PLUGIN_PREFIX . 'filter' ]     = isset( $sync_settings[ PLUGIN_PREFIX . 'filter' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'filter']        : '';
-			$sanitary_values[ PLUGIN_PREFIX . 'rates']      = isset( $sync_settings[ PLUGIN_PREFIX . 'rates'] ) ? $sync_settings[ PLUGIN_PREFIX . 'rates']          : 'default';
-			$sanitary_values[ PLUGIN_PREFIX . 'catnp']      = isset( $sync_settings[ PLUGIN_PREFIX . 'catnp'] ) ? $sync_settings[ PLUGIN_PREFIX . 'catnp']          :  'yes';
+			$sanitary_values[ PLUGIN_PREFIX . 'idcentre' ]   = isset( $sync_settings[ PLUGIN_PREFIX . 'idcentre' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'idcentre' ] : '';
+			$sanitary_values[ PLUGIN_PREFIX . 'api' ]        = isset( $sync_settings[ PLUGIN_PREFIX . 'api' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'api' ] : '';
+			$sanitary_values[ PLUGIN_PREFIX . 'stock' ]      = isset( $sync_settings[ PLUGIN_PREFIX . 'stock' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'stock' ] : 'no';
+			$sanitary_values[ PLUGIN_PREFIX . 'prodst' ]     = isset( $sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'prodst' ] : 'draft';
+			$sanitary_values[ PLUGIN_PREFIX . 'virtual' ]    = isset( $sync_settings[ PLUGIN_PREFIX . 'virtual' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'virtual' ] : 'no';
+			$sanitary_values[ PLUGIN_PREFIX . 'backorders' ] = isset( $sync_settings[ PLUGIN_PREFIX . 'backorders' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'backorders' ] : 'no';
+			$sanitary_values[ PLUGIN_PREFIX . 'tax' ] = isset( $sync_settings[ PLUGIN_PREFIX . 'tax' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'tax' ] : 'no';
+			$sanitary_values[ PLUGIN_PREFIX . 'filter' ]     = isset( $sync_settings[ PLUGIN_PREFIX . 'filter' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'filter' ] : '';
+			$sanitary_values[ PLUGIN_PREFIX . 'rates' ]      = isset( $sync_settings[ PLUGIN_PREFIX . 'rates' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'rates' ] : 'default';
+			$sanitary_values[ PLUGIN_PREFIX . 'catnp' ]      = isset( $sync_settings[ PLUGIN_PREFIX . 'catnp' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'catnp' ] : 'yes';
 		}
 
 		return $sanitary_values;
@@ -377,7 +377,7 @@ class SYNC_Admin {
 	public function idcentre_callback() {
 		printf(
 			'<input class="regular-text" type="password" name="' . PLUGIN_OPTIONS . '[' . PLUGIN_PREFIX . 'idcentre]" id="' . PLUGIN_PREFIX . 'idcentre" value="%s">',
-			isset( $this->sync_settings[ PLUGIN_PREFIX . 'idcentre'] ) ? esc_attr( $this->sync_settings[ PLUGIN_PREFIX . 'idcentre'] ) : ''
+			isset( $this->sync_settings[ PLUGIN_PREFIX . 'idcentre' ] ) ? esc_attr( $this->sync_settings[ PLUGIN_PREFIX . 'idcentre'] ) : ''
 		);
 	}
 
@@ -402,13 +402,13 @@ class SYNC_Admin {
 	public function wcsen_prodst_callback() {
 		?>
 		<select name="<?php echo PLUGIN_OPTIONS . '[' . PLUGIN_PREFIX; ?>prodst]" id="wcsen_prodst">
-			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'prodst'] ) && 'draft' === $this->sync_settings[ PLUGIN_PREFIX . 'prodst'] ) ? 'selected' : ''; ?>
+			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) && 'draft' === $this->sync_settings[ PLUGIN_PREFIX . 'prodst'] ) ? 'selected' : ''; ?>
 			<option value="draft" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Draft', 'sync-ecommerce-neo' ); ?></option>
-			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'prodst'] ) && 'publish' === $this->sync_settings[ PLUGIN_PREFIX . 'prodst'] ) ? 'selected' : ''; ?>
+			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) && 'publish' === $this->sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) ? 'selected' : ''; ?>
 			<option value="publish" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Publish', 'sync-ecommerce-neo' ); ?></option>
-			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'prodst'] ) && 'pending' === $this->sync_settings[ PLUGIN_PREFIX . 'prodst'] ) ? 'selected' : ''; ?>
+			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) && 'pending' === $this->sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) ? 'selected' : ''; ?>
 			<option value="pending" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Pending', 'sync-ecommerce-neo' ); ?></option>
-			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'prodst'] ) && 'private' === $this->sync_settings[ PLUGIN_PREFIX . 'prodst'] ) ? 'selected' : ''; ?>
+			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) && 'private' === $this->sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) ? 'selected' : ''; ?>
 			<option value="private" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Private', 'sync-ecommerce-neo' ); ?></option>
 		</select>
 		<?php
@@ -417,9 +417,9 @@ class SYNC_Admin {
 	public function wcsen_virtual_callback() {
 		?>
 		<select name="<?php echo PLUGIN_OPTIONS . '[' . PLUGIN_PREFIX;?>virtual]" id="wcsen_virtual">
-			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'virtual'] ) && $this->sync_settings[ PLUGIN_PREFIX . 'virtual'] === 'no' ) ? 'selected' : ''; ?>
+			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'virtual' ] ) && $this->sync_settings[ PLUGIN_PREFIX . 'virtual' ] === 'no' ) ? 'selected' : ''; ?>
 			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'sync-ecommerce-neo' ); ?></option>
-			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'virtual'] ) && $this->sync_settings[ PLUGIN_PREFIX . 'virtual'] === 'yes' ) ? 'selected' : ''; ?>
+			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'virtual' ] ) && $this->sync_settings[ PLUGIN_PREFIX . 'virtual' ] === 'yes' ) ? 'selected' : ''; ?>
 			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'sync-ecommerce-neo' ); ?></option>
 		</select>
 		<?php
@@ -428,7 +428,7 @@ class SYNC_Admin {
 	public function wcsen_backorders_callback() {
 		?>
 		<select name="<?php echo PLUGIN_OPTIONS . '[' . PLUGIN_PREFIX;?>backorders]" id="wcsen_backorders">
-			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'backorders'] ) && $this->sync_settings[ PLUGIN_PREFIX . 'backorders'] === 'no' ) ? 'selected' : ''; ?>
+			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'backorders' ] ) && $this->sync_settings[ PLUGIN_PREFIX . 'backorders' ] === 'no' ) ? 'selected' : ''; ?>
 			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'sync-ecommerce-neo' ); ?></option>
 			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'backorders'] ) && $this->sync_settings[ PLUGIN_PREFIX . 'backorders'] === 'yes' ) ? 'selected' : ''; ?>
 			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'sync-ecommerce-neo' ); ?></option>

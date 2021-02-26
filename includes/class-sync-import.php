@@ -584,20 +584,6 @@ class SYNC_Import {
 			}
 			$product_props['attributes'] = array_merge( $att_props, $variation_attributes );
 		}
-		/*
-		if ( cmk_fs()->is__premium_only() ) {
-			// Category Holded.
-			$category_newp = isset( $sync_settings[ PLUGIN_PREFIX . 'catnp']  ) ? $sync_settings[ PLUGIN_PREFIX . 'catnp']  : 'yes';
-			if ( ( isset( $item['type'] ) && $item['type'] && 'yes' === $category_newp && $is_new_product ) ||
-				( isset( $item['type'] ) && $item['type'] && 'no' === $category_newp && false === $is_new_product )
-			) {
-				foreach ( $item['type'] as $category ) {
-					$category_array = array( $category['name'] );
-					$product_props['category_ids'] = $this->find_categories_ids( $category_array );
-				}
-			}
-		}
-		*/
 		// Set properties and save.
 		$product->set_props( $product_props );
 		$product->save();
@@ -609,7 +595,7 @@ class SYNC_Import {
 	 * @return boolean True to not get the product, false to get it.
 	 */
 	private function filter_product( $tag_product ) {
-		$sync_settings       = get_option( PLUGIN_OPTIONS );
+		$sync_settings      = get_option( PLUGIN_OPTIONS );
 		$tag_product_option = isset( $sync_settings[ PLUGIN_PREFIX . 'filter' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'filter' ] : '';
 		if ( $tag_product_option && ! in_array( $tag_product_option, $tag_product, true ) ) {
 			return true;
@@ -766,20 +752,20 @@ class SYNC_Import {
 						$this->ajax_msg .= __( 'SKU not finded in Simple product. Product not imported: ', 'sync-ecommerce-neo' ) . $item['name'] . '(' . $item['kind'] . ')</br>';
 
 						$this->error_product_import[] = array(
-							'id_holded' => $item['id'],
-							'name'      => $item['name'],
-							'sku'       => $item['sku'],
-							'error'     => __( 'SKU not finded in Simple product. Product not imported. ', 'sync-ecommerce-neo' ),
+							'product_id' => $item['id'],
+							'name'       => $item['name'],
+							'sku'        => $item['sku'],
+							'error'      => __( 'SKU not finded in Simple product. Product not imported. ', 'sync-ecommerce-neo' ),
 						);
 					} elseif ( 'simple' !== $item['kind'] ) {
 						// Product not synced without SKU.
 						$this->ajax_msg .= __( 'Product type not supported. Product not imported: ', 'sync-ecommerce-neo' ) . $item['name'] . '(' . $item['kind'] . ')</br>';
 
 						$this->error_product_import[] = array(
-							'id_holded' => $item['id'],
-							'name'      => $item['name'],
-							'sku'       => $item['sku'],
-							'error'     => __( 'Product type not supported. Product not imported: ', 'sync-ecommerce-neo' ),
+							'product_id' => $item['id'],
+							'name'       => $item['name'],
+							'sku'        => $item['sku'],
+							'error'      => __( 'Product type not supported. Product not imported: ', 'sync-ecommerce-neo' ),
 						);
 					}
 				}
@@ -844,76 +830,13 @@ class SYNC_Import {
 			$error_content .= ' ' . __( 'Error:', 'sync-ecommerce-neo' ) . $error['error'];
 			$error_content .= ' ' . __( 'SKU:', 'sync-ecommerce-neo' ) . $error['sku'];
 			$error_content .= ' ' . __( 'Name:', 'sync-ecommerce-neo' ) . $error['name'];
-			$error_content .= ' <a href="https://app.holded.com/products/' . $error['id_holded'] . '">';
+			$error_content .= ' <a href="https://app.holded.com/products/' . $error['product_id'] . '">';
 			$error_content .= __( 'Edit:', 'sync-ecommerce-neo' ) . '</a>';
 			$error_content .= '<br/>';
 		}
 		// Sends an email to admin.
 		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
 		wp_mail( get_option( 'admin_email' ), __( 'Error in Products Synced in', 'sync-ecommerce-neo' ) . ' ' . get_option( 'blogname' ), $error_content, $headers );
-	}
-
-	public function attach_image( $post_id, $img_string ) {
-		if ( ! $img_string || ! $post_id ) {
-			return null;
-		}
-
-		$post         = get_post( $post_id );
-		$upload_dir   = wp_upload_dir();
-		$upload_path  = $upload_dir['path'];
-		$filename     = $post->post_name . '.png';
-		$image_upload = file_put_contents( $upload_path . $filename, $img_string );
-		// HANDLE UPLOADED FILE.
-		if ( ! function_exists( 'wp_handle_sideload' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/file.php';
-		}
-
-		if ( ! function_exists( 'wp_get_current_user' ) ) {
-			require_once ABSPATH . 'wp-includes/pluggable.php';
-		}
-		$file = array(
-			'error'    => '',
-			'tmp_name' => $upload_path . $filename,
-			'name'     => $filename,
-			'type'     => 'image/png',
-			'size'     => filesize( $upload_path . $filename ),
-		);
-		if ( ! empty( $file ) ) {
-			$file_return = wp_handle_sideload( $file, array( 'test_form' => false ) );
-			$filename    = $file_return['file'];
-		}
-		if ( isset( $file_return['file'] ) && isset( $file_return['file'] ) ) {
-			$attachment = array(
-				'post_mime_type' => $file_return['type'],
-				'post_title'     => preg_replace( '/\.[^.]+$/', ' ', basename( $file_return['file'] ) ),
-				'post_content'   => '',
-				'post_status'    => 'inherit',
-				'guid'           => $file_return['url'],
-			);
-			$attach_id  = wp_insert_attachment( $attachment, $filename, $post_id );
-			if ( $attach_id ) {
-				require_once ABSPATH . 'wp-admin/includes/image.php';
-				$post_thumbnail_id = get_post_thumbnail_id( $post_id );
-				if ( $post_thumbnail_id ) {
-					wp_delete_attachment( $post_thumbnail_id, true );
-				}
-				$attach_data = wp_generate_attachment_metadata( $attach_id, $filename );
-				wp_update_attachment_metadata( $attach_id, $attach_data );
-				set_post_thumbnail( $post_id, $attach_id );
-			}
-		}
-	}
-
-	/**
-	 * Get mains image.
-	 *
-	 * @param string $id ID of the post.
-	 * @param string $post_id Post ID.
-	 * @return void
-	 */
-	private function get_main_image( $id, $post_id ) {
-		$product_main_img = $this->get_product_detail( $id );
-		$this->attach_image( $post_id, $product_main_img );
 	}
 
 	/**
@@ -1011,7 +934,7 @@ class SYNC_Import {
 	 */
 	private function check_can_sync() {
 		$sync_settings = get_option( PLUGIN_OPTIONS );
-		if ( ! isset( $sync_settings[ PLUGIN_PREFIX . 'api'] )  ) {
+		if ( ! isset( $sync_settings[ PLUGIN_PREFIX . 'api' ] )  ) {
 			return false;
 		}
 		return true;
@@ -1052,6 +975,7 @@ class SYNC_Import {
 			foreach ( $products_api as $product_sync ) {
 				$this->create_sync_product( $product_sync );
 			}
+			$this->send_sync_ended_products( count( $products_api ) );
 		}
 	}
 	/**
@@ -1150,20 +1074,18 @@ class SYNC_Import {
 	 *
 	 * @return void
 	 */
-	private function send_sync_ended_products() {
+	private function send_sync_ended_products( $count_products ) {
 		global $wpdb;
 		$sync_settings = get_option( PLUGIN_OPTIONS );
-		$send_email   = isset( $sync_settings[ PLUGIN_PREFIX . 'sync_em ail'] ) ? strval( $sync_settings[ PLUGIN_PREFIX . 'sync_em ail'] ) : 'yes';
+		$send_email    = isset( $sync_settings[ PLUGIN_PREFIX . 'sync_email' ] ) ? strval( $sync_settings[ PLUGIN_PREFIX . 'sync_email' ] ) : 'yes';
 
-		$results = $wpdb->get_results( "SELECT sync_prodid FROM $this->table_sync WHERE synced = 1", ARRAY_A );
-
-		if ( count( $results ) > 0 && 'yes' === $send_email ) {
-			$subject = __( 'All products synced with Holded', 'sync-ecommerce-neo' );
+		if ( 'yes' === $send_email ) {
+			$subject = __( 'All products synced with NEO', 'sync-ecommerce-neo' );
 			$headers = array( 'Content-Type: text/html; charset=UTF-8' );
 			$body    = '<br/><strong>' . __( 'Total products:', 'sync-ecommerce-neo' ) . '</strong> ';
-			$body   .= count( $results );
+			$body   .= count( $count_products );
 			$body   .= '<br/><strong>' . __( 'Time:', 'sync-ecommerce-neo' ) . '</strong> ';
-			$body   .= date_i18n( 'Y-m-d H:i:s', current_time( 'timestamp') );
+			$body   .= date_i18n( 'Y-m-d H:i:s', current_time( 'timestamp' ) );
 			wp_mail( get_option( 'admin_email' ), $subject, $body, $headers );
 		}
 	}
@@ -1179,7 +1101,7 @@ class SYNC_Import {
 		$body    = implode( '<br/>', $errors );
 		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
 
-		wp_mail( get_option( 'admin_email' ), 'IMPORT HOLDED: ' . $subject, $body, $headers );
+		wp_mail( get_option( 'admin_email' ), 'IMPORT NEO: ' . $subject, $body, $headers );
 	}
 }
 

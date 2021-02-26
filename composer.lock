@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "freemius/wordpress-sdk",
-            "version": "2.4.1",
+            "version": "2.4.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Freemius/wordpress-sdk.git",
-                "reference": "4f60bf8a5d0635954fb911ffd52a21bc06aa7561"
+                "reference": "84a9be4717effd7697a217e0d931f48ae0d2ecc6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Freemius/wordpress-sdk/zipball/4f60bf8a5d0635954fb911ffd52a21bc06aa7561",
-                "reference": "4f60bf8a5d0635954fb911ffd52a21bc06aa7561",
+                "url": "https://api.github.com/repos/Freemius/wordpress-sdk/zipball/84a9be4717effd7697a217e0d931f48ae0d2ecc6",
+                "reference": "84a9be4717effd7697a217e0d931f48ae0d2ecc6",
                 "shasum": ""
             },
             "require": {
@@ -39,7 +39,11 @@
                 "wordpress-plugin",
                 "wordpress-theme"
             ],
-            "time": "2020-10-16T08:50:13+00:00"
+            "support": {
+                "issues": "https://github.com/Freemius/wordpress-sdk/issues",
+                "source": "https://github.com/Freemius/wordpress-sdk/tree/2.4.2"
+            },
+            "time": "2021-02-08T16:47:44+00:00"
         }
     ],
     "packages-dev": [],
@@ -50,5 +54,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.0.0"
 }
