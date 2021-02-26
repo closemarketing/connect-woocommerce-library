@@ -284,20 +284,20 @@ class SYNC_Admin {
 				$sanitary_values[ PLUGIN_PREFIX . 'backorders'] = $input[ PLUGIN_PREFIX . 'backorders'];
 			}
 
-			if ( isset( $input[ PLUGIN_PREFIX . 'tax'] ) ) {
-				$sanitary_values[ PLUGIN_PREFIX . 'tax'] = $input[ PLUGIN_PREFIX . 'tax'];
+			if ( isset( $input[ PLUGIN_PREFIX . 'tax' ] ) ) {
+				$sanitary_values[ PLUGIN_PREFIX . 'tax' ] = $input[ PLUGIN_PREFIX . 'tax' ];
 			}
 
-			if ( isset( $input[ PLUGIN_PREFIX . 'filter'] ) ) {
-				$sanitary_values[ PLUGIN_PREFIX . 'filter'] = sanitize_text_field( $input[ PLUGIN_PREFIX . 'filter'] );
+			if ( isset( $input[ PLUGIN_PREFIX . 'filter' ] ) ) {
+				$sanitary_values[ PLUGIN_PREFIX . 'filter' ] = sanitize_text_field( $input[ PLUGIN_PREFIX . 'filter'] );
 			}
 
 			if ( isset( $input[ PLUGIN_PREFIX . 'rates'] ) ) {
-				$sanitary_values[ PLUGIN_PREFIX . 'rates'] = $input[ PLUGIN_PREFIX . 'rates' ];
+				$sanitary_values[ PLUGIN_PREFIX . 'rates' ] = $input[ PLUGIN_PREFIX . 'rates' ];
 			}
 
-			if ( isset( $input[ PLUGIN_PREFIX . 'catnp'] ) ) {
-				$sanitary_values[ PLUGIN_PREFIX . 'catnp'] = $input[ PLUGIN_PREFIX . 'catnp' ];
+			if ( isset( $input[ PLUGIN_PREFIX . 'catnp' ] ) ) {
+				$sanitary_values[ PLUGIN_PREFIX . 'catnp' ] = $input[ PLUGIN_PREFIX . 'catnp' ];
 			}
 			// Other tab.
 			$sanitary_values[ PLUGIN_PREFIX . 'sync' ]     = isset( $sync_settings[ PLUGIN_PREFIX . 'sync' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'sync' ] : 'no';
@@ -312,14 +312,14 @@ class SYNC_Admin {
 				$sanitary_values[ PLUGIN_PREFIX . 'sync_email'] = $input[ PLUGIN_PREFIX . 'sync_email'];
 			}
 			// Other tab.
-			$sanitary_values[ PLUGIN_PREFIX . 'idcentre']        = isset( $sync_settings[ PLUGIN_PREFIX . 'idcentre'] ) ? $sync_settings[ PLUGIN_PREFIX . 'idcentre']              : '';
-			$sanitary_values[ PLUGIN_PREFIX . 'api']        = isset( $sync_settings[ PLUGIN_PREFIX . 'api'] ) ? $sync_settings[ PLUGIN_PREFIX . 'api']              : '';
-			$sanitary_values[ PLUGIN_PREFIX . 'stock']      = isset( $sync_settings[ PLUGIN_PREFIX . 'stock'] ) ? $sync_settings[ PLUGIN_PREFIX . 'stock']          : 'no';
-			$sanitary_values[ PLUGIN_PREFIX . 'prodst']     = isset( $sync_settings[ PLUGIN_PREFIX . 'prodst'] ) ? $sync_settings[ PLUGIN_PREFIX . 'prodst']        : 'draft';
-			$sanitary_values[ PLUGIN_PREFIX . 'virtual']    = isset( $sync_settings[ PLUGIN_PREFIX . 'virtual'] ) ? $sync_settings[ PLUGIN_PREFIX . 'virtual']      : 'no';
-			$sanitary_values[ PLUGIN_PREFIX . 'backorders'] = isset( $sync_settings[ PLUGIN_PREFIX . 'backorders'] ) ? $sync_settings[ PLUGIN_PREFIX . 'backorders']: 'no';
-			$sanitary_values[ PLUGIN_PREFIX . 'tax'] = isset( $sync_settings[ PLUGIN_PREFIX . 'tax'] ) ? $sync_settings[ PLUGIN_PREFIX . 'tax']: 'no';
-			$sanitary_values[ PLUGIN_PREFIX . 'filter']     = isset( $sync_settings[ PLUGIN_PREFIX . 'filter'] ) ? $sync_settings[ PLUGIN_PREFIX . 'filter']        : '';
+			$sanitary_values[ PLUGIN_PREFIX . 'idcentre' ]        = isset( $sync_settings[ PLUGIN_PREFIX . 'idcentre' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'idcentre' ]              : '';
+			$sanitary_values[ PLUGIN_PREFIX . 'api' ]        = isset( $sync_settings[ PLUGIN_PREFIX . 'api' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'api' ]              : '';
+			$sanitary_values[ PLUGIN_PREFIX . 'stock' ]      = isset( $sync_settings[ PLUGIN_PREFIX . 'stock' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'stock' ]          : 'no';
+			$sanitary_values[ PLUGIN_PREFIX . 'prodst' ]     = isset( $sync_settings[ PLUGIN_PREFIX . 'prodst' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'prodst' ]        : 'draft';
+			$sanitary_values[ PLUGIN_PREFIX . 'virtual' ]    = isset( $sync_settings[ PLUGIN_PREFIX . 'virtual' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'virtual' ]      : 'no';
+			$sanitary_values[ PLUGIN_PREFIX . 'backorders' ] = isset( $sync_settings[ PLUGIN_PREFIX . 'backorders' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'backorders' ]: 'no';
+			$sanitary_values[ PLUGIN_PREFIX . 'tax' ] = isset( $sync_settings[ PLUGIN_PREFIX . 'tax' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'tax' ]: 'no';
+			$sanitary_values[ PLUGIN_PREFIX . 'filter' ]     = isset( $sync_settings[ PLUGIN_PREFIX . 'filter' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'filter']        : '';
 			$sanitary_values[ PLUGIN_PREFIX . 'rates']      = isset( $sync_settings[ PLUGIN_PREFIX . 'rates'] ) ? $sync_settings[ PLUGIN_PREFIX . 'rates']          : 'default';
 			$sanitary_values[ PLUGIN_PREFIX . 'catnp']      = isset( $sync_settings[ PLUGIN_PREFIX . 'catnp'] ) ? $sync_settings[ PLUGIN_PREFIX . 'catnp']          :  'yes';
 		}
@@ -504,6 +504,21 @@ class SYNC_Admin {
 
 			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'sync'] ) &&  PLUGIN_PREFIX . 'cron_six_hours' === $this->sync_settings[ PLUGIN_PREFIX . 'sync'] ) ? 'selected' : ''; ?>
 			<option value="<?php echo PLUGIN_PREFIX; ?>cron_six_hours" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Every six hours', 'sync-ecommerce-neo' ); ?></option>
+
+			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'sync' ] ) &&  PLUGIN_PREFIX . 'cron_three_hours' === $this->sync_settings[ PLUGIN_PREFIX . 'sync' ] ) ? 'selected' : ''; ?>
+			<option value="<?php echo PLUGIN_PREFIX; ?>cron_three_hours" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Every three hours', 'sync-ecommerce-neo' ); ?></option>
+
+			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'sync' ] ) && PLUGIN_PREFIX . 'cron_one_hour' === $this->sync_settings[ PLUGIN_PREFIX . 'sync' ] ) ? 'selected' : ''; ?>
+			<option value="<?php echo PLUGIN_PREFIX; ?>cron_one_hour" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Every hour', 'sync-ecommerce-neo' ); ?></option>
+
+			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'sync' ] ) && PLUGIN_PREFIX . 'cron_thirty_minutes' === $this->sync_settings[ PLUGIN_PREFIX . 'sync' ] ) ? 'selected' : ''; ?>
+			<option value="<?php echo PLUGIN_PREFIX; ?>cron_thirty_minutes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Every thirty minutes', 'sync-ecommerce-neo' ); ?></option>
+
+			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'sync' ] ) && PLUGIN_PREFIX . 'cron_fifteen_minutes' === $this->sync_settings[ PLUGIN_PREFIX . 'sync' ] ) ? 'selected' : ''; ?>
+			<option value="<?php echo PLUGIN_PREFIX; ?>cron_fifteen_minutes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Every fifteen minutes', 'sync-ecommerce-neo' ); ?></option>
+
+			<?php $selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'sync' ] ) && PLUGIN_PREFIX . 'cron_five_minutes' === $this->sync_settings[ PLUGIN_PREFIX . 'sync' ] ) ? 'selected' : ''; ?>
+			<option value="<?php echo PLUGIN_PREFIX; ?>cron_five_minutes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Every five minutes', 'sync-ecommerce-neo' ); ?></option>
 		</select>
 		<?php
 	}

@@ -5,7 +5,7 @@
  * Description: Imports Products and data from NEO to WooCommerce.
  * Author: closemarketing
  * Author URI: https://www.closemarketing.es/
- * Version: 1.0b4
+ * Version: 1.0b5
  *
  * @package WordPress
  * Text Domain: sync-ecommerce-neo
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WCSEN_VERSION', '1.0b4' );
+define( 'WCSEN_VERSION', '1.0b5' );
 define( 'WCSEN_PLUGIN', __FILE__ );
 define( 'WCSEN_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'WCSEN_PLUGIN_DIR', untrailingslashit( dirname( WCSEN_PLUGIN ) ) );
@@ -101,7 +101,22 @@ add_filter( 'cron_schedules', 'wcsen_add_cron_recurrence_interval' );
  * @return array $schedules
  */
 function wcsen_add_cron_recurrence_interval( $schedules ) {
-
+	$schedules['every_five_minutes'] = array(
+		'interval' => 300,
+		'display'  => __( 'Every 5 minutes', 'sync-ecommerce-neo' ),
+	);
+	$schedules['every_fifteen_minutes'] = array(
+		'interval' => 900,
+		'display'  => __( 'Every 15 minutes', 'sync-ecommerce-neo' ),
+	);
+	$schedules['every_thirty_minutes']  = array(
+		'interval' => 1800,
+		'display'  => __( 'Every 30 Minutes', 'sync-ecommerce-neo' ),
+	);
+	$schedules['every_one_hour']        = array(
+		'interval' => 3600,
+		'display'  => __( 'Every 1 Hour', 'sync-ecommerce-neo' ),
+	);
 	$schedules['every_three_hours']     = array(
 		'interval' => 10800,
 		'display'  => __( 'Every 3 Hours', 'sync-ecommerce-neo' ),
