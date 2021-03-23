@@ -122,11 +122,7 @@ function sync_get_token( $renew_token = false ) {
 		if ( ( isset( $body_response['result'] ) && 'error' === $body_response['result'] ) || 
 			! isset( $body_response['token'] )
 		) {
-			wp_send_json_error(
-				array(
-					'msg' => '[' . date_i18n( 'H:i:s' ) . '] ' . '<span style="color:red;">Error: ' . $body_response['message'] . '</span>',
-				)
-			);
+			echo '<div class="error notice"><p>Error: ' . esc_html( $body_response['message'] ) . '</p></div>';
 			return false;
 		}
 		set_transient( PLUGIN_PREFIX . 'token', $body_response['token'], EXPIRE_TOKEN );
@@ -162,11 +158,7 @@ function sync_get_products( $id = null, $page = null, $period = null ) {
 	$body_response = json_decode( $response_body, true );
 
 	if ( isset( $body_response['result'] ) && 'error' === $body_response['result'] ) {
-		wp_send_json_error(
-			array(
-				'msg' => '[' . date_i18n( 'H:i:s' ) . '] ' . '<span style="color:red;">Error: ' . $body_response['message'] . '</span>',
-			)
-		);
+		echo '<div class="error notice"><p>Error: ' . esc_html( $body_response['message'] ) . '</p></div>';
 		return false;
 	}
 

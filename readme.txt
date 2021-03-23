@@ -1,11 +1,11 @@
-=== Sync eCommerce for NEO ERP ===
+=== Sync eCommerce NEO ===
 Contributors: closemarketing, davidperez, sacrajaimez
 Tags: neo erp, woocommerce
 Donate link: https://www.closemarketing.es/go/donate/
 Requires at least: 3.0
-Tested up to: 5.6
-Stable tag: 1.0b5
-Version: 1.0b5
+Tested up to: 5.7
+Stable tag: 1.0
+Version: 1.0
 
 Imports Products and data from NEO software to WooCommerce.
 
@@ -24,7 +24,7 @@ These are the features:
 - Import variable products.
 - Automate the syncronization.
 
-[You could buy it here](https://checkout.freemius.com/mode/dialog/plugin/5133/plan/8469/)
+[You could buy it here](https://checkout.freemius.com/mode/dialog/plugin/7463/plan/12237/)
 
 Made by [Closemarketing](https://www.closemarketing.es/)
 
