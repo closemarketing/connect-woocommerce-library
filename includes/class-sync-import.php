@@ -553,11 +553,9 @@ class SYNC_Import {
 			// Check if WooCommerce Variations have more than Holded and unset.
 			if ( ! $is_new_product && ! empty( $variations_array ) ) {
 				foreach ( $variations_array as $variation_id => $variation_sku ) {
-					wp_update_post(
-						array(
-							'ID'          => $variation_id,
-							'post_status' => 'draft',
-						)
+					wp_delete_post(
+						$variation_id,
+						false,
 					);
 				}
 			}
