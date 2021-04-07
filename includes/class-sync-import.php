@@ -373,6 +373,7 @@ class SYNC_Import {
 			'stock_status'  => 'instock',
 			'backorders'    => $allow_backorders,
 			'regular_price' => $price,
+			'manage_stock'  => 'yes' === $import_stock ? true : false,
 		);
 		$product_props_new = array();
 		if ( $is_new_product ) {
@@ -391,7 +392,6 @@ class SYNC_Import {
 				'total_sales'        => '',
 				'tax_status'         => 'taxable',
 				'tax_class'          => '',
-				'manage_stock'       => 'yes' === $import_stock ? true : false,
 				'stock_quantity'     => null,
 				'sold_individually'  => false,
 				'weight'             => $is_virtual ? '' : $weight,
