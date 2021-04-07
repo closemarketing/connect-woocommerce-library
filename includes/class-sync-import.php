@@ -75,7 +75,7 @@ class SYNC_Import {
 
 		// Cron jobs.
 		if ( WP_DEBUG ) {
-			//add_action( 'admin_head', array( $this, 'cron_sync_products' ), 20 );
+			add_action( 'admin_head', array( $this, 'cron_sync_products' ), 20 );
 		}
 		$sync_settings = get_option( PLUGIN_OPTIONS );
 		$sync_period   = isset( $sync_settings[ PLUGIN_PREFIX . 'sync' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'sync' ] : 'no';
@@ -978,6 +978,10 @@ class SYNC_Import {
 			$date_sync = date( 'Ymd', time() );
 		}
 
+		echo '<pre>date_sync:';
+		print_r($date_sync);
+		echo '</pre>';
+
 		// Start.
 		$products_api_tran = get_transient( 'syncperiod_api_products' );
 		$products_api      = json_decode( $products_api_tran, true );
@@ -989,7 +993,6 @@ class SYNC_Import {
 			set_transient( 'syncperiod_api_products', $products_api, 10800 ); // 3 hours
 			$products_api = json_decode( $products_api, true );
 		}
-
 		if ( ! empty( $products_api ) ) {
 			foreach ( $products_api as $product_sync ) {
 				$this->create_sync_product( $product_sync );

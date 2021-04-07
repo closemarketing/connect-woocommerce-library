@@ -144,14 +144,14 @@ if ( cmk_fs()->is__premium_only() ) {
 	function wcsen_cron_schedules() {
 
 		// Schedules cron.
-		wp_schedule_event( time(), 'every_five_minutes', 'wcsen_cron_five_minutes' );
-		wp_schedule_event( time(), 'every_fifteen_minutes', 'wcsen_cron_fifteen_minutes' );
-		wp_schedule_event( time(), 'every_thirty_minutes', 'wcsen_cron_thirty_minutes' );
-		wp_schedule_event( time(), 'every_one_hour', 'wcsen_cron_one_hour' );
-		wp_schedule_event( time(), 'every_three_hours', 'wcsen_cron_three_hours' );
-		wp_schedule_event( time(), 'every_six_hours', 'wcsen_cron_six_hours' );
-		wp_schedule_event( time(), 'every_twelve_hours', 'wcsen_cron_twelve_hours' );
-		wp_schedule_event( strtotime( '01:30:00' ), 'daily', 'wcsen_cron_daily' );
+		wp_schedule_event( time(), 'every_five_minutes', PLUGIN_PREFIX . 'cron_five_minutes' );
+		wp_schedule_event( time(), 'every_fifteen_minutes', PLUGIN_PREFIX . 'cron_fifteen_minutes' );
+		wp_schedule_event( time(), 'every_thirty_minutes', PLUGIN_PREFIX . 'cron_thirty_minutes' );
+		wp_schedule_event( time(), 'every_one_hour', PLUGIN_PREFIX . 'cron_one_hour' );
+		wp_schedule_event( time(), 'every_three_hours', PLUGIN_PREFIX . 'cron_three_hours' );
+		wp_schedule_event( time(), 'every_six_hours', PLUGIN_PREFIX . 'cron_six_hours' );
+		wp_schedule_event( time(), 'every_twelve_hours', PLUGIN_PREFIX . 'cron_twelve_hours' );
+		wp_schedule_event( strtotime( '01:30:00' ), 'daily', PLUGIN_PREFIX . 'cron_daily' );
 	}
 
 
@@ -164,14 +164,14 @@ if ( cmk_fs()->is__premium_only() ) {
 	 * @return void
 	 */
 	function wcsen_deactivate() {
-		wp_clear_scheduled_hook( 'wcsen_cron_five_minutes' );
-		wp_clear_scheduled_hook( 'wcsen_cron_fifteen_minutes' );
-		wp_clear_scheduled_hook( 'wcsen_cron_thirty_minutes' );
-		wp_clear_scheduled_hook( 'wcsen_cron_one_hour' );
-		wp_clear_scheduled_hook( 'wcsen_cron_three_hours' );
-		wp_clear_scheduled_hook( 'wcsen_cron_six_hours' );
-		wp_clear_scheduled_hook( 'wcsen_cron_twelve_hours' );
-		wp_clear_scheduled_hook( 'wcsen_cron_daily' );
+		wp_clear_scheduled_hook( PLUGIN_PREFIX . 'cron_five_minutes' );
+		wp_clear_scheduled_hook( PLUGIN_PREFIX . 'cron_fifteen_minutes' );
+		wp_clear_scheduled_hook( PLUGIN_PREFIX . 'cron_thirty_minutes' );
+		wp_clear_scheduled_hook( PLUGIN_PREFIX . 'cron_one_hour' );
+		wp_clear_scheduled_hook( PLUGIN_PREFIX . 'cron_three_hours' );
+		wp_clear_scheduled_hook( PLUGIN_PREFIX . 'cron_six_hours' );
+		wp_clear_scheduled_hook( PLUGIN_PREFIX . 'cron_twelve_hours' );
+		wp_clear_scheduled_hook( PLUGIN_PREFIX . 'cron_daily' );
 	}
 }
 
