@@ -578,7 +578,7 @@ class SYNC_Import {
 				foreach ( $variations_array as $variation_id => $variation_sku ) {
 					wp_delete_post(
 						$variation_id,
-						false,
+						false
 					);
 					$this->ajax_msg .= '<span class="error">' . __( 'Variation deleted after sync (SKU blank)', 'sync-ecommerce-neo' ) . $item['name'] . '. Variant ID: ' . $variation_id . '(' . $item['kind'] . ') </span><br/>';
 				}
