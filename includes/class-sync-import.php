@@ -465,11 +465,34 @@ class SYNC_Import {
 		} elseif ( 'variable' === $type && cmk_fs()->is__premium_only() ) {
 			$attributes      = array();
 			$attributes_prod = array();
+			$parent_sku      = $product->get_sku();
 
 			if ( ! $is_new_product ) {
-				$variations       = $product->get_available_variations();
-				$variations_array = wp_list_pluck( $variations, 'sku', 'variation_id' );
+				$variations       = $product->get_children();
+				foreach ( $product->get_children( false ) as $child_id ) {
+					// get an instance of the WC_Variation_product Object
+					$variation_children = wc_get_product( $child_id ); 
+					if ( ! $variation_children || ! $variation_children->exists() ) {
+						continue;
+					}
+					$variations_array[ $child_id ] = $variation_children->get_sku();
+				}
 			}
+
+			// Remove variations without SKU blank.
+			if ( ! empty( $variations_array ) ) {
+				foreach ( $variations_array as $variation_id => $variation_sku ) {
+					if ( $parent_sku == $variation_sku || '' == $variation_sku || null == $variation_sku) {
+						wp_delete_post(
+							$variation_id,
+							false,
+						);
+
+						$this->ajax_msg .= '<span class="error">' . __( 'Variation deleted (SKU blank)', 'sync-ecommerce-neo' ) . $item['name'] . '. Variant ID: ' . $variation_id . '(' . $item['kind'] . ') </span><br/>';
+					}
+				}
+			}
+			// Query.
 			foreach ( $item['variants'] as $variant ) {
 				$variation_id = 0; // default value.
 				if ( ! $is_new_product ) {
@@ -550,13 +573,14 @@ class SYNC_Import {
 			$data_store                  = $product->get_data_store();
 			$data_store->sort_all_product_variations( $product_id );
 
-			// Check if WooCommerce Variations have more than Holded and unset.
+			// Check if WooCommerce Variations have more than NEO and unset.
 			if ( ! $is_new_product && ! empty( $variations_array ) ) {
 				foreach ( $variations_array as $variation_id => $variation_sku ) {
 					wp_delete_post(
 						$variation_id,
 						false,
 					);
+					$this->ajax_msg .= '<span class="error">' . __( 'Variation deleted after sync (SKU blank)', 'sync-ecommerce-neo' ) . $item['name'] . '. Variant ID: ' . $variation_id . '(' . $item['kind'] . ') </span><br/>';
 				}
 			}
 			/**
@@ -867,7 +891,7 @@ class SYNC_Import {
 			<script type="text/javascript">
 				var loop=0;
 				jQuery(function($){
-					$(document).find('#sync-neo-engine').after('<div class="sync-wrapper"><h2><?php _e( 'Import Products from Holded', 'sync-ecommerce-neo' ); ?></h2><p><?php _e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', 'sync-ecommerce-neo' ); ?><br/></p><button id="start-sync" class="button button-primary"<?php if ( false === $this->check_can_sync() ) { echo ' disabled'; } ?>><?php _e( 'Start Import', 'sync-ecommerce-neo' ); ?></button></div><fieldset id="logwrapper"><legend><?php _e( 'Log', 'sync-ecommerce-neo' ); ?></legend><div id="loglist"></div></fieldset>');
+					$(document).find('#sync-neo-engine').after('<div class="sync-wrapper"><h2><?php _e( 'Import Products from NEO', 'sync-ecommerce-neo' ); ?></h2><p><?php _e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', 'sync-ecommerce-neo' ); ?><br/></p><button id="start-sync" class="button button-primary"<?php if ( false === $this->check_can_sync() ) { echo ' disabled'; } ?>><?php _e( 'Start Import', 'sync-ecommerce-neo' ); ?></button></div><fieldset id="logwrapper"><legend><?php _e( 'Log', 'sync-ecommerce-neo' ); ?></legend><div id="loglist"></div></fieldset>');
 					$(document).find('#start-sync').on('click', function(){
 						$(this).attr('disabled','disabled');
 						$(this).after('<span class="spinner is-active"></span>');
