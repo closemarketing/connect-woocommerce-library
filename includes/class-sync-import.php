@@ -485,7 +485,7 @@ class SYNC_Import {
 					if ( $parent_sku == $variation_sku || '' == $variation_sku || null == $variation_sku) {
 						wp_delete_post(
 							$variation_id,
-							false,
+							false
 						);
 
 						$this->ajax_msg .= '<span class="error">' . __( 'Variation deleted (SKU blank)', 'sync-ecommerce-neo' ) . $item['name'] . '. Variant ID: ' . $variation_id . '(' . $item['kind'] . ') </span><br/>';
