@@ -75,13 +75,24 @@ class SYNC_Import {
 
 		// Cron jobs.
 		if ( WP_DEBUG ) {
-			add_action( 'admin_head', array( $this, 'cron_sync_products' ), 20 );
+			//add_action( 'admin_head', array( $this, 'cron_sync_products' ), 20 );
+			//add_action( 'admin_head', array( $this, 'cron_sync_stock' ), 20 );
 		}
 		$sync_settings = get_option( PLUGIN_OPTIONS );
+		// Sync Articles.
 		$sync_period   = isset( $sync_settings[ PLUGIN_PREFIX . 'sync' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'sync' ] : 'no';
-
 		if ( $sync_period && 'no' !== $sync_period ) {
 			add_action( $sync_period, array( $this, 'cron_sync_products' ) );
+		}
+		// Sync stock.
+		$sync_period_stk = isset( $sync_settings[ PLUGIN_PREFIX . 'sync_stk' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'sync_stk' ] : 'no';
+		echo '<pre>sync_period_stk:';
+		print_r($sync_period_stk);
+		echo '</pre>';
+		if ( $sync_period_stk && 'no' !== $sync_period_stk ) {
+			echo '<pre>hola:';
+			echo '</pre>';
+			add_action( $sync_period_stk, array( $this, 'cron_sync_stock' ) );
 		}
 	}
 
@@ -247,21 +258,6 @@ class SYNC_Import {
 			$position++;
 		}
 		return $attributes_return;
-	}
-
-	/**
-	 * Finds simple and variation item in WooCommerce.
-	 *
-	 * @param string $sku SKU of product.
-	 * @return string $product_id Products id.
-	 */
-	private function find_product( $sku ) {
-		global $wpdb;
-		$post_type   = 'product';
-		$meta_key     = '_sku';
-		$result_query = $wpdb->get_var( $wpdb->prepare( "SELECT P.ID FROM $wpdb->posts AS P LEFT JOIN $wpdb->postmeta AS PM ON PM.post_id = P.ID WHERE P.post_type = '$post_type' AND PM.meta_key='$meta_key' AND PM.meta_value=%s AND P.post_status != 'trash' LIMIT 1", $sku ) );
-
-		return $result_query;
 	}
 
 	/**
@@ -696,9 +692,9 @@ class SYNC_Import {
 					$is_filtered_product = $this->filter_product( $product_tags );
 
 					if ( ! $is_filtered_product && $item['sku'] && 'simple' === $item['kind'] ) {
-						$post_id = $this->find_product( $item['sku'] );
+						$post_id = wc_get_product_id_by_sku( $item['sku'] );
 
-						if ( ! $post_id ) {
+						if ( 0 === $post_id ) {
 							$post_arg = array(
 								'post_title'   => ( $item['name'] ) ? $item['name'] : '',
 								'post_content' => ( $item['desc'] ) ? $item['desc'] : '',
@@ -978,10 +974,6 @@ class SYNC_Import {
 			$date_sync = date( 'Ymd', time() );
 		}
 
-		echo '<pre>date_sync:';
-		print_r($date_sync);
-		echo '</pre>';
-
 		// Start.
 		$products_api_tran = get_transient( 'syncperiod_api_products' );
 		$products_api      = json_decode( $products_api_tran, true );
@@ -1000,6 +992,7 @@ class SYNC_Import {
 			$this->send_sync_ended_products( count( $products_api ) );
 		}
 	}
+
 	/**
 	 * Create Syncs product for automatic
 	 *
@@ -1014,9 +1007,9 @@ class SYNC_Import {
 		$sku_key   = '_sku';
 
 		if ( $item['sku'] && 'simple' === $item['kind'] ) {
-			$post_id = $this->find_product( $item['sku'] );
+			$post_id = wc_get_product_id_by_sku( $item['sku'] );
 
-			if ( ! $post_id ) {
+			if ( 0 === $post_id ) {
 				$post_arg = array(
 					'post_title'   => ( $item['name'] ) ? $item['name'] : '',
 					'post_content' => ( $item['desc'] ) ? $item['desc'] : '',
@@ -1088,6 +1081,67 @@ class SYNC_Import {
 					'Product Kind:' . $item['kind'],
 				)
 			);
+		}
+	}
+
+	/**
+	 * Create cron sync stock
+	 *
+	 * @return boolean False if not premium.
+	 */
+	public function cron_sync_stock() {
+		if ( ! cmk_fs()->is__premium_only() ) {
+			return false;
+		}
+		$sync_settings = get_option( PLUGIN_OPTIONS );
+		$sync_period_stk   = isset( $sync_settings[ PLUGIN_PREFIX . 'sync_stk' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'sync_stk' ] : 'no';
+
+		$hour_today = date( 'H' );
+		if ( 'wcsync_cron_daily' === $sync_period_stk || ( 'wcsync_cron_twelve_hours' === $sync_period_stk && $hour_today > 12 ) || ( 'wcsync_cron_six_hours' === $sync_period_stk && $hour_today > 6 )
+		) {
+			$date_sync = date( 'Ymd', strtotime( '-1 days' ) );
+		} else {
+			$date_sync = date( 'Ymd', time() );
+		}
+		// Start.
+		$products_stock_api_neo = sync_get_products_stock( $date_sync );
+		if ( ! empty( $products_stock_api_neo ) ) {
+			foreach ( $products_stock_api_neo as $stock_sync ) {
+				$this->sync_product_stock( $stock_sync );
+			}
+		}
+	}
+
+	/**
+	 * Syncs product stock from item
+	 *
+	 * @param array $item Item of Holded.
+	 * @return void
+	 */
+	private function sync_product_stock( $item ) {
+		$sku         = isset( $item['CodArticulo'] ) ? $item['CodArticulo'] : '';
+		$stock_value = isset( $item['StockActual'] ) ? (int) $item['StockActual'] : 0;
+		$product_id  = wc_get_product_id_by_sku( $sku );
+
+		if ( 0 !== $product_id ) {
+			update_post_meta( $product_id, '_stock', $stock_value );
+			if ( $stock_value > 0 ) {
+				update_post_meta( $product_id, '_stock_status', 'instock' );
+				update_post_meta( $product_id, 'catalog_visibility', 'visible' );
+				wp_remove_object_terms( $product_id, 'exclude-from-catalog', 'product_visibility' );
+				wp_remove_object_terms( $product_id, 'exclude-from-search', 'product_visibility' );
+			} else {
+				// Hide of catalogue
+				update_post_meta( $product_id, '_stock_status', 'outofstock' );
+				wp_set_object_terms(
+					$product_id,
+					array(
+						'exclude-from-catalog',
+						'exclude-from-search',
+					),
+					'product_visibility'
+				);
+			}
 		}
 	}
 

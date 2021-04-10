@@ -164,3 +164,36 @@ function sync_get_products( $id = null, $page = null, $period = null ) {
 
 	return $body_response['articulos'];
 }
+
+/**
+ * Gets information from Holded products
+ *
+ * @param string $id Id of product to get information.
+ * @return array Array of products imported via API.
+ */
+function sync_get_products_stock( $period = null ) {
+	$sync_settings = get_option( PLUGIN_OPTIONS );
+	$token         = sync_get_token();
+
+	$args = array(
+		'body' => array(
+			'token' => $token,
+		),
+		'timeout' => 3000,
+	);
+
+	if ( $period ) {
+		$args['body']['fecha'] = $period;
+	}
+
+	$response      = wp_remote_post( 'https://apis.bartolomeconsultores.com/pedidosweb/verstock.php', $args );
+	$response_body = wp_remote_retrieve_body( $response );
+	$body_response = json_decode( $response_body, true );
+
+	if ( isset( $body_response['result'] ) && 'error' === $body_response['result'] ) {
+		echo '<div class="error notice"><p>Error: ' . esc_html( $body_response['message'] ) . '</p></div>';
+		return false;
+	}
+
+	return $body_response['stock'];
+}

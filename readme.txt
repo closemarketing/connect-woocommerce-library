@@ -40,6 +40,9 @@ WordPress installation and then activate the Plugin from Plugins page.
 
 == Changelog ==
 
+= 1.2 =
+*   Sync stock independently (premium).
+
 = 1.1 =
 *   Fix variations duplicated (premium).
 

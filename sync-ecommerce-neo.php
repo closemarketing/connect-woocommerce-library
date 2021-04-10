@@ -5,7 +5,7 @@
  * Description: Imports Products and data from NEO to WooCommerce.
  * Author: closemarketing
  * Author URI: https://www.closemarketing.es/
- * Version: 1.1
+ * Version: 1.2b1
  *
  * @package WordPress
  * Text Domain: sync-ecommerce-neo
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WCSEN_VERSION', '1.1' );
+define( 'WCSEN_VERSION', '1.2b1' );
 define( 'WCSEN_PLUGIN', __FILE__ );
 define( 'WCSEN_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'WCSEN_PLUGIN_DIR', untrailingslashit( dirname( WCSEN_PLUGIN ) ) );
@@ -34,11 +34,6 @@ add_action( 'init', 'wcsen_load_textdomain' );
 function wcsen_load_textdomain() {
 	load_plugin_textdomain( 'sync-ecommerce-neo', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 }
-
-// Includes files.
-require_once dirname( __FILE__ ) . '/includes/helpers-functions.php';
-require_once dirname( __FILE__ ) . '/includes/class-sync-admin.php';
-require_once dirname( __FILE__ ) . '/includes/class-sync-import.php';
 
 
 if ( function_exists( 'cmk_fs' ) ) {
@@ -92,47 +87,81 @@ if ( function_exists( 'cmk_fs' ) ) {
 	}
 }
 
-add_filter( 'cron_schedules', 'wcsen_add_cron_recurrence_interval' );
-/**
- * Adds a cron Schedule
- *
- * @param array $schedules Array of Schedules.
- * @return array $schedules
- */
-function wcsen_add_cron_recurrence_interval( $schedules ) {
-	$schedules['every_five_minutes'] = array(
-		'interval' => 300,
-		'display'  => __( 'Every 5 minutes', 'sync-ecommerce-neo' ),
-	);
-	$schedules['every_fifteen_minutes'] = array(
-		'interval' => 900,
-		'display'  => __( 'Every 15 minutes', 'sync-ecommerce-neo' ),
-	);
-	$schedules['every_thirty_minutes']  = array(
-		'interval' => 1800,
-		'display'  => __( 'Every 30 Minutes', 'sync-ecommerce-neo' ),
-	);
-	$schedules['every_one_hour']        = array(
-		'interval' => 3600,
-		'display'  => __( 'Every 1 Hour', 'sync-ecommerce-neo' ),
-	);
-	$schedules['every_three_hours']     = array(
-		'interval' => 10800,
-		'display'  => __( 'Every 3 Hours', 'sync-ecommerce-neo' ),
-	);
-	$schedules['every_six_hours']       = array(
-		'interval' => 21600,
-		'display'  => __( 'Every 6 Hours', 'sync-ecommerce-neo' ),
-	);
-	$schedules['every_twelve_hours']    = array(
-		'interval' => 43200,
-		'display'  => __( 'Every 12 Hours', 'sync-ecommerce-neo' ),
-	);
-
-	return $schedules;
-}
 
 if ( cmk_fs()->is__premium_only() ) {
+	$cron_options = array(
+		array(
+			'key'      => 'every_five_minutes',
+			'interval' => 300,
+			'display'  => __( 'Every 5 minutes', 'sync-ecommerce-neo' ),
+			'cron'     => PLUGIN_PREFIX . 'cron_five_minutes',
+		),
+		array(
+			'key'      => 'every_fifteen_minutes',
+			'interval' => 900,
+			'display'  => __( 'Every 15 minutes', 'sync-ecommerce-neo' ),
+			'cron'     => PLUGIN_PREFIX . 'cron_fifteen_minutes',
+		),
+		array(
+			'key'      => 'every_thirty_minutes',
+			'interval' => 1800,
+			'display'  => __( 'Every 30 Minutes', 'sync-ecommerce-neo' ),
+			'cron'     => PLUGIN_PREFIX . 'cron_thirty_minutes',
+		),
+		array(
+			'key'      => 'every_one_hour',
+			'interval' => 3600,
+			'display'  => __( 'Every 1 Hour', 'sync-ecommerce-neo' ),
+			'cron'     => PLUGIN_PREFIX . 'cron_one_hour',
+		),
+		array(
+			'key'      => 'every_three_hours',
+			'interval' => 10800,
+			'display'  => __( 'Every 3 Hours', 'sync-ecommerce-neo' ),
+			'cron'     => PLUGIN_PREFIX . 'cron_three_hours',
+		),
+		array(
+			'key'      => 'every_six_hours',
+			'interval' => 21600,
+			'display'  => __( 'Every 6 Hours', 'sync-ecommerce-neo' ),
+			'cron'     => PLUGIN_PREFIX . 'cron_six_hours',
+		),
+		array(
+			'key'      => 'every_twelve_hours',
+			'interval' => 43200,
+			'display'  => __( 'Every 12 Hours', 'sync-ecommerce-neo' ),
+			'cron'     => PLUGIN_PREFIX . 'cron_twelve_hours',
+		),
+	);
+}
+
+// Includes files.
+require_once dirname( __FILE__ ) . '/includes/helpers-functions.php';
+require_once dirname( __FILE__ ) . '/includes/class-sync-admin.php';
+require_once dirname( __FILE__ ) . '/includes/class-sync-import.php';
+
+if ( cmk_fs()->is__premium_only() ) {
+	add_filter( 'cron_schedules', 'wcsen_add_cron_recurrence_interval' );
+	/**
+	 * Adds a cron Schedule
+	 *
+	 * @param array $schedules Array of Schedules.
+	 * @return array $schedules
+	 */
+	function wcsen_add_cron_recurrence_interval( $schedules ) {
+		global $cron_options;
+
+		foreach ( $cron_options as $cron_option ) {
+
+			$schedules[ $cron_option['key'] ] = array(
+				'interval' => $cron_option['interval'],
+				'display'  => $cron_option['display'],
+			);
+		}
+
+		return $schedules;
+	}
+
 	register_activation_hook( __FILE__, 'wcsen_cron_schedules' );
 	/**
 	 * Creates the database
@@ -142,15 +171,11 @@ if ( cmk_fs()->is__premium_only() ) {
 	 * @return void
 	 */
 	function wcsen_cron_schedules() {
-
+		global $cron_options;
 		// Schedules cron.
-		wp_schedule_event( time(), 'every_five_minutes', PLUGIN_PREFIX . 'cron_five_minutes' );
-		wp_schedule_event( time(), 'every_fifteen_minutes', PLUGIN_PREFIX . 'cron_fifteen_minutes' );
-		wp_schedule_event( time(), 'every_thirty_minutes', PLUGIN_PREFIX . 'cron_thirty_minutes' );
-		wp_schedule_event( time(), 'every_one_hour', PLUGIN_PREFIX . 'cron_one_hour' );
-		wp_schedule_event( time(), 'every_three_hours', PLUGIN_PREFIX . 'cron_three_hours' );
-		wp_schedule_event( time(), 'every_six_hours', PLUGIN_PREFIX . 'cron_six_hours' );
-		wp_schedule_event( time(), 'every_twelve_hours', PLUGIN_PREFIX . 'cron_twelve_hours' );
+		foreach ( $cron_options as $cron_option ) {
+			wp_schedule_event( time(), $cron_option['key'], $cron_option['cron'] );
+		}
 		wp_schedule_event( strtotime( '01:30:00' ), 'daily', PLUGIN_PREFIX . 'cron_daily' );
 	}
 
@@ -164,13 +189,11 @@ if ( cmk_fs()->is__premium_only() ) {
 	 * @return void
 	 */
 	function wcsen_deactivate() {
-		wp_clear_scheduled_hook( PLUGIN_PREFIX . 'cron_five_minutes' );
-		wp_clear_scheduled_hook( PLUGIN_PREFIX . 'cron_fifteen_minutes' );
-		wp_clear_scheduled_hook( PLUGIN_PREFIX . 'cron_thirty_minutes' );
-		wp_clear_scheduled_hook( PLUGIN_PREFIX . 'cron_one_hour' );
-		wp_clear_scheduled_hook( PLUGIN_PREFIX . 'cron_three_hours' );
-		wp_clear_scheduled_hook( PLUGIN_PREFIX . 'cron_six_hours' );
-		wp_clear_scheduled_hook( PLUGIN_PREFIX . 'cron_twelve_hours' );
+		global $cron_options;
+		// Schedules cron.
+		foreach ( $cron_options as $cron_option ) {
+			wp_clear_scheduled_hook( $cron_option['cron'] );
+		}
 		wp_clear_scheduled_hook( PLUGIN_PREFIX . 'cron_daily' );
 	}
 }
@@ -199,3 +222,5 @@ function wcsen_create_db() {
 	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 	dbDelta( $sql );
 }
+
+
