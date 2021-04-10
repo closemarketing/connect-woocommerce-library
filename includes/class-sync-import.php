@@ -73,11 +73,13 @@ class SYNC_Import {
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_styles' ) );
 		add_filter( 'admin_body_class', array( $this, 'admin_body_class' ) );
 
+		/*
 		// Cron jobs.
 		if ( WP_DEBUG ) {
 			//add_action( 'admin_head', array( $this, 'cron_sync_products' ), 20 );
 			//add_action( 'admin_head', array( $this, 'cron_sync_stock' ), 20 );
 		}
+		*/
 		$sync_settings = get_option( PLUGIN_OPTIONS );
 		// Sync Articles.
 		$sync_period   = isset( $sync_settings[ PLUGIN_PREFIX . 'sync' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'sync' ] : 'no';
@@ -86,12 +88,7 @@ class SYNC_Import {
 		}
 		// Sync stock.
 		$sync_period_stk = isset( $sync_settings[ PLUGIN_PREFIX . 'sync_stk' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'sync_stk' ] : 'no';
-		echo '<pre>sync_period_stk:';
-		print_r($sync_period_stk);
-		echo '</pre>';
 		if ( $sync_period_stk && 'no' !== $sync_period_stk ) {
-			echo '<pre>hola:';
-			echo '</pre>';
 			add_action( $sync_period_stk, array( $this, 'cron_sync_stock' ) );
 		}
 	}

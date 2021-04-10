@@ -119,6 +119,11 @@ class SYNC_Admin {
 		<?php
 	}
 
+	/**
+	 * Test connection
+	 *
+	 * @return void
+	 */
 	public function test_connection() {
 		$token = sync_get_token( true );
 	}
@@ -344,10 +349,10 @@ class SYNC_Admin {
 				__( ' <a href="%s">Get Pro version</a> to enable', 'sync-ecommerce-neo' ),
 				array(
 					'a'      => array(
-					'href'   => array(),
-					'target' => array(),
-				),
-			)
+						'href'   => array(),
+						'target' => array(),
+					),
+				)
 			),
 			esc_url( $purchase_url )
 		);

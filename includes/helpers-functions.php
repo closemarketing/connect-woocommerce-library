@@ -20,7 +20,7 @@ if ( ! function_exists( 'error_admin_message' ) ) {
 	 */
 	function error_admin_message( $code, $message ) {
 		echo '<div class="error">';
-		echo '<p><strong>API ' . $code . ': </strong> ' . $message . '</p>';
+		echo '<p><strong>API ' . esc_html( $code ) . ': </strong> ' . esc_html( $message ) . '</p>';
 		echo '</div>';
 	}
 }
@@ -28,8 +28,8 @@ if ( ! function_exists( 'error_admin_message' ) ) {
 /**
  * Converts product from API to SYNC
  *
- * @param array $products_original API NEO Product
- * @return void
+ * @param array $products_original API NEO Product.
+ * @return array Products converted to manage internally.
  */
 function sync_convert_products( $products_original ) {
 	$sync_settings      = get_option( PLUGIN_OPTIONS );
@@ -94,6 +94,7 @@ function sync_convert_products( $products_original ) {
 /**
  * Gets token of API NEO
  *
+ * @param  boolean $renew_token Renew token.
  * @return string Array of products imported via API.
  */
 function sync_get_token( $renew_token = false ) {
@@ -118,8 +119,8 @@ function sync_get_token( $renew_token = false ) {
 		$response      = wp_remote_post( 'https://apis.bartolomeconsultores.com/pedidosweb/gettoken.php', $args );
 		$body          = wp_remote_retrieve_body( $response );
 		$body_response = json_decode( $body, true );
- 
-		if ( ( isset( $body_response['result'] ) && 'error' === $body_response['result'] ) || 
+
+		if ( ( isset( $body_response['result'] ) && 'error' === $body_response['result'] ) ||
 			! isset( $body_response['token'] )
 		) {
 			echo '<div class="error notice"><p>Error: ' . esc_html( $body_response['message'] ) . '</p></div>';
@@ -136,6 +137,8 @@ function sync_get_token( $renew_token = false ) {
  * Gets information from Holded products
  *
  * @param string $id Id of product to get information.
+ * @param string $page Pagination of API.
+ * @param string $period Date to get YYYYMMDD.
  * @return array Array of products imported via API.
  */
 function sync_get_products( $id = null, $page = null, $period = null ) {
@@ -143,7 +146,7 @@ function sync_get_products( $id = null, $page = null, $period = null ) {
 	$token         = sync_get_token();
 
 	$args = array(
-		'body' => array(
+		'body'    => array(
 			'token' => $token,
 		),
 		'timeout' => 3000,
@@ -168,7 +171,7 @@ function sync_get_products( $id = null, $page = null, $period = null ) {
 /**
  * Gets information from Holded products
  *
- * @param string $id Id of product to get information.
+ * @param string $period Date YYYYMMDD for syncs.
  * @return array Array of products imported via API.
  */
 function sync_get_products_stock( $period = null ) {
@@ -176,7 +179,7 @@ function sync_get_products_stock( $period = null ) {
 	$token         = sync_get_token();
 
 	$args = array(
-		'body' => array(
+		'body'    => array(
 			'token' => $token,
 		),
 		'timeout' => 3000,
