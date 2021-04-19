@@ -43,8 +43,6 @@ class WC_NEO_Integration extends WC_Integration {
 
 		add_action( 'woocommerce_refund_created', array( $this, 'refunded_created' ), 10, 2 );
 
-		//add_action( 'admin_head', array($this, 'order_completed'));
-
 		// woocommerce_order_status_pending
 		// woocommerce_order_status_failed
 		// woocommerce_order_status_on-hold
@@ -56,9 +54,8 @@ class WC_NEO_Integration extends WC_Integration {
 
 
 	
-	public function order_completed( $order_id = 6329 ){
+	public function order_completed( $order_id ){
 		$date = date( 'Y-m-d' );
-		$order_id = 7674;
 		$this->create_neo_invoice( $order_id, $date );
 	}
 
@@ -221,7 +218,5 @@ class WC_NEO_Integration extends WC_Integration {
 			}
 		}
 	}
-
-
 }
 
