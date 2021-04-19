@@ -40,6 +40,9 @@ WordPress installation and then activate the Plugin from Plugins page.
 
 == Changelog ==
 
+= 1.3 =
+*   Sync orders with NEO.
+
 = 1.2 =
 *   Sync stock independently (premium).
 

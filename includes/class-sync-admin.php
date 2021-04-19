@@ -81,9 +81,9 @@ class SYNC_Admin {
 			<?php $active_tab = isset( $_GET['tab'] ) ? strval( $_GET['tab'] ) : 'sync'; ?>
 
 			<h2 class="nav-tab-wrapper">
-				<a href="?page=<?php echo 'import_' . esc_html( 'sync-ecommerce-neo' ); ?>&tab=sync" class="nav-tab <?php echo 'sync' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Manual Synchronization', 'sync-ecommerce-neo' ); ?></a>
-				<a href="?page=<?php echo 'import_' . esc_html( 'sync-ecommerce-neo' ); ?>&tab=automate" class="nav-tab <?php echo 'automate' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Automate', 'sync-ecommerce-neo' ); ?></a>
-				<a href="?page=<?php echo 'import_' . esc_html( 'sync-ecommerce-neo' ); ?>&tab=settings" class="nav-tab <?php echo 'settings' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Settings', 'sync-ecommerce-neo' ); ?></a>
+				<a href="?page=import_sync-ecommerce-neo&tab=sync" class="nav-tab <?php echo 'sync' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Manual Synchronization', 'sync-ecommerce-neo' ); ?></a>
+				<a href="?page=import_sync-ecommerce-neo&tab=automate" class="nav-tab <?php echo 'automate' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Automate', 'sync-ecommerce-neo' ); ?></a>
+				<a href="?page=import_sync-ecommerce-neo&tab=settings" class="nav-tab <?php echo 'settings' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Settings', 'sync-ecommerce-neo' ); ?></a><a href="?page=import_sync-ecommerce-neo&tab=orders" class="nav-tab <?php echo 'orders' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Orders', 'sync-ecommerce-neo' ); ?></a>
 			</h2>
 
 			<?php	if ( 'sync' === $active_tab ) { ?>
@@ -115,6 +115,9 @@ class SYNC_Admin {
 					?>
 				</form>
 			<?php } ?>
+			<?php	if ( 'orders' === $active_tab ) {
+				$this->page_sync_orders();
+			} ?>
 		</div>
 		<?php
 	}
@@ -206,13 +209,16 @@ class SYNC_Admin {
 			'import_neo_setting_section'
 		);
 
-		add_settings_field(
-			'wcsen_filter',
-			__( 'Filter products by tag?', 'sync-ecommerce-neo' ),
-			array( $this, 'wcsen_filter_callback' ),
-			'import-neo-admin',
-			'import_neo_setting_section'
-		);
+		$name_proporder = __( 'Properties for orders?', 'sync-ecommerce-neo' );
+		if ( cmk_fs()->is__premium_only() ) {
+			add_settings_field(
+				'wcsen_prop_orders',
+				$name_proporder,
+				array( $this, 'wcsen_properties_callback' ),
+				'import-neo-admin',
+				'import_neo_setting_section'
+			);
+		}
 
 		$name_catnp = __( 'Import category only in new products?', 'sync-ecommerce-neo' );
 		if ( cmk_fs()->is__premium_only() ) {
@@ -259,6 +265,13 @@ class SYNC_Admin {
 				'import_neo_setting_automate'
 			);
 		}
+	}
+
+	public function page_sync_orders() {
+		echo '<h2>' . __( 'Synchronize Orders', 'sync-ecommerce-neo' ) . '</h2>';
+		echo '<p>' . __( 'Synchronize previous orders in "Completed" status with your Holded account.', 'sync-ecommerce-neo' ) . '</p>';
+
+		echo '<button class="button-secondary" type="button" name="wcsen_customize_button" id="wcsen_customize_button" style="" onclick="syncNEOOrders();">Sync</button>';
 	}
 
 	/**
@@ -464,22 +477,15 @@ class SYNC_Admin {
 		<?php
 	}
 
-	public function wcsen_filter_callback() {
-		printf(
-			'<input class="regular-text" type="text" name="' . PLUGIN_OPTIONS . '[' . PLUGIN_PREFIX . 'filter]" id="wcsen_filter" value="%s">',
-			isset( $this->sync_settings[ PLUGIN_PREFIX . 'filter'] ) ? esc_attr( $this->sync_settings[ PLUGIN_PREFIX . 'filter'] ) : ''
-		);
-	}
-
-	public function wcsen_rates_callback() {
-		$rates_options = $this->get_rates();
-		if ( false == $rates_options ) {
+	public function wcsen_properties_callback() {
+		$properties_options = sync_get_properties_order();
+		if ( false == $properties_options ) {
 			return false;
 		}
 		?>
 		<select name="' . PLUGIN_OPTIONS . '[' . PLUGIN_PREFIX . 'rates]" id="wcsen_rates">
 			<?php
-			foreach ( $rates_options as $value => $label ) {
+			foreach ( $properties_options as $value => $label ) {
 				$selected = ( isset( $this->sync_settings[ PLUGIN_PREFIX . 'rates'] ) && $this->sync_settings[ PLUGIN_PREFIX . 'rates'] === $value ) ? 'selected' : '';
 				echo '<option value="' . esc_html( $value ) . '" ' . esc_html( $selected ) . '>' . esc_html( $label ) . '</option>';
 			}

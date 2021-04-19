@@ -200,3 +200,70 @@ function sync_get_products_stock( $period = null ) {
 
 	return $body_response['stock'];
 }
+
+/*
+* Gets properties for orders
+*
+* @param string $period Date YYYYMMDD for syncs.
+* @return array Array of products imported via API.
+*/
+function sync_get_properties_order() {
+	$sync_settings = get_option( PLUGIN_OPTIONS );
+	$token         = sync_get_token();
+
+	$args = array(
+		'body'    => array(
+			'token' => $token,
+		),
+		'timeout' => 3000,
+	);
+
+	$response      = wp_remote_post( 'https://apis.bartolomeconsultores.com/pedidosweb/propiedadespedidos.php', $args );
+	$response_body = wp_remote_retrieve_body( $response );
+	$body_response = json_decode( $response_body, true );
+
+	if ( isset( $body_response['result'] ) && 'error' === $body_response['result'] ) {
+		echo '<div class="error notice"><p>Error: ' . esc_html( $body_response['message'] ) . '</p></div>';
+		return false;
+	}
+
+	return $body_response['propiedades'];
+}
+
+/**
+ * Gets information from Holded products
+ *
+ * @param string $order Array order to NEO in ARRAY.
+ * @return array NumPedido.
+ */
+function sync_post_order( $order ) {
+	$sync_settings = get_option( PLUGIN_OPTIONS );
+	$token         = sync_get_token();
+	$order_json    = wp_json_encode( $order );
+	echo '<pre>order:';
+	print_r($order_json);
+	echo '</pre>';
+	$args = array(
+		'body'    => array(
+			'token'  => $token,
+			'pedido' => $order_json,
+		),
+		'timeout' => 3000,
+	);
+
+	$response      = wp_remote_post( 'https://apis.bartolomeconsultores.com/pedidosweb/insertarpedido.php', $args );
+	$response_body = wp_remote_retrieve_body( $response );
+	$body_response = json_decode( $response_body, true );
+
+	echo '<pre>body_response:';
+	print_r($body_response);
+	echo '</pre>';
+	die();
+
+	if ( isset( $body_response['result'] ) && 'error' === $body_response['result'] ) {
+		echo '<div class="error notice"><p>Error: ' . esc_html( $body_response['message'] ) . '</p></div>';
+		return false;
+	}
+
+	return $body_response['numpedido'];
+}

@@ -5,7 +5,7 @@
  * Description: Imports Products and data from NEO to WooCommerce.
  * Author: closemarketing
  * Author URI: https://www.closemarketing.es/
- * Version: 1.2b1
+ * Version: 1.3b1
  *
  * @package WordPress
  * Text Domain: sync-ecommerce-neo
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WCSEN_VERSION', '1.2b1' );
+define( 'WCSEN_VERSION', '1.3b1' );
 define( 'WCSEN_PLUGIN', __FILE__ );
 define( 'WCSEN_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'WCSEN_PLUGIN_DIR', untrailingslashit( dirname( WCSEN_PLUGIN ) ) );
@@ -224,3 +224,61 @@ function wcsen_create_db() {
 }
 
 
+
+
+if ( cmk_fs()->is__premium_only() ) {
+	class WCSEN_Orders {
+
+		/**
+		 * @var WC_Holded_Integration
+		 */
+		private $integration;
+	
+		/**
+		* Construct the plugin.
+		*/
+		public function __construct() {
+			add_action( 'plugins_loaded', array( $this, 'init' ) );
+		}
+	
+		/**
+		* Initialize the plugin.
+		*/
+		public function init() {
+
+			// Checks if WooCommerce is installed.
+			if ( class_exists( 'WC_Integration' ) ) {
+				// Include our integration class.
+				require_once 'includes/class-sync-orders.php';
+	
+				// Register the integration.
+				add_filter( 'woocommerce_integrations', array( $this, 'add_integration' ) );
+			} else {
+				// throw an admin error if you like
+				add_action( 'admin_notices', array( $this, 'notice_wc_required' ) );
+			}
+		}
+	
+		/**
+		 * Add a new integration to WooCommerce.
+		 */
+		public function add_integration( $integrations ) {
+			$integrations[] = 'WC_NEO_Integration';
+			return $integrations;
+		}
+
+		/**
+		 * Admin error notifying user that WC is required
+		 */
+		public function notice_wc_required() {
+		?>
+		<div class="error">
+			<p><?php _e( 'WooCommerce NEO Integration requires WooCommerce to be installed and activated!', 'holded-for-woocommerce' ); ?></p>
+		</div>
+		<?php
+		}
+	}
+
+	$WCSEN_Orders = new WCSEN_Orders( __FILE__ );
+
+}
