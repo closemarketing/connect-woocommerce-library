@@ -4,8 +4,8 @@ Tags: neo erp, woocommerce
 Donate link: https://www.closemarketing.es/go/donate/
 Requires at least: 3.0
 Tested up to: 5.7
-Stable tag: 1.1
-Version: 1.1
+Stable tag: 1.3b1
+Version: 1.3b1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,7 +41,7 @@ WordPress installation and then activate the Plugin from Plugins page.
 == Changelog ==
 
 = 1.3 =
-*   Sync orders with NEO.
+*   Sync orders with NEO (premium).
 
 = 1.2 =
 *   Sync stock independently (premium).
