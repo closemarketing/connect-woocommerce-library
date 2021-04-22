@@ -52,9 +52,7 @@ class WC_NEO_Integration extends WC_Integration {
 		// woocommerce_order_status_cancelled.
 	}
 
-
-	
-	public function order_completed( $order_id ){
+	public function order_completed( $order_id ) {
 		$date = date( 'Y-m-d' );
 		$this->create_neo_invoice( $order_id, $date );
 	}
@@ -132,17 +130,17 @@ class WC_NEO_Integration extends WC_Integration {
 		// Get "Completed" date not order date
 		foreach ( $orders as $order ) {
 			$completed_date = get_post_meta( $order->ID, '_completed_date', true );
+			$synced_order   = get_post_meta( $order->ID, '_sync_ecommerce_neo_oid', true );
 			if ( empty( $completed_date ) ) {
 				$orders_comp[$order->ID] = $order->post_date;
-			} else {
-				$orders_comp[$order->ID] = $completed_date;	
+			} elseif ( ! empty( $synced_order ) ) {
+				$orders_comp[$order->ID] = $completed_date;
 			}				
 		}
 
 		if ( $orders_comp ) {
 			asort( $orders_comp );
 			foreach ( $orders_comp as $key => $value ) {
-				// $this->order_competed($key);
 				$this->create_neo_invoice( $key, $value );
 			}
 
@@ -156,22 +154,17 @@ class WC_NEO_Integration extends WC_Integration {
 	}
 
 	public function create_neo_invoice( $order_id, $completed_date ) {
+		$sync_settings = get_option( PLUGIN_OPTIONS );
+		$billing_key   = isset( $sync_settings[ PLUGIN_PREFIX . 'billing_key' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'billing_key' ] : '_billing_vat';
 
-		$neo_invoice_id = get_post_meta( $order_id, '_wcsen_neo_invoice_id', true );
+		$neo_invoice_id = get_post_meta( $order_id, '_sync_ecommerce_neo_oid', true );
 		if ( empty( $neo_invoice_id ) ) {
 
 			try {
-
 				$order = new WC_Order( $order_id );
-
-				/*
-				$wc_order_date = strtotime( $order->order_date );
-				$wc_order_completed_date = strtotime( $completed_date );
-				*/
-
 				$order_neo = array(
 					'NombreCliente'    => get_post_meta( $order_id, '_billing_first_name', true) . ' ' . get_post_meta( $order_id, '_billing_last_name', true ) . ' ' . get_post_meta( $order_id, '_billing_company', true ),
-					'CifCliente'       => get_post_meta( $order_id, '_billing_vat', true ),
+					'CifCliente'       => get_post_meta( $order_id, $billing_key, true ),
 					'DirCliente'       => get_post_meta( $order_id, '_billing_address_1', true ) . ',' . get_post_meta( $order_id, '_billing_address_2', true ),
 					'CiudadCliente'    => get_post_meta( $order_id, '_billing_city', true ),
 					'ProvinciaCliente' => get_post_meta( $order_id, '_billing_state', true ),
@@ -212,8 +205,9 @@ class WC_NEO_Integration extends WC_Integration {
 					);
 					$order_line++;
 				}
-				#Create salesorder
-        			$result = sync_post_order( $order_neo );
+				// Create sales order.
+				$result = sync_post_order( $order_neo );
+				update_post_meta( $order_id, '_sync_ecommerce_neo_oid', $result );
 			} catch ( Exception $e ) {
 			}
 		}

@@ -82,8 +82,9 @@ class SYNC_Admin {
 
 			<h2 class="nav-tab-wrapper">
 				<a href="?page=import_sync-ecommerce-neo&tab=sync" class="nav-tab <?php echo 'sync' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Manual Synchronization', 'sync-ecommerce-neo' ); ?></a>
+				<a href="?page=import_sync-ecommerce-neo&tab=orders" class="nav-tab <?php echo 'orders' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sync Orders', 'sync-ecommerce-neo' ); ?></a>
 				<a href="?page=import_sync-ecommerce-neo&tab=automate" class="nav-tab <?php echo 'automate' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Automate', 'sync-ecommerce-neo' ); ?></a>
-				<a href="?page=import_sync-ecommerce-neo&tab=settings" class="nav-tab <?php echo 'settings' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Settings', 'sync-ecommerce-neo' ); ?></a><a href="?page=import_sync-ecommerce-neo&tab=orders" class="nav-tab <?php echo 'orders' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Orders', 'sync-ecommerce-neo' ); ?></a>
+				<a href="?page=import_sync-ecommerce-neo&tab=settings" class="nav-tab <?php echo 'settings' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Settings', 'sync-ecommerce-neo' ); ?></a>
 			</h2>
 
 			<?php	if ( 'sync' === $active_tab ) { ?>
@@ -209,12 +210,12 @@ class SYNC_Admin {
 			'import_neo_setting_section'
 		);
 
-		$name_proporder = __( 'Properties for orders?', 'sync-ecommerce-neo' );
+		$name_nif = __( 'Meta key for Billing NIF?', 'sync-ecommerce-neo' );
 		if ( cmk_fs()->is__premium_only() ) {
 			add_settings_field(
-				'wcsen_prop_orders',
-				$name_proporder,
-				array( $this, 'wcsen_properties_callback' ),
+				'wcsen_billing_key',
+				$name_nif,
+				array( $this, 'wcsen_billing_nif_callback' ),
 				'import-neo-admin',
 				'import_neo_setting_section'
 			);
@@ -269,7 +270,7 @@ class SYNC_Admin {
 
 	public function page_sync_orders() {
 		echo '<h2>' . __( 'Synchronize Orders', 'sync-ecommerce-neo' ) . '</h2>';
-		echo '<p>' . __( 'Synchronize previous orders in "Completed" status with your Holded account.', 'sync-ecommerce-neo' ) . '</p>';
+		echo '<p>' . __( 'Synchronize previous orders in "Completed" status with your NEO ERP.', 'sync-ecommerce-neo' ) . '</p>';
 
 		echo '<button class="button-secondary" type="button" name="wcsen_customize_button" id="wcsen_customize_button" style="" onclick="syncNEOOrders();">Sync</button>';
 	}
@@ -324,10 +325,14 @@ class SYNC_Admin {
 			if ( isset( $input[ PLUGIN_PREFIX . 'catnp' ] ) ) {
 				$sanitary_values[ PLUGIN_PREFIX . 'catnp' ] = $input[ PLUGIN_PREFIX . 'catnp' ];
 			}
+			if ( isset( $input[ PLUGIN_PREFIX . 'billing_key' ] ) ) {
+				$sanitary_values[ PLUGIN_PREFIX . 'billing_key' ] = $input[ PLUGIN_PREFIX . 'billing_key' ];
+			}
 			// Other tab.
 			$sanitary_values[ PLUGIN_PREFIX . 'sync' ]     = isset( $sync_settings[ PLUGIN_PREFIX . 'sync' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'sync' ] : 'no';
 			$sanitary_values[ PLUGIN_PREFIX . 'sync_stk' ]     = isset( $sync_settings[ PLUGIN_PREFIX . 'sync_stk' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'sync_stk' ] : 'no';
 			$sanitary_values[ PLUGIN_PREFIX . 'sync_email' ] = isset( $sync_settings[ PLUGIN_PREFIX . 'sync_email' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'sync_email' ] : 'yes';
+			$sanitary_values[ PLUGIN_PREFIX . 'billing_key' ]      = isset( $sync_settings[ PLUGIN_PREFIX . 'billing_key' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'billing_key' ] : '_billing_vat';
 
 		} elseif ( isset( $_POST['submit_automate'] ) ) {
 			if ( isset( $input[ PLUGIN_PREFIX . 'sync' ] ) ) {
@@ -349,6 +354,8 @@ class SYNC_Admin {
 			$sanitary_values[ PLUGIN_PREFIX . 'filter' ]     = isset( $sync_settings[ PLUGIN_PREFIX . 'filter' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'filter' ] : '';
 			$sanitary_values[ PLUGIN_PREFIX . 'rates' ]      = isset( $sync_settings[ PLUGIN_PREFIX . 'rates' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'rates' ] : 'default';
 			$sanitary_values[ PLUGIN_PREFIX . 'catnp' ]      = isset( $sync_settings[ PLUGIN_PREFIX . 'catnp' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'catnp' ] : 'yes';
+			$sanitary_values[ PLUGIN_PREFIX . 'billing_key' ]      = isset( $sync_settings[ PLUGIN_PREFIX . 'billing_key' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'billing_key' ] : '_billing_vat';
+
 		}
 
 		return $sanitary_values;
@@ -381,6 +388,21 @@ class SYNC_Admin {
 	public function import_neo_section_automate() {
 		if ( cmk_fs()->is__premium_only() ) {
 			esc_html_e( 'Every day will sync the products changes.', 'sync-ecommerce-neo' );
+		} else {
+			esc_html_e( 'Section only for Premium version', 'sync-ecommerce-neo' );
+
+			echo $this->show_get_premium();
+		}
+	}
+
+	/**
+	 * Info for neo section.
+	 *
+	 * @return void
+	 */
+	public function import_neo_section_orders() {
+		if ( cmk_fs()->is__premium_only() ) {
+			esc_html_e( 'Settings for syncing orders.', 'sync-ecommerce-neo' );
 		} else {
 			esc_html_e( 'Section only for Premium version', 'sync-ecommerce-neo' );
 
@@ -560,6 +582,13 @@ class SYNC_Admin {
 			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'sync-ecommerce-neo' ); ?></option>
 		</select>
 		<?php
+	}
+
+	public function wcsen_billing_nif_callback() {
+		printf(
+			'<input class="regular-text" type="text" name="' . PLUGIN_OPTIONS . '[' . PLUGIN_PREFIX . 'billing_key]" id="' . PLUGIN_PREFIX . 'billing_key" value="%s">',
+			isset( $this->sync_settings[ PLUGIN_PREFIX . 'billing_key' ] ) ? esc_attr( $this->sync_settings[ PLUGIN_PREFIX . 'billing_key' ] ) : ''
+		);
 	}
 
 

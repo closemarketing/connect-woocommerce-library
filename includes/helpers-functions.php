@@ -123,7 +123,8 @@ function sync_get_token( $renew_token = false ) {
 		if ( ( isset( $body_response['result'] ) && 'error' === $body_response['result'] ) ||
 			! isset( $body_response['token'] )
 		) {
-			echo '<div class="error notice"><p>Error: ' . esc_html( $body_response['message'] ) . '</p></div>';
+			$message = isset( $body_response['message'] ) ? $body_response['message'] : '';
+			echo '<div class="error notice"><p>Error: ' . esc_html( $message ) . '</p></div>';
 			return false;
 		}
 		set_transient( PLUGIN_PREFIX . 'token', $body_response['token'], EXPIRE_TOKEN );
@@ -142,10 +143,8 @@ function sync_get_token( $renew_token = false ) {
  * @return array Array of products imported via API.
  */
 function sync_get_products( $id = null, $page = null, $period = null ) {
-	$sync_settings = get_option( PLUGIN_OPTIONS );
-	$token         = sync_get_token();
-
-	$args = array(
+	$token = sync_get_token();
+	$args  = array(
 		'body'    => array(
 			'token' => $token,
 		),
@@ -175,9 +174,7 @@ function sync_get_products( $id = null, $page = null, $period = null ) {
  * @return array Array of products imported via API.
  */
 function sync_get_products_stock( $period = null ) {
-	$sync_settings = get_option( PLUGIN_OPTIONS );
 	$token         = sync_get_token();
-
 	$args = array(
 		'body'    => array(
 			'token' => $token,
@@ -208,8 +205,7 @@ function sync_get_products_stock( $period = null ) {
 * @return array Array of products imported via API.
 */
 function sync_get_properties_order() {
-	$sync_settings = get_option( PLUGIN_OPTIONS );
-	$token         = sync_get_token();
+	$token = sync_get_token();
 
 	$args = array(
 		'body'    => array(
@@ -237,12 +233,9 @@ function sync_get_properties_order() {
  * @return array NumPedido.
  */
 function sync_post_order( $order ) {
-	$sync_settings = get_option( PLUGIN_OPTIONS );
-	$token         = sync_get_token();
-	$order_json    = wp_json_encode( $order );
-	echo '<pre>order:';
-	print_r($order_json);
-	echo '</pre>';
+	$token      = sync_get_token();
+	$order_json = wp_json_encode( $order );
+
 	$args = array(
 		'body'    => array(
 			'token'  => $token,
@@ -250,15 +243,9 @@ function sync_post_order( $order ) {
 		),
 		'timeout' => 3000,
 	);
-
 	$response      = wp_remote_post( 'https://apis.bartolomeconsultores.com/pedidosweb/insertarpedido.php', $args );
 	$response_body = wp_remote_retrieve_body( $response );
 	$body_response = json_decode( $response_body, true );
-
-	echo '<pre>body_response:';
-	print_r($body_response);
-	echo '</pre>';
-	die();
 
 	if ( isset( $body_response['result'] ) && 'error' === $body_response['result'] ) {
 		echo '<div class="error notice"><p>Error: ' . esc_html( $body_response['message'] ) . '</p></div>';
