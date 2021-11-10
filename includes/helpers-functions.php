@@ -114,6 +114,8 @@ function sync_get_token( $renew_token = false ) {
 				'Centro' => $idcentre,
 				'APIKey' => $api,
 			),
+			'timeout'   => 50,
+			'sslverify' => false,
 		);
 
 		$response      = wp_remote_post( 'https://apis.bartolomeconsultores.com/pedidosweb/gettoken.php', $args );
@@ -124,6 +126,11 @@ function sync_get_token( $renew_token = false ) {
 			! isset( $body_response['token'] )
 		) {
 			$message = isset( $body_response['message'] ) ? $body_response['message'] : '';
+			if ( ! $message && $response->errors ) {
+				foreach ( $response->errors as $key => $value ) {
+					$message .= $key . ': ' . $value[0];
+				}
+			}
 			echo '<div class="error notice"><p>Error: ' . esc_html( $message ) . '</p></div>';
 			return false;
 		}
@@ -148,7 +155,8 @@ function sync_get_products( $id = null, $page = null, $period = null ) {
 		'body'    => array(
 			'token' => $token,
 		),
-		'timeout' => 3000,
+		'timeout'   => 3000,
+		'sslverify' => false,
 	);
 
 	if ( $period ) {
@@ -179,7 +187,8 @@ function sync_get_products_stock( $period = null ) {
 		'body'    => array(
 			'token' => $token,
 		),
-		'timeout' => 3000,
+		'timeout'   => 3000,
+		'sslverify' => false,
 	);
 
 	if ( $period ) {
@@ -211,7 +220,8 @@ function sync_get_properties_order() {
 		'body'    => array(
 			'token' => $token,
 		),
-		'timeout' => 3000,
+		'timeout'   => 3000,
+		'sslverify' => false,
 	);
 
 	$response      = wp_remote_post( 'https://apis.bartolomeconsultores.com/pedidosweb/propiedadespedidos.php', $args );
@@ -241,7 +251,8 @@ function sync_post_order( $order ) {
 			'token'  => $token,
 			'pedido' => $order_json,
 		),
-		'timeout' => 3000,
+		'timeout'   => 3000,
+		'sslverify' => false,
 	);
 	$response      = wp_remote_post( 'https://apis.bartolomeconsultores.com/pedidosweb/insertarpedido.php', $args );
 	$response_body = wp_remote_retrieve_body( $response );
