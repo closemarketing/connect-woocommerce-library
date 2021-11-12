@@ -491,6 +491,9 @@ class SYNC_Import {
 				if ( ! $is_new_product ) {
 					$variation_id = array_search( $variant['sku'], $variations_array );
 					unset( $variations_array[ $variation_id ] );
+				} elseif ( wc_get_product_id_by_sku( $variant['sku'] ) ) {
+					// Prevents fatal error.
+					continue;
 				}
 
 				if ( ! isset( $variant['categoryFields'] ) ) {
