@@ -36,57 +36,6 @@ function wcsen_load_textdomain() {
 }
 
 
-if ( function_exists( 'cmk_fs' ) ) {
-	cmk_fs()->set_basename( true, __FILE__ );
-} else {
-	// DO NOT REMOVE THIS IF, IT IS ESSENTIAL FOR THE `function_exists` CALL ABOVE TO PROPERLY WORK.
-	if ( ! function_exists( 'cmk_fs' ) ) {
-		/**
-		 * Create a helper function for easy SDK access.
-		 *
-		 * @return function Dynamic init.
-		 */
-		function cmk_fs() {
-			global $cmk_fs;
-
-			if ( ! isset( $cmk_fs ) ) {
-				// Include Freemius SDK.
-				require_once dirname( __FILE__ ) . '/vendor/freemius/wordpress-sdk/start.php';
-
-				$cmk_fs = fs_dynamic_init(
-					array(
-						'id'                  => '7463',
-						'slug'                => 'sync-ecommerce-neo',
-						'premium_slug'        => 'sync-ecommerce-neo-premium',
-						'type'                => 'plugin',
-						'public_key'          => 'pk_383663f6536abd96fc0baa8081b21',
-						'is_premium'          => true,
-						'premium_suffix'      => '',
-						// If your plugin is a serviceware, set this option to false.
-						'has_premium_version' => true,
-						'has_addons'          => false,
-						'has_paid_plans'      => true,
-						'trial'               => array(
-							'days'               => 7,
-							'is_require_payment' => false,
-						),
-						'menu'                => array(
-							'slug'       => 'import_sync-ecommerce-neo',
-							'first-path' => 'admin.php?page=import_sync-ecommerce-neo&tab=settings',
-						),
-					)
-				);
-			}
-			return $cmk_fs;
-		}
-
-		// Init Freemius.
-		cmk_fs();
-		// Signal that SDK was initiated.
-		do_action( 'cmk_fs_loaded' );
-	}
-}
-
 
 if ( cmk_fs()->is__premium_only() ) {
 	$cron_options = array(
