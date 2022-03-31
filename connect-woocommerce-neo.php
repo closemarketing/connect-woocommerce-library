@@ -1,10 +1,10 @@
 <?php
 /**
- * Plugin Name: Sync eCommerce NEO
- * Plugin URI: https://www.closemarketing.es
+ * Plugin Name: Connect WooCommerce NEO TPV
+ * Plugin URI: https://close.technology/wordpress-plugins/conecta-woocommerce-neo/
  * Description: Imports Products and data from NEO to WooCommerce.
- * Author: closemarketing
- * Author URI: https://www.closemarketing.es/
+ * Author: Closetechnology
+ * Author URI: https://close.technology/
  * Version: 1.4
  *
  * @package WordPress

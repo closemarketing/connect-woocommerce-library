@@ -1,4 +1,4 @@
-=== Sync eCommerce NEO ===
+=== Connect WooCommerce NEO ===
 Contributors: closemarketing, davidperez, sacrajaimez
 Tags: neo erp, woocommerce
 Donate link: https://www.closemarketing.es/go/donate/
