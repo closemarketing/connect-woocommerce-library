@@ -38,11 +38,16 @@ class CONNAPI_NEO_ERP {
 	 * @param array $products_original API NEO Product.
 	 * @return array Products converted to manage internally.
 	 */
-	public function convert_products( $products_original ) {
+	private function convert_products( $products_original ) {
 		$sync_settings      = get_option( 'imhset' );
-		$product_tax        = isset( $sync_settings[ PLUGIN_PREFIX . 'tax' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'tax' ] : 'yes';
+		$product_tax        = isset( $sync_settings['wcpimh_tax_option'] ) ? $sync_settings['wcpimh_tax_option'] : 'yes';
 		$products_converted = array();
 		$i                  = 0;
+
+		echo '<pre style="margin-left:200px;">$products_original:';
+		print_r( $products_original );
+		echo '</pre>';
+		die();
 
 		foreach ( $products_original as $product ) {
 			$product_array = array();
@@ -106,11 +111,11 @@ class CONNAPI_NEO_ERP {
 	 */
 	private function get_token( $renew_token = false ) {
 		$sync_settings = get_option( 'imhset' );
-		$token         = get_transient( PLUGIN_PREFIX . 'token' );
+		$token         = get_transient( 'wcpimh_token' );
 
 		if ( ! $token || ! $renew_token ) {
-			$idcentre = isset( $sync_settings[ PLUGIN_PREFIX . 'idcentre' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'idcentre' ] : false;
-			$api      = isset( $sync_settings[ PLUGIN_PREFIX . 'api' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'api' ] : false;
+			$idcentre = isset( $sync_settings['wcpimh_idcentre'] ) ? $sync_settings['wcpimh_idcentre'] : false;
+			$api      = isset( $sync_settings['wcpimh_api'] ) ? $sync_settings['wcpimh_api'] : false;
 
 			if ( false === $idcentre || false === $api ) {
 				return false;
@@ -141,7 +146,7 @@ class CONNAPI_NEO_ERP {
 				echo '<div class="error notice"><p>Error: ' . esc_html( $message ) . '</p></div>';
 				return false;
 			}
-			set_transient( PLUGIN_PREFIX . 'token', $body_response['token'], EXPIRE_TOKEN );
+			set_transient( 'wcpimh_token', $body_response['token'], WCPIMH_EXPIRE_TOKEN );
 			return $body_response['token'];
 		} else {
 			return $token;
@@ -159,7 +164,7 @@ class CONNAPI_NEO_ERP {
 	public function get_products( $id = null, $page = null, $period = null ) {
 		$token = $this->get_token();
 		$args  = array(
-			'body'    => array(
+			'body'      => array(
 				'token' => $token,
 			),
 			'timeout'   => 3000,
@@ -170,16 +175,25 @@ class CONNAPI_NEO_ERP {
 			$args['body']['fecha'] = $period;
 		}
 
-		$response      = wp_remote_post( 'https://apis.bartolomeconsultores.com/pedidosweb/verarticulos2.php', $args );
-		$response_body = wp_remote_retrieve_body( $response );
-		$body_response = json_decode( $response_body, true );
+		$products_api_tran = get_transient( 'connect_woocommerce_api_products' );
+		$products_api      = json_decode( $products_api_tran, true );
 
-		if ( isset( $body_response['result'] ) && 'error' === $body_response['result'] ) {
-			echo '<div class="error notice"><p>Error: ' . esc_html( $body_response['message'] ) . '</p></div>';
-			return false;
+		if ( empty( $products_api ) ) {
+			$response      = wp_remote_post( 'https://apis.bartolomeconsultores.com/pedidosweb/verarticulos2.php', $args );
+			$response_body = wp_remote_retrieve_body( $response );
+			$body_response = json_decode( $response_body, true );
+
+			if ( isset( $body_response['result'] ) && 'error' === $body_response['result'] ) {
+				echo '<div class="error notice"><p>Error: ' . esc_html( $body_response['message'] ) . '</p></div>';
+				return false;
+			}
+			$products_json = wp_json_encode( $body_response['articulos'] );
+
+			set_transient( 'connect_woocommerce_api_products', $products_json, 3600 ); // 1 hour
+			$products_api = $body_response['articulos'];
 		}
 
-		return $body_response['articulos'];
+		return $this->convert_products( $products_api );
 	}
 
 	/**
@@ -188,9 +202,9 @@ class CONNAPI_NEO_ERP {
 	 * @param string $period Date YYYYMMDD for syncs.
 	 * @return array Array of products imported via API.
 	 */
-	function sync_get_products_stock( $period = null ) {
-		$token         = $this->get_token();
-		$args = array(
+	public function get_products_stock( $period = null ) {
+		$token = $this->get_token();
+		$args  = array(
 			'body'    => array(
 				'token' => $token,
 			),
@@ -220,7 +234,7 @@ class CONNAPI_NEO_ERP {
 	* @param string $period Date YYYYMMDD for syncs.
 	* @return array Array of products imported via API.
 	*/
-	function sync_get_properties_order() {
+	function get_properties_order() {
 		$token = $this->get_token();
 
 		$args = array(
@@ -249,7 +263,7 @@ class CONNAPI_NEO_ERP {
 	 * @param string $order Array order to NEO in ARRAY.
 	 * @return array NumPedido.
 	 */
-	function sync_post_order( $order ) {
+	public function post_order( $order ) {
 		$token      = $this->get_token();
 		$order_json = wp_json_encode( $order );
 
