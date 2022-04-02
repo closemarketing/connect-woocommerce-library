@@ -57,7 +57,7 @@ $cron_options = array(
 );
 
 
-register_activation_hook( __FILE__, 'cwneo_process_activation_premium' );
+register_activation_hook( __FILE__, 'connwoo_process_activation_premium' );
 /**
  * Creates the database
  *
@@ -65,17 +65,17 @@ register_activation_hook( __FILE__, 'cwneo_process_activation_premium' );
  * @access private
  * @return void
  */
-function cwneo_process_activation_premium() {
+function connwoo_process_activation_premium() {
 	global $wpdb;
 	$charset_collate = $wpdb->get_charset_collate();
 
-	$table_name = $wpdb->prefix . 'cwneo_product_sync';
+	$table_name = $wpdb->prefix . 'connwoo_product_sync';
 
 	// DB Tasks.
 	$sql = "CREATE TABLE $table_name (
-	    cwneo_prodid varchar(255) NOT NULL,
+	    prodid varchar(255) NOT NULL,
 	    synced boolean,
-          UNIQUE KEY cwneo_prodid (cwneo_prodid)
+          UNIQUE KEY prodid (prodid)
     	) $charset_collate;";
 
 	require_once ABSPATH . 'wp-admin/includes/upgrade.php';

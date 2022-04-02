@@ -1,808 +1,158 @@
 <?php
 /**
- * The admin-specific functionality of the plugin.
+ * Library for admin settings
  *
- * @link       https://www.wpautotranslate.com
- * @since      1.0.0
- *
- * @package    Wpautotranslate
- * @subpackage Wpautotranslate/admin
+ * @package    WordPress
+ * @author     David Perez <david@closemarketing.es>
+ * @copyright  2019 Closemarketing
+ * @version    1.0
  */
 
-// Include files.
-require_once WPAT_PLUGINPATH . 'includes/class-wpautotranslate-translation.php';
-require_once WPAT_PLUGINPATH . 'includes/class-wpautotranslate-checkapi.php';
-require_once WPAT_PLUGINPATH . 'includes/class-wpautotranslate-languages.php';
+defined( 'ABSPATH' ) || exit;
 
 /**
- * The admin-specific functionality of the plugin.
+ * Library for WooCommerce Settings
  *
- * @package    Wpautotranslate
- * @subpackage Wpautotranslate/admin
+ * Settings in order to sync products
+ *
+ * @package    WordPress
+ * @author     David Perez <david@closemarketing.es>
+ * @copyright  2019 Closemarketing
+ * @version    0.1
  */
-class Wpautotranslate_Admin {
-
+class WCIMPH_Admin {
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
-	 * The version of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
-	 */
-	private $version;
-
-	/**
-	 * The options name to be used in this plugin
-	 *
-	 * @since    1.0.0
-	 * @access    private
-	 * @var    string $option_name Option name of this plugin
-	 */
-	private $option_name = WPAT_PREFIX;
-
-	/**
-	 * Settings Name
-	 *
-	 * @var string
-	 */
-	private $settings_name = 'wpautotranslate_settings';
-
-	/**
-	 * Class to make translations
-	 *
-	 * @var object
-	 */
-	private $class_translation;
-
-	/**
-	 * Notice error for WordPress admin.
-	 *
-	 * @var string
-	 */
-	private $notice_class;
-
-	/**
-	 * Notice message for WordPress admin.
-	 *
-	 * @var string
-	 */
-	private $notice_message;
-
-	/**
-	 * Labels for the api methods.
+	 * Settings
 	 *
 	 * @var array
 	 */
-	private $label_api_method = array(
-		'amazon'     => 'Amazon',
-		'deepl'      => 'DeepL',
-		'google'     => 'Google',
-		'ibm'        => 'IBM',
-		'bing'       => 'Microsoft',
-		'softcatala' => 'Softcatalà',
-		'yandex'     => 'Yandex',
-	);
+	private $imh_settings;
 
 	/**
-	 * Initialize the class and set its properties.
+	 * Label for pro features
 	 *
-	 * @since    1.0.0
-	 * @param      string $plugin_name       The name of this plugin.
-	 * @param      string $version    The version of this plugin.
+	 * @var string
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name    = $plugin_name;
-		$this->version        = $version;
-		$this->notice_class   = 'error';
-		$this->notice_message = '';
+	private $label_pro;
 
-		if ( is_admin() ) {
-			add_action( 'network_admin_menu', array( $this, 'settings_add_plugin_page' ) );
-			add_action( 'admin_init', array( $this, 'register_setting' ) );
-		}
+	/**
+	 * Construct of class
+	 */
+	public function __construct() {
+		global $wpdb;
+		$this->table_sync = $wpdb->prefix . 'wcpimh_product_sync';
+		$this->label_pro  = __( '(ONLY PRO VERSION)', 'connect-woocommerce-neo' );
+		add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
+		add_action( 'admin_init', array( $this, 'page_init' ) );
+		add_action( 'admin_head', array( $this, 'custom_css' ) );
 	}
 
 	/**
-	 * Register the stylesheets for the admin area.
-	 *
-	 * @since    1.0.0
-	 */
-	public function enqueue_styles() {
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/wpautotranslate-admin.css', array(), $this->version, 'all' );
-	}
-
-	/**
-	 * Register the JavaScript for the admin area.
-	 *
-	 * @since    1.0.0
-	 */
-	public function enqueue_scripts() {
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/wpautotranslate-admin.js', array( 'jquery' ), $this->version, false );
-	}
-
-	/**
-	 * Adds menu page
+	 * Adds plugin page.
 	 *
 	 * @return void
 	 */
-	public function settings_add_plugin_page() {
-		add_menu_page(
-			__( 'Settings', 'wpautotranslate' ),
-			'AutoTranslate',
+	public function add_plugin_page() {
+
+		add_submenu_page(
+			'woocommerce',
+			__( 'Connect WooCommerce', 'connect-woocommerce-neo' ) . connwoo_remote_name(),
+			__( 'Connect ', 'connect-woocommerce-neo' ) . connwoo_remote_name(),
 			'manage_options',
-			'wpautotranslate',
-			array( $this, 'display_options_page' ),
-			'dashicons-translation',
-			90
+			'connect_woocommerce',
+			array( $this, 'create_admin_page' ),
 		);
 	}
 
 	/**
-	 * Render the options page for plugin
-	 *
-	 * @since  1.0.0
-	 */
-	public function display_options_page() {
-		$this->update_options();
-		$this->settings_create_admin_page();
-	}
-
-	/**
-	 * Update site options multisite
+	 * Create admin page.
 	 *
 	 * @return void
 	 */
-	public function update_options() {
-		if ( ! empty( $_POST ) && check_admin_referer( 'Update_WPAT_Options', 'wpauto_nonce' ) ) {
-
-			if ( ! current_user_can( 'manage_network_options' ) ) {
-				wp_die( 'FU' );
-			}
-			$settings_fields_values = array();
-			if ( isset( $_POST['submit_general'] ) ) {
-				$settings_fields_values = array(
-					'wpat_translation_method' => sanitize_text_field( $_POST['wpat_translation_method'] ),
-					'wpat_meta_sync'          => sanitize_text_field( $_POST['wpat_meta_sync'] ),
-					'wpat_status_sync'        => sanitize_text_field( $_POST['wpat_status_sync'] ),
-				);
-			} elseif ( isset( $_POST['submit_amazon'] ) ) {
-				$settings_fields_values = array(
-					$this->option_name . 'amazon_accesskey' => sanitize_text_field( $_POST[ $this->option_name . 'amazon_accesskey' ] ),
-					$this->option_name . 'amazon_secretkey' => sanitize_text_field( $_POST[ $this->option_name . 'amazon_secretkey' ] ),
-					$this->option_name . 'amazon_region' => sanitize_text_field( $_POST[ $this->option_name . 'amazon_region' ] ),
-				);
-			} elseif ( isset( $_POST['submit_deepl'] ) ) {
-				$settings_fields_values = array(
-					$this->option_name . 'deepl_key' => sanitize_text_field( $_POST[ $this->option_name . 'deepl_key' ] ),
-				);
-			} elseif ( isset( $_POST['submit_google'] ) ) {
-				$sanitize_json = json_encode( json_decode( stripslashes( trim ( $_POST[ $this->option_name . 'google_jsonkey' ] ) ) ), JSON_PRETTY_PRINT );
-				$settings_fields_values = array(
-					$this->option_name . 'google_jsonkey' => $sanitize_json,
-				);
-			} elseif ( isset( $_POST['submit_ibm'] ) ) {
-				$settings_fields_values = array(
-					$this->option_name . 'ibm_key' => sanitize_text_field( $_POST[ $this->option_name . 'ibm_key' ] ),
-					$this->option_name . 'ibm_url' => sanitize_text_field( $_POST[ $this->option_name . 'ibm_url' ] ),
-				);
-			} elseif ( isset( $_POST['submit_bing'] ) ) {
-				$settings_fields_values = array(
-					$this->option_name . 'bing_key'    => sanitize_text_field( $_POST[ $this->option_name . 'bing_key' ] ),
-					$this->option_name . 'bing_region' => sanitize_text_field( $_POST[ $this->option_name . 'bing_region' ] ),
-				);
-			} elseif ( isset( $_POST['submit_yandex'] ) ) {
-				$settings_fields_values = array(
-					$this->option_name . 'yandex_folder' => sanitize_text_field( $_POST[ $this->option_name . 'yandex_folder' ] ),
-					$this->option_name . 'yandex_api'    => sanitize_text_field( $_POST[ $this->option_name . 'yandex_api' ] ),
-					$this->option_name . 'yandex_secret' => sanitize_text_field( $_POST[ $this->option_name . 'yandex_secret' ] ),
-				);
-			}
-			if ( ! empty( $settings_fields_values ) ) {
-				foreach ( $settings_fields_values as $key => $value ) {
-					// Saves option.
-					update_site_option(
-						$key,
-						$value
-					);
-				}
-
-				// Checks API if it's correct.
-				if ( isset( $_POST['submit_amazon'] ) ) {
-					$this->check_method( 'amazon' );
-				} elseif ( isset( $_POST['submit_deepl'] ) ) {
-					$this->check_method( 'deepl' );
-				} elseif ( isset( $_POST['submit_google'] ) ) {
-					$this->check_method( 'google' );
-				} elseif ( isset( $_POST['submit_ibm'] ) ) {
-					$this->check_method( 'ibm' );
-				} elseif ( isset( $_POST['submit_bing'] ) ) {
-					$this->check_method( 'bing' );
-				} elseif ( isset( $_POST['submit_softcatala'] ) ) {
-					$this->check_method( 'softcatala' );
-				} elseif ( isset( $_POST['submit_yandex'] ) ) {
-					$this->check_method( 'yandex' );
-				} else {
-					$this->notice_class   = 'updated';
-					$this->notice_message = __( 'Options saved correctly.', 'wpautotranslate' );
-					$this->notice_message();
-				}
-			}
-		}
-	}
-
-	/**
-	 * Checks if method connects correctly to API
-	 *
-	 * @param string $api_method API Method to connect.
-	 * @return void
-	 */
-	private function check_method( $api_method ) {
-		$api_actived = get_site_option( $this->option_name . 'translation_actived' );
-
-		if ( is_array( $api_actived ) ) {
-			sort( $api_actived );
-		}
-
-		$this->notice_class   = 'error';
-		$this->notice_message = '';
-		$checkapi             = new WPAutoTranslate_CheckAPI();
-		$response_api         = $checkapi->CheckAPI( $api_method );
-
-		if ( ! $api_actived ) {
-			$api_actived = array( 'softcatala' );
-		}
-
-		if ( isset( $response_api['status'] ) && 0 === $response_api['status'] ) {
-			// Error.
-			$this->notice_class    = 'error';
-			$this->notice_message  = sprintf( __( '%s API Error:', 'wpautotranslate' ), $this->label_api_method[ $api_method ] );
-			$this->notice_message .= ' ' . $response_api['error'];
-
-			// Remove from API Actived.
-			sort( $api_actived );
-			$key_search = array_search( $api_method, $api_actived );
-			if ( $key_search ) {
-				unset( $api_actived[ $key_search ] );
-			}
-		} else {
-			$this->notice_class   = 'updated';
-			$this->notice_message = sprintf( __( 'The %s API has been configured properly.', 'wpautotranslate' ), $this->label_api_method[ $api_method ] );
-
-			// Adds from API Actived.
-			$api_actived[] = 'softcatala'; // by default
-			$api_actived[] = $api_method;
-			$api_actived   = array_unique( $api_actived, SORT_REGULAR );
-			sort( $api_actived );
-		}
-		$value = update_site_option( $this->option_name . 'translation_actived', $api_actived );
-		$this->notice_message();
-	}
-
-	/**
-	 * Shows message in admin WordPress
-	 *
-	 * @return void
-	 */
-	private function notice_message() {
+	public function create_admin_page() {
+		$this->imh_settings  = get_option( 'imhset' );
+		$this->imhset_public = get_option( 'imhset_public' );
 		?>
-		<div class="<?php echo esc_html( $this->notice_class ); ?> notice">
-			<p><?php echo esc_html( $this->notice_message ); ?></p>
-		</div>
-		<?php
-	}
 
-	/**
-	 * Checks any API Actived.
-	 *
-	 * @return void
-	 */
-	private function checks_any_api_active() {
-
-		$count_apis = 0;
-
-				$api_actived = get_site_option( $this->option_name . 'translation_actived' );
-
-		if ( is_array( $api_actived ) ) {
-			$count_apis  = count( $api_actived );
-		}
-
-		if ( ! $api_actived || $count_apis <= 1 ) {
-			$this->notice_class   = 'error';
-			$this->notice_message = __( 'Please select any API to activate translations', 'wpautotranslate');
-			$this->notice_message();
-		}
-	}
-
-	private function show_list_languages( $api ) {
-
-		$listadeidiomas = new WPAutoTranslate_Languages( $api );
-		$ln = $listadeidiomas->GetLanguages();
-
-		echo '<div>';
-
-		$listadeidiomas_array = $listadeidiomas->GetLanguage( $api );
-		if ( is_countable( $listadeidiomas_array ) && count( $listadeidiomas_array ) ) {
-
-			echo '<table>';
-			echo '<thead><tr><td>Source language</td><td>Target language</td></tr></thead><tbody>';
-
-			foreach ( $listadeidiomas_array as $ldi ) {
-				if ( isset( $ldi['from'] ) && $ldi['to'] ) {
-					$from_iso = trim( strtolower( $ldi['from'] ) );
-					$to_iso   = trim(strtolower( $ldi['to'] ) );
-
-					if ( isset( $ln[$from_iso] ) ) {
-						$from_lang = ' - ' . trim( $ln[ $from_iso ] );
-					} else {
-						$from_lang = '';
-					}
-
-					if ( isset( $ln[ $to_iso ] ) ) {
-						$to_lang = ' - ' . trim( $ln[ $to_iso ] );
-					} else {
-						$to_lang = '';
-					}
-
-					echo '<tr><td>' . strtoupper($from_iso) . $from_lang . '</td><td>' . strtoupper($to_iso) . $to_lang . '</td></tr>';
-				}
-				unset( $ldi );
-			}
-
-			echo '</tbody></table>';
-
-		} else {
-			echo 'If you want to know the Language pairs (Source language -> Target language), API configuration is needed.';
-		}
-		unset( $listadeidiomas_array );
-		echo '</div>';
-		unset($ln, $listadeidiomas);
-	}
-
-	/**
-	 * Creates Admin page
-	 *
-	 * @return void
-	 */
-	public function settings_create_admin_page() {
-		$this->checks_any_api_active();
-		?>
 		<div class="wrap">
-			<h2><?php echo esc_html__( 'WPAutoTranslate Settings', 'wpautotranslate' ); ?></h2>
-			<?php settings_errors(); ?>
-			<?php $active_tab = isset( $_GET['tab'] ) ? strval( $_GET['tab'] ) : 'general'; ?>
-			<h2 class="nav-tab-wrapper">
-				<a href="?page=wpautotranslate&tab=general" class="nav-tab <?php echo 'general' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'General', 'wpautotranslate' ); ?></a>
-				<a href="?page=wpautotranslate&tab=amazon" class="nav-tab <?php echo 'amazon' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Amazon', 'wpautotranslate' ); ?></a>
-				<a href="?page=wpautotranslate&tab=deepl" class="nav-tab <?php echo 'deepl' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'DeepL', 'wpautotranslate' ); ?></a>
-				<a href="?page=wpautotranslate&tab=google" class="nav-tab <?php echo 'google' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Google', 'wpautotranslate' ); ?></a>
-				<a href="?page=wpautotranslate&tab=ibm" class="nav-tab <?php echo 'ibm' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'IBM', 'wpautotranslate' ); ?></a>
-				<a href="?page=wpautotranslate&tab=bing" class="nav-tab <?php echo 'bing' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Microsoft', 'wpautotranslate' ); ?></a>
-				<a href="?page=wpautotranslate&tab=softcatala" class="nav-tab <?php echo 'softcatala' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Softcatalà', 'wpautotranslate' ); ?></a>
-				<a href="?page=wpautotranslate&tab=yandex" class="nav-tab <?php echo 'yandex' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Yandex', 'wpautotranslate' ); ?></a>
-				<a href="?page=wpautotranslate&tab=license" class="nav-tab <?php echo 'license' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'License activation', 'wpautotranslate' ); ?></a>
-				<a href="?page=wpautotranslate&tab=license" class="nav-tab <?php echo 'licensedeac' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'License deactivation', 'wpautotranslate' ); ?></a>
+			<h2>
+				<?php
+				esc_html_e( 'WooCommerce Connection Settings with ', 'connect-woocommerce-neo' );
+				echo esc_html( connwoo_remote_name() );
+				?>
 			</h2>
-			<?php
-			if ( 'general' === $active_tab ) {
-				echo '<p>';
-				esc_html_e( 'WP AutoTranslate plugin works with MultilingualPress and performs automatic translation between languages, when languages synchronized in a post, page or other content.', 'wpautotranslate' );
-				echo '</p><p>';
-				esc_html_e( 'When you use MultilingualPress and check the option "Create a new post, and use it as a [language] translation." it makes a copy of all the contents but does not translate them. By configuring one of the translation platform through its API, the content will be created in the target language, but already translated.', 'wpautotranslate' );
-				echo '</p><p>';
-				esc_html_e( 'Please select the main provider you are going to use to translate. You can configure several, but only the selected one will be used.', 'wpautotranslate' );
-				echo '</p>';
+			<p></p>
+			<?php settings_errors(); ?>
+
+			<?php $active_tab = isset( $_GET['tab'] ) ? strval( $_GET['tab'] ) : 'sync'; ?>
+
+			<h2 class="nav-tab-wrapper">
+				<a href="?page=connect_woocommerce&tab=sync" class="nav-tab <?php echo 'sync' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sync products', 'connect-woocommerce-neo' ); ?></a>
+				<a href="?page=connect_woocommerce&tab=orders" class="nav-tab <?php echo 'orders' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sync Orders', 'connect-woocommerce-neo' ); ?></a>
+				<a href="?page=connect_woocommerce&tab=automate" class="nav-tab <?php echo 'automate' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Automate', 'connect-woocommerce-neo' ); ?></a>
+				<a href="?page=connect_woocommerce&tab=settings" class="nav-tab <?php echo 'settings' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Settings', 'connect-woocommerce-neo' ); ?></a>
+				<a href="?page=connect_woocommerce&tab=public" class="nav-tab <?php echo 'public' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Frontend Settings', 'connect-woocommerce-neo' ); ?></a>
+				<?php
+				if ( connwoo_is_pro() ) {
+					?>
+					<a href="?page=connect_woocommerce&tab=license" class="nav-tab <?php echo 'license' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'License', 'connect-woocommerce-neo' ); ?></a>
+					<?php
+				}
 				?>
-				<form method="post">
+			</h2>
+
+			<?php	if ( 'sync' === $active_tab ) { ?>
+				<div id="connect-woocommerce-engine"></div>
+			<?php } ?>
+			<?php	if ( 'settings' === $active_tab ) { ?>
+				<form method="post" action="options.php">
 					<?php
-						settings_fields( 'wpat_settings_admin' );
-						do_settings_sections( 'wpat_settings_admin_general' );
-						wp_nonce_field( 'Update_WPAT_Options', 'wpauto_nonce' );
+						settings_fields( 'wcpimh_settings' );
+						do_settings_sections( 'connect-woocommerce-admin' );
 						submit_button(
-							__( 'Save', 'wpautotranslate' ),
+							__( 'Save settings', 'connect-woocommerce-neo' ),
 							'primary',
-							'submit_general'
+							'submit_settings'
 						);
 					?>
 				</form>
-				<?php
-			}
-			if ( 'amazon' === $active_tab ) {
-				?>
-				<form method="post">
+			<?php } ?>
+			<?php	if ( 'automate' === $active_tab ) { ?>
+				<form method="post" action="options.php">
 					<?php
-						settings_fields( 'wpat_settings_admin_amazon' );
-						do_settings_sections( 'wpat_settings_admin_amazon' );
-						wp_nonce_field( 'Update_WPAT_Options', 'wpauto_nonce' );
+					settings_fields( 'wcpimh_settings' );
+					do_settings_sections( 'connect-woocommerce-automate' );
+
+					if ( connwoo_is_pro() ) {
 						submit_button(
-							__( 'Save Amazon settings', 'wpautotranslate' ),
+							__( 'Save automate', 'connect-woocommerce-neo' ),
 							'primary',
-							'submit_amazon'
+							'submit_automate'
 						);
+					}
 					?>
 				</form>
-				<?php
-				echo '<div class="wpautotranslate-settings amazon">';
-				echo '<div class="settings">';
-				echo '<h2>' . esc_html__( 'Amazon configuration', 'wpautotranslate' ) . '</h2>';
-				echo '<p>';
-				echo sprintf(
-					__( 'Here you can configure the <a href="%s" target="_blank"><b>Amazon API</b></a>.', 'wpautotranslate' ),
-					'https://aws.amazon.com/translate/'
-				);
-				echo '</p>';
-				echo '</div><div class="help">';
-				echo '<h2>' . esc_html__( 'Amazon help', 'wpautotranslate' ) . '</h2>';
-				echo '<p>';
-				echo sprintf(
-					__( 'To use the Amazon API, you must register at <b>Amazon AWS</b>. You can do it from <a href="%s" target="_blank"><b>Amazon AWS account registration</b></a>.', 'wpautotranslate' ),
-					'https://portal.aws.amazon.com/billing/signup'
-				);
-				echo '</p>';
-				echo '<p>';
-				echo sprintf(
-					__( 'Once you have the account, you must access the <a href="%s" target="_blank"><b>Your Security Credentials</b></a> section and create a new access key from the <b>Access keys (access key ID and secret access key)</b> zone.', 'wpautotranslate'),
-					'https://console.aws.amazon.com/iam/home#/security_credentials'
-				);
-				echo '</p>';
-				echo '<p>';
-				echo sprintf(
-					__( 'You should get three values: <b>Access Key</b>, <b>Secret Key</b> and <b>Region</b>.', 'wpautotranslate')
-				);
-				echo '</p>';
-				echo '</div><div class="price">';
-				echo '<h3>' . esc_html__( 'Amazon price', 'wpautotranslate' ) . '</h3>';
-				echo '<p>' . esc_html__( 'There is no monthly fee. Offers 2M (2,000,000) free characters per month (for 12 months). The pay-per-use system is $ 15.00 per million characters.', 'wpautotranslate' ) . '</p>';
-				echo '<p>' . esc_html__( 'This data may vary due to promotions or other changes. Please, review this information before getting the services.', 'wpautotranslate' ) . '</p>';
-				echo '<h3>' . esc_html__( 'The editor, with Amazon', 'wpautotranslate' ) . '</h3>';
-				echo '<p><span title="' . esc_html__( 'Yes', 'wpautotranslate' ) . '">✔</span> ' . esc_html__( 'Classic editor', 'wpautotranslate' ) . '</p>';
-				echo '<p><span title="' . esc_html__( 'Yes', 'wpautotranslate' ) . '">✔</span> ' . esc_html__( 'Block editor', 'wpautotranslate' ) . '</p>';
-				echo '</div></div>';
-
-				// Show list languages.
-				$this->show_list_languages( 'amazon' );
-			}
-			if ( 'deepl' === $active_tab ) { ?>
-				<form method="post">
+			<?php } ?>
+			<?php	if ( 'public' === $active_tab ) { ?>
+				<form method="post" action="options.php">
 					<?php
-						settings_fields( 'wpat_settings_admin' );
-						do_settings_sections( 'wpat_settings_admin_deepl' );
-						wp_nonce_field( 'Update_WPAT_Options', 'wpauto_nonce' );
-						submit_button(
-							__( 'Save DeepL settings', 'wpautotranslate' ),
-							'primary',
-							'submit_deepl'
-						);
+					settings_fields( 'wcpimhset_public' );
+					do_settings_sections( 'connect-woocommerce-public' );
+					submit_button(
+						__( 'Save public', 'connect-woocommerce-neo' ),
+						'primary',
+						'submit_public'
+					);
 					?>
 				</form>
-				<?php
-				echo '<div class="wpautotranslate-settings deepl">';
-				echo '<div class="settings">';
-				echo '<h2>' . esc_html__( 'DeepL configuration', 'wpautotranslate' ) . '</h2>';
-				echo '<p>';
-				echo sprintf(
-					__( 'Here you can configure the <a href="%s" target="_blank"><b>DeepL API</b></a>.', 'wpautotranslate'),
-					'https://www.deepl.com/pro#developer'
-				);
-				echo '</p>';
-				echo '</div><div class="help">';
-				echo '<h2>' . esc_html__( 'DeepL help', 'wpautotranslate' ) . '</h2>';
-				echo '<p>';
-				echo sprintf(
-					__( 'To use the Deepl API, you must register at <b>Deepl</b> with a <a href="%s" target="_blank"><b>Developer</b></a> account.', 'wpautotranslate'),
-					'https://www.deepl.com/pro#developer'
-				);
-				echo '</p>';
-				echo '<p>';
-				echo sprintf(
-					__( 'Once you have the account, you must access the <a href="%s" target="_blank"><b>Your DeepL Pro Account</b></a> section and copy the <b>Authentication Key for DeepL API</b>.', 'wpautotranslate'),
-					'https://www.deepl.com/pro-account.html'
-				);
-				echo '</p>';
-				echo '<p>';
-				echo sprintf(
-					__( 'You should get a value: <b>API Key</b>.', 'wpautotranslate')
-				);
-				echo '</p>';
-				echo '</div><div class="price">';
-				echo '<h3>' . esc_html__( 'DeepL price', 'wpautotranslate' ) . '</h3>';
-				echo '<p>' . esc_html__( 'It has a monthly rate of € 4.99 per month. It does not offer any free packages. The pay-per-use system is € 20.00 per million characters.', 'wpautotranslate' ) . '</p>';
-				echo '<p>' . esc_html__( 'This data may vary due to promotions or other changes. Please, review this information before getting the services.', 'wpautotranslate' ) . '</p>';
-				echo '<h3>' . esc_html__( 'The editor, with DeepL', 'wpautotranslate' ) . '</h3>';
-				echo '<p><span title="' . esc_html__( 'Yes', 'wpautotranslate' ) . '">✔</span> ' . esc_html__( 'Classic editor', 'wpautotranslate' ) . '</p>';
-				echo '<p><span title="' . esc_html__( 'Yes', 'wpautotranslate' ) . '">✔</span> ' . esc_html__( 'Block editor', 'wpautotranslate' ) . '</p>';
-				echo '</div></div>';
+			<?php }
 
-				// Show list languages.
-				$this->show_list_languages( 'deepl' );
-
+			if ( 'orders' === $active_tab ) {
+				$this->page_sync_orders();
 			}
-			if ( 'google' === $active_tab ) {
-				?>
-				<form method="post">
-					<?php
-						settings_fields( 'wpat_settings_admin' );
-						do_settings_sections( 'wpat_settings_admin_google' );
-						wp_nonce_field( 'Update_WPAT_Options', 'wpauto_nonce' );
-						submit_button(
-							__( 'Save Google settings', 'wpautotranslate' ),
-							'primary',
-							'submit_google'
-						);
-					?>
-				</form>
-				<?php
-				echo '<div class="wpautotranslate-settings google">';
-				echo '<div class="settings">';
-				echo '<h2>' . esc_html__( 'Google configuration', 'wpautotranslate' ) . '</h2>';
-				echo '<p>';
-				echo sprintf(
-					__( 'Here you can configure the <a href="%s" target="_blank"><b>Google API</b></a>.', 'wpautotranslate'),
-					'https://cloud.google.com/translate/'
-				);
-				echo '</p>';
-				echo '</div><div class="help">';
-				echo '<h2>' . esc_html__( 'Google help', 'wpautotranslate' ) . '</h2>';
-				echo '<p>';
-				echo sprintf(
-					__( 'To use the Google API you must sign up at <b>Google Cloud</b> enabling access for the <a href="%s" target="_blank"><b>Cloud Translation API</b></a>.', 'wpautotranslate'),
-					'https://console.cloud.google.com/apis/library/translate.googleapis.com'
-				);
-				echo '</p>';
-				echo '<p>';
-				echo sprintf(
-					__( 'Once you have the account, you must access the <a href="%s" target="_blank"><b>Credentials</b></a> section and create a <b>Service Account</b> (<a href="%s" target="_blank">+info</a>). When creating it, you must <b>choose the JSON format</b> and copy the entire content of the file (it can be opened with any text editor).', 'wpautotranslate'),
-					'https://console.cloud.google.com/apis/api/translate.googleapis.com/credentials', 'https://cloud.google.com/iam/docs/service-accounts'
-				);
-				echo '</p>';
-				echo '<p>';
-				echo sprintf(
-					__( 'You should get a value: <b>JSON File</b>.', 'wpautotranslate')
-				);
-				echo '</p>';
-				echo '</div><div class="price">';
-				echo '<h3>' . esc_html__( 'Google price', 'wpautotranslate' ) . '</h3>';
-				echo '<p>' . esc_html__( 'There is no monthly fee. Offers 500K (500,000) free characters per month. The pay-per-use system is $ 20.00 per million characters.', 'wpautotranslate' ) . '</p>';
-				echo '<p>' . esc_html__( 'This data may vary due to promotions or other changes. Please, review this information before getting the services.', 'wpautotranslate' ) . '</p>';
-				echo '<h3>' . esc_html__( 'The editor, with Google', 'wpautotranslate' ) . '</h3>';
-				echo '<p><span title="' . esc_html__( 'Yes', 'wpautotranslate' ) . '">✔</span> ' . esc_html__( 'Classic editor', 'wpautotranslate' ) . '</p>';
-				echo '<p><span title="' . esc_html__( 'Yes', 'wpautotranslate' ) . '">✔</span> ' . esc_html__( 'Block editor', 'wpautotranslate' ) . '</p>';
-				echo '</div></div>';
 
-				// Show list languages.
-				$this->show_list_languages( 'google' );
-
-			}
-			if ( 'ibm' === $active_tab ) {
-				?>
-				<form method="post">
-					<?php
-						settings_fields( 'wpat_settings_admin' );
-						do_settings_sections( 'wpat_settings_admin_ibm' );
-						wp_nonce_field( 'Update_WPAT_Options', 'wpauto_nonce' );
-						submit_button(
-							__( 'Save IBM settings', 'wpautotranslate' ),
-							'primary',
-							'submit_ibm'
-						);
-					?>
-				</form>
-				<?php
-				echo '<div class="wpautotranslate-settings ibm">';
-				echo '<div class="settings">';
-				echo '<h2>' . esc_html__( 'IBM configuration', 'wpautotranslate' ) . '</h2>';
-				echo '<p>';
-				echo sprintf(
-					__( 'Here you can configure the <a href="%s" target="_blank">IBM API</a>.', 'wpautotranslate'),
-					'https://www.ibm.com/watson/services/language-translator/'
-				);
-				echo '</p>';
-				echo '</div><div class="help">';
-				echo '<h2>' . esc_html__( 'IBM help', 'wpautotranslate' ) . '</h2>';
-				echo '<p>';
-				echo sprintf(
-					__( 'To use the IBM API you must register at <b>IBM Cloud</b> enabling access for the <a href="%s" target="_blank"><b>Language Translator</b></a>.', 'wpautotranslate'),
-					'https://cloud.ibm.com/catalog/services/language-translator'
-				);
-				echo '</p>';
-				echo '<p>';
-				echo sprintf(
-					__( 'Once you have the account, you must access the resources where <b>you will have some credentials</b> already.', 'wpautotranslate')
-				);
-				echo '</p>';
-				echo '<p>';
-				echo sprintf(
-					__( 'Here you should get two values: <b>API key</b> and <b>URL</b>.', 'wpautotranslate')
-				);
-				echo '</p>';
-				echo '</div><div class="price">';
-				echo '<h3>' . esc_html__( 'IBM price', 'wpautotranslate' ) . '</h3>';
-				echo '<p>' . esc_html__( 'There is no monthly fee. It offers two options:', 'wpautotranslate' ) . '</p>';
-				echo '<p>' . esc_html__( 'Option A: Up to 1M (1,000,000) of free characters per month. You cannot overdo it.', 'wpautotranslate' ) . '</p>';
-				echo '<p>' . esc_html__( 'Option B: 250K (250,000) free characters per month. The pay-per-use system is $ 20.00 per million characters.', 'wpautotranslate' ) . '</p>';
-				echo '<p>' . esc_html__( 'This data may vary due to promotions or other changes. Please, review this information before getting the services.', 'wpautotranslate' ) . '</p>';
-				echo '<h3>' . esc_html__( 'The editor, with IBM', 'wpautotranslate' ) . '</h3>';
-				echo '<p><span title="' . esc_html__( 'Yes', 'wpautotranslate' ) . '">✔</span> ' . esc_html__( 'Classic editor', 'wpautotranslate' ) . '</p>';
-				echo '<p><span title="' . esc_html__( 'No', 'wpautotranslate' ) . '">❌</span> ' . esc_html__( 'Block editor', 'wpautotranslate' ) . '</p>';
-				echo '</div></div>';
-
-				// Show list languages.
-				$this->show_list_languages( 'ibm' );
-
-			}
-			if ( 'bing' === $active_tab ) {
-				?>
-				<form method="post">
-					<?php
-						settings_fields( 'wpat_settings_admin' );
-						do_settings_sections( 'wpat_settings_admin_bing' );
-						wp_nonce_field( 'Update_WPAT_Options', 'wpauto_nonce' );
-						submit_button(
-							__( 'Save Microsoft settings', 'wpautotranslate' ),
-							'primary',
-							'submit_bing'
-						);
-					?>
-				</form>
-				<?php
-				echo '<div class="wpautotranslate-settings bing">';
-				echo '<div class="settings">';
-				echo '<h2>' . esc_html__( 'Microsoft configuration', 'wpautotranslate' ) . '</h2>';
-				echo '<p>';
-				echo sprintf(
-					__( 'Here you can configure the <a href="%s" target="_blank">Microsoft API</a>.', 'wpautotranslate'),
-					'https://azure.microsoft.com/en-us/services/cognitive-services/translator/'
-				);
-				echo '</p>';
-				echo '</div><div class="help">';
-				echo '<h2>' . esc_html__( 'Microsoft help', 'wpautotranslate' ) . '</h2>';
-				echo '<p>';
-				echo sprintf(
-					__( 'To use the Microsoft API, you must sign up at <b>Microsoft Azure</b>. You can do it from <a href="%s" target="_blank"><b>Microsoft Azure account registration</b></a>.', 'wpautotranslate'),
-					'https://signup.azure.com/signup'
-				);
-				echo '</p>';
-				echo '<p>';
-				echo sprintf(
-					__( 'Once you have the account, you must access the <a href="%s" target="_blank"><b>Create Translator</b></a> section and create <b>a new project and instance</b>.', 'wpautotranslate'),
-					'https://ms.portal.azure.com/#create/Microsoft.CognitiveServicesTextTranslation'
-				);
-				echo '</p>';
-				echo '<p>';
-				echo sprintf(
-					__( 'You should get two values: <b>Key</b> and <b>Region</b>.', 'wpautotranslate')
-				);
-				echo '</p>';
-				echo '</div><div class="price">';
-				echo '<h3>' . esc_html__( 'Microsoft price', 'wpautotranslate' ) . '</h3>';
-				echo '<p>' . esc_html__( 'There is no monthly fee. Offers 2M (2,000,000) free characters per month. The pay-as-you-go system is $ 10.00 per million characters.', 'wpautotranslate' ) . '</p>';
-				echo '<p>' . esc_html__( 'This data may vary due to promotions or other changes. Please, review this information before getting the services.', 'wpautotranslate' ) . '</p>';
-				echo '<h3>' . esc_html__( 'The editor, with Microsoft', 'wpautotranslate' ) . '</h3>';
-				echo '<p><span title="' . esc_html__( 'Yes', 'wpautotranslate' ) . '">✔</span> ' . esc_html__( 'Classic editor', 'wpautotranslate' ) . '</p>';
-				echo '<p><span title="' . esc_html__( 'Yes', 'wpautotranslate' ) . '">✔</span> ' . esc_html__( 'Block editor', 'wpautotranslate' ) . '</p>';
-				echo '</div></div>';
-
-				// Show list languages.
-				$this->show_list_languages( 'bing' );
-
-			}
-			if ( 'softcatala' === $active_tab ) { ?>
-				<?php
-				echo '<div class="wpautotranslate-settings softcatala">';
-				echo '<div class="settings">';
-				echo '<h2>' . esc_html__( 'Softcatalà configuration', 'wpautotranslate' ) . '</h2>';
-				echo '<p>';
-				echo sprintf(
-					__( 'Softcatal doesn\'t require any kind of configuration.', 'wpautotranslate' )
-				);
-				echo '</p>';
-				echo '</div><div class="help">';
-				echo '<h2>' . esc_html__( 'Softcatalà help', 'wpautotranslate' ) . '</h2>';
-				echo '<p>';
-				echo sprintf(
-					__( 'The use of Softcatalà is under testing. It is only possible to translate from Catalan to: Aranese, Spanish, Occitan, French, Romanian, English, Aragonese, Portuguese and vice versa.', 'wpautotranslate' )
-				);
-				echo '</p>';
-				echo '</div><div class="price">';
-				echo '<h3>' . esc_html__( 'Softcatalà price', 'wpautotranslate' ) . '</h3>';
-				echo '<p>' . esc_html__( 'The use of Softcatalà is under testing. There is no set price or requirements. It is an unlimited service, but we ask for your responsibility.', 'wpautotranslate' ) . '</p>';
-				echo '<h3>' . esc_html__( 'The editor, with Softcatalà', 'wpautotranslate' ) . '</h3>';
-				echo '<p><span title="' . esc_html__( 'Yes', 'wpautotranslate' ) . '">✔</span> ' . esc_html__( 'Classic editor', 'wpautotranslate' ) . '</p>';
-				echo '<p><span title="' . esc_html__( 'Yes', 'wpautotranslate' ) . '">✔</span> ' . esc_html__( 'Block editor', 'wpautotranslate' ) . '</p>';
-				echo '</div></div>';
-
-				// Show list languages.
-				$this->show_list_languages( 'softcatala' );
-
-			}
-      	if ( 'yandex' === $active_tab ) {
-				?>
-				<form method="post">
-					<?php
-						settings_fields( 'wpat_settings_admin' );
-						do_settings_sections( 'wpat_settings_admin_yandex' );
-						wp_nonce_field( 'Update_WPAT_Options', 'wpauto_nonce' );
-						submit_button(
-							__( 'Save Yandex settings', 'wpautotranslate' ),
-							'primary',
-							'submit_yandex'
-						);
-					?>
-				</form>
-				<?php
-				echo '<div class="wpautotranslate-settings yandex">';
-				echo '<div class="settings">';
-				echo '<h2>' . esc_html__( 'Yandex configuration', 'wpautotranslate' ) . '</h2>';
-				echo '<p>';
-				echo sprintf(
-					__( 'Here you can configure the <a href="%s" target="_blank">Yandex API</a>.', 'wpautotranslate'),
-					'https://cloud.yandex.com/services/translate'
-				);
-				echo '</p>';
-				echo '</div><div class="help">';
-				echo '<h2>' . esc_html__( 'Yandex help', 'wpautotranslate' ) . '</h2>';
-				echo '<p>';
-				echo sprintf(
-					__( 'To use the Yandex API, you must sign up at <b>Yandex Cloud</b>. You can do it from <a href="%s" target="_blank"><b>Yandex Cloud account registration</b></a>.', 'wpautotranslate'),
-					'https://passport.yandex.com/registration'
-				);
-				echo '</p>';
-				echo '<p>';
-				echo sprintf(
-					__( 'Once you have the account, you must access the <a href="%s" target="_blank"><b>Yandex Console</b></a>, access the <b>Service Accounts</b>, then <b>Create service account</b> with an <b>editor</b> role. Once you have an account, you must <b>Create a new key</b> (<b>API Key</b> option).', 'wpautotranslate'),
-					'https://console.cloud.yandex.com/'
-				);
-				echo '</p>';
-				echo '<p>';
-				echo sprintf(
-					__( 'You should get three values: <b>Folder</b> (in <i>Folder</i> section), <b>API Key</b> and <b>Secret Key</b> (in <i>Service Account</i> section).', 'wpautotranslate')
-				);
-				echo '</p>';
-				echo '</div><div class="price">';
-				echo '<h3>' . esc_html__( 'Yandex price', 'wpautotranslate' ) . '</h3>';
-				echo '<p>' . esc_html__( 'There is no monthly fee. It does not offer any free packages. The pay-as-you-go system is $ 5.74 per million characters.', 'wpautotranslate' ) . '</p>';
-				echo '<p>' . esc_html__( 'This data may vary due to promotions or other changes. Please, review this information before getting the services.', 'wpautotranslate' ) . '</p>';
-				echo '<h3>' . esc_html__( 'The editor, with Yandex', 'wpautotranslate' ) . '</h3>';
-				echo '<p><span title="' . esc_html__( 'Yes', 'wpautotranslate' ) . '">✔</span> ' . esc_html__( 'Classic editor', 'wpautotranslate' ) . '</p>';
-				echo '<p><span title="' . esc_html__( 'Yes', 'wpautotranslate' ) . '">✔</span> ' . esc_html__( 'Block editor', 'wpautotranslate' ) . '</p>';
-				echo '</div></div>';
-
-				// Show list languages.
-				$this->show_list_languages( 'yandex' );
-
-			}
 			if ( 'license' === $active_tab ) {
-				echo '<div class="wpautotranslate-settings license">';
-				echo '<div class="settings">';
-				echo '<h2>' . esc_html__( 'What is the license for?', 'wpautotranslate' ) . '</h2>';
-				echo '<p>';
-				echo sprintf(
-					__( 'With the <a href="%s" target="_blank">WP AutoTranslate for MultilingualPress</a> license, you\'ll have updates and automatic fixes to what\'s new or change in your system, so you\'ll always have automatic translations working.', 'wpautotranslate'),
-					'https://www.wpautotranslate.com/downloads/wpautotranslate-pro-multilingualpress/?utm_source=Plugin%20AutoTranaslate&utm_medium=link&utm_campaign=Settings%20License'
-				);
-				echo '</p>';
-				echo '</div><div class="help">';
-				echo '<h2>' . esc_html__( 'How do I get a license?', 'wpautotranslate' ) . '</h2>';
-				echo '<p>';
-				echo sprintf(
-					__( 'Visit the <a href="%s" target="_blank">WPAutoTranslate for MultilingualPress</a> page and purchase the licenses you need, depending on the number of WordPress MultiSites you\'re using.', 'wpautotranslate'),
-					'https://www.wpautotranslate.com/downloads/wpautotranslate-pro-multilingualpress/?utm_source=Plugin%20AutoTranaslate&utm_medium=link&utm_campaign=Settings%20License'
-				);
-				echo '</p>';
-				echo '</div></div>';
-				do_action( 'wpautotranslate_options_license' );
-			}
-
-			if ( 'licensedeac' === $active_tab ) {
-				do_action( 'wpautotranslate_options_license_deactivate' );
+				do_action( 'connect_woocommerce_options_license' );
 			}
 			?>
 		</div>
@@ -810,391 +160,866 @@ class Wpautotranslate_Admin {
 	}
 
 	/**
-	 * Registers settings
+	 * Init for page
 	 *
 	 * @return void
 	 */
-	public function register_setting() {
+	public function page_init() {
+
+		register_setting(
+			'wcpimh_settings',
+			'imhset',
+			array( $this, 'sanitize_fields_settings' )
+		);
 
 		add_settings_section(
-			'wpat_general',
-			'',
-			'',
-			'wpat_settings_admin_general',
+			'connect_woocommerce_setting_section',
+			__( 'Settings for Importing in WooCommerce', 'connect-woocommerce-neo' ),
+			array( $this, 'connect_woocommerce_section_info' ),
+			'connect-woocommerce-admin'
+		);
+
+		if ( 'NEO' === connwoo_remote_name() ) {
+			add_settings_field(
+				'wcpimh_idcentre',
+				__( 'NEO ID Centre', 'connect-woocommerce-neo' ),
+				array( $this, 'idcentre_callback' ),
+				'connect-woocommerce-admin',
+				'connect_woocommerce_setting_section'
+			);
+		}
+
+		add_settings_field(
+			'wcpimh_api',
+			__( 'API Key', 'connect-woocommerce-neo' ),
+			array( $this, 'api_callback' ),
+			'connect-woocommerce-admin',
+			'connect_woocommerce_setting_section'
 		);
 
 		add_settings_field(
-			'wpat_translation_method',
-			__( 'Main provider', 'wpautotranslate' ),
-			array( $this, 'translation_method_callback' ),
-			'wpat_settings_admin_general',
-			'wpat_general'
+			'wcpimh_stock',
+			__( 'Import stock?', 'connect-woocommerce-neo' ),
+			array( $this, 'wcpimh_stock_callback' ),
+			'connect-woocommerce-admin',
+			'connect_woocommerce_setting_section'
 		);
 
 		add_settings_field(
-			'wpat_meta_sync',
-			__( 'Synchronize all metadata', 'wpautotranslate' ),
-			array( $this, 'meta_sync_callback' ),
-			'wpat_settings_admin_general',
-			'wpat_general'
+			'wcpimh_prodst',
+			__( 'Default status for new products?', 'connect-woocommerce-neo' ),
+			array( $this, 'wcpimh_prodst_callback' ),
+			'connect-woocommerce-admin',
+			'connect_woocommerce_setting_section'
 		);
 
 		add_settings_field(
-			'wpat_status_sync',
-			__( 'Synchronize content status', 'wpautotranslate' ),
-			array( $this, 'status_sync_callback' ),
-			'wpat_settings_admin_general',
-			'wpat_general'
-		);
-
-		/**
-		 * ## Amazon
-		 * --------------------------- */
-		add_settings_section(
-			$this->option_name . '_amazon',
-			'',
-			'',
-			'wpat_settings_admin_amazon',
-		);
-		add_settings_field(
-			$this->option_name . 'amazon_accesskey',
-			__( 'Amazon Access Key', 'wpautotranslate' ),
-			array( $this, 'amazon_accesskey_callback' ),
-			'wpat_settings_admin_amazon',
-			$this->option_name . '_amazon',
+			'wcpimh_virtual',
+			__( 'Virtual products?', 'connect-woocommerce-neo' ),
+			array( $this, 'wcpimh_virtual_callback' ),
+			'connect-woocommerce-admin',
+			'connect_woocommerce_setting_section'
 		);
 
 		add_settings_field(
-			$this->option_name . 'amazon_secretkey',
-			__( 'Amazon Secret Key', 'wpautotranslate' ),
-			array( $this, 'amazon_secretkey_callback' ),
-			'wpat_settings_admin_amazon',
-			$this->option_name . '_amazon',
+			'wcpimh_backorders',
+			__( 'Allow backorders?', 'connect-woocommerce-neo' ),
+			array( $this, 'wcpimh_backorders_callback' ),
+			'connect-woocommerce-admin',
+			'connect_woocommerce_setting_section'
+		);
+
+		$label_cat = __( 'Category separator', 'connect-woocommerce-neo' );
+		if ( ! connwoo_is_pro() ) {
+			$label_cat .= ' ' . $this->label_pro;
+		}
+		add_settings_field(
+			'wcpimh_catsep',
+			$label_cat,
+			array( $this, 'wcpimh_catsep_callback' ),
+			'connect-woocommerce-admin',
+			'connect_woocommerce_setting_section'
 		);
 
 		add_settings_field(
-			$this->option_name . 'amazon_region',
-			__( 'Amazon Region', 'wpautotranslate' ),
-			array( $this, 'amazon_region_callback' ),
-			'wpat_settings_admin_amazon',
-			$this->option_name . '_amazon',
+			'wcpimh_filter',
+			__( 'Filter products by tags? (separated by comma and no space)', 'connect-woocommerce-neo' ),
+			array( $this, 'wcpimh_filter_callback' ),
+			'connect-woocommerce-admin',
+			'connect_woocommerce_setting_section'
 		);
 
-		/**
-		 * ## DeepL
-		 * --------------------------- */
-		add_settings_section(
-			$this->option_name . '_deepl',
-			'',
-			'',
-			'wpat_settings_admin_deepl',
-		);
-		add_settings_field(
-			$this->option_name . 'deepl_key',
-			__( 'DeepL Key', 'wpautotranslate' ),
-			array( $this, 'deepl_key_callback' ),
-			'wpat_settings_admin_deepl',
-			$this->option_name . '_deepl',
-		);
+		if ( connwoo_remote_price_tax_option() ) {
 
-		/**
-		 * ## Google Translate
-		 * --------------------------- */
-		add_settings_section(
-			$this->option_name . '_google',
-			'',
-			'',
-			'wpat_settings_admin_google',
-		);
+			add_settings_field(
+				'wcpimh_tax_option',
+				__( 'Get prices with Tax?', 'connect-woocommerce-neo' ),
+				array( $this, 'tax_option_callback' ),
+				'connect-woocommerce-admin',
+				'connect_woocommerce_setting_section'
+			);
+		}
 
-		add_settings_field(
-			$this->option_name . 'google_jsonkey',
-			__( 'Google JSON Key', 'wpautotranslate' ),
-			array( $this, 'google_jsonkey_callback' ),
-			'wpat_settings_admin_google',
-			$this->option_name . '_google',
-		);
-
-		/**
-		 * ## IBM
-		 * --------------------------- */
-		add_settings_section(
-			$this->option_name . '_ibm',
-			'',
-			'',
-			'wpat_settings_admin_ibm',
-		);
-		add_settings_field(
-			$this->option_name . 'ibm_key',
-			__( 'IBM Key', 'wpautotranslate' ),
-			array( $this, 'ibm_key_callback' ),
-			'wpat_settings_admin_ibm',
-			$this->option_name . '_ibm',
-		);
-
-		add_settings_field(
-			$this->option_name . 'ibm_url',
-			__( 'IBM URL', 'wpautotranslate' ),
-			array( $this, 'ibm_url_callback' ),
-			'wpat_settings_admin_ibm',
-			$this->option_name . '_ibm',
-		);
-
-		/**
-		 * ## Microsoft
-		 * --------------------------- */
-		add_settings_section(
-			$this->option_name . '_bing',
-			'',
-			'',
-			'wpat_settings_admin_bing',
-		);
-		add_settings_field(
-			$this->option_name . 'bing_key',
-			__( 'Microsoft Key', 'wpautotranslate' ),
-			array( $this, 'bing_key_callback' ),
-			'wpat_settings_admin_bing',
-			$this->option_name . '_bing',
-		);
-
-		add_settings_field(
-			$this->option_name . 'bing_region',
-			__( 'Microsoft Region', 'wpautotranslate' ),
-			array( $this, 'bing_region_callback' ),
-			'wpat_settings_admin_bing',
-			$this->option_name . '_bing',
-		);
-
-		/**
-		 * ## Yandex
-		 * --------------------------- */
-		add_settings_section(
-			$this->option_name . '_yandex',
-			'',
-			'',
-			'wpat_settings_admin_yandex',
-		);
-		add_settings_field(
-			$this->option_name . 'yandex_folder',
-			__( 'Yandex Folder', 'wpautotranslate' ),
-			array( $this, 'yandex_folder_callback' ),
-			'wpat_settings_admin_yandex',
-			$this->option_name . '_yandex',
-		);
-
-		add_settings_field(
-			$this->option_name . 'yandex_api',
-			__( 'Yandex API Key', 'wpautotranslate' ),
-			array( $this, 'yandex_api_callback' ),
-			'wpat_settings_admin_yandex',
-			$this->option_name . '_yandex',
-		);
-
-		add_settings_field(
-			$this->option_name . 'yandex_secret',
-			__( 'Yandex Secret Key', 'wpautotranslate' ),
-			array( $this, 'yandex_secret_callback' ),
-			'wpat_settings_admin_yandex',
-			$this->option_name . '_yandex',
-		);
-
-	}
-
-	/**
-	 * CallBack for Translation Method
-	 *
-	 * @return void
-	 */
-	public function translation_method_callback() {
-		$value       = get_site_option( $this->option_name . 'translation_method' );
-		$api_actived = get_site_option( $this->option_name . 'translation_actived' );
-		?>
-
-		<select name="<?php echo esc_html( $this->option_name ) . 'translation_method'; ?>" id="<?php echo esc_html( $this->option_name ) . 'translation_method'; ?>">
-			<?php
-			$selected = ( isset( $value ) && '-' === $value ) ? 'selected' : '';
-			echo '<option value="-" ' . esc_html( $selected ) . '>-</option>';
-			foreach ( $api_actived as $api_method ) {
-				$selected = ( isset( $value ) && $value === $api_method ) ? 'selected' : '';
-				echo '<option value="' . esc_html( $api_method ) . '" ' . esc_html( $selected ) . '>';
-				echo esc_html( $this->label_api_method[ $api_method ] ) . '</option>';
+		if ( connwoo_remote_price_rate_option() ) {
+			$label_filter = __( 'Product price rate for this eCommerce', 'connect-woocommerce-neo' );
+			$desc_tip = __( 'Copy and paste the ID of the rates for publishing in the web', 'connect-woocommerce-neo' );
+			if ( ! connwoo_is_pro() ) {
+				$label_filter .= ' ' . $this->label_pro;
 			}
-			?>
-		</select>
-    <?php
-    echo '<p>' . esc_html__( 'Only active providers are displayed.', 'wpautotranslate' ) . '</p>';
+			add_settings_field(
+				'wcpimh_rates',
+				$label_filter,
+				array( $this, 'wcpimh_rates_callback' ),
+				'connect-woocommerce-admin',
+				'connect_woocommerce_setting_section'
+			);
+		}
+
+		$name_catnp = __( 'Import category only in new products?', 'connect-woocommerce-neo' );
+		if ( connwoo_is_pro() ) {
+			add_settings_field(
+				'wcpimh_catnp',
+				$name_catnp,
+				array( $this, 'wcpimh_catnp_callback' ),
+				'connect-woocommerce-admin',
+				'connect_woocommerce_setting_section'
+			);
+		}
+
+		if ( 'Holded' === connwoo_remote_name() ) {
+			$name_docorder = __( 'Document to create after order completed?', 'connect-woocommerce-neo' );
+			if ( connwoo_is_pro() ) {
+				add_settings_field(
+					'wcpimh_doctype',
+					$name_docorder,
+					array( $this, 'wcpimh_doctype_callback' ),
+					'connect-woocommerce-admin',
+					'connect_woocommerce_setting_section'
+				);
+			}
+
+			$name_docorder = __( 'Create document for free Orders?', 'connect-woocommerce-neo' );
+			if ( connwoo_is_pro() ) {
+				add_settings_field(
+					'wcpimh_freeorder',
+					$name_docorder,
+					array( $this, 'wcpimh_freeorder_callback' ),
+					'connect-woocommerce-admin',
+					'connect_woocommerce_setting_section'
+				);
+			}
+
+			$name_docorder = __( 'Status to sync Orders?', 'connect-woocommerce-neo' );
+			if ( connwoo_is_pro() ) {
+				add_settings_field(
+					'wcpimh_ecstatus',
+					$name_docorder,
+					array( $this, 'wcpimh_ecstatus_callback' ),
+					'connect-woocommerce-admin',
+					'connect_woocommerce_setting_section'
+				);
+			}
+
+			$name_nif = __( 'ID Holded design for document', 'connect-woocommerce-neo' );
+			if ( connwoo_is_pro() ) {
+				add_settings_field(
+					'wcpimh_design_id',
+					$name_nif,
+					array( $this, 'wcpimh_design_id_callback' ),
+					'connect-woocommerce-admin',
+					'connect_woocommerce_setting_section'
+				);
+			}
+		}
+
+		/**
+		 * # Automate
+		 * ---------------------------------------------------------------------------------------------------- */
+
+		add_settings_section(
+			'connect_woocommerce_setting_automate',
+			__( 'Automate', 'connect-woocommerce-neo' ),
+			array( $this, 'connect_woocommerce_section_automate' ),
+			'connect-woocommerce-automate'
+		);
+		if ( connwoo_is_pro() ) {
+			$name_sync = __( 'When do you want to sync?', 'connect-woocommerce-neo' );
+			if ( connwoo_is_pro() ) {
+				add_settings_field(
+					'wcpimh_sync',
+					$name_sync,
+					array( $this, 'wcpimh_sync_callback' ),
+					'connect-woocommerce-automate',
+					'connect_woocommerce_setting_automate'
+				);
+			}
+
+			$name_sync = __( 'How many products do you want to sync each time?', 'connect-woocommerce-neo' );
+			if ( connwoo_is_pro() ) {
+				add_settings_field(
+					'wcpimh_sync_num',
+					$name_sync,
+					array( $this, 'wcpimh_sync_num_callback' ),
+					'connect-woocommerce-automate',
+					'connect_woocommerce_setting_automate'
+				);
+			}
+			if ( connwoo_is_pro() ) {
+				add_settings_field(
+					'wcpimh_sync_email',
+					__( 'Do you want to receive an email when all products are synced?', 'connect-woocommerce-neo' ),
+					array( $this, 'wcpimh_sync_email_callback' ),
+					'connect-woocommerce-automate',
+					'connect_woocommerce_setting_automate'
+				);
+			}
+		}
+
+		/**
+		 * ## Public
+		 * --------------------------- */
+
+		register_setting(
+			'wcpimhset_public',
+			'imhset_public',
+			array(
+				$this,
+				'sanitize_fields_public',
+			)
+		);
+
+		add_settings_section(
+			'imhset_pub_setting_section',
+			__( 'Settings for Woocommerce Shop', 'connect-woocommerce-neo' ),
+			array( $this, 'section_info_public' ),
+			'connect-woocommerce-public'
+		);
+
+		add_settings_field(
+			'wcpimh_vat_show',
+			__( 'Ask for VAT in Checkout?', 'connect-woocommerce-neo' ),
+			array( $this, 'vat_show_callback' ),
+			'connect-woocommerce-public',
+			'imhset_pub_setting_section'
+		);
+		add_settings_field(
+			'wcpimh_vat_mandatory',
+			__( 'VAT info mandatory?', 'connect-woocommerce-neo' ),
+			array( $this, 'vat_mandatory_callback' ),
+			'connect-woocommerce-public',
+			'imhset_pub_setting_section'
+		);
+
+		add_settings_field(
+			'wcpimh_company_field',
+			__( 'Show Company field?', 'connect-woocommerce-neo' ),
+			array( $this, 'company_field_callback' ),
+			'connect-woocommerce-public',
+			'imhset_pub_setting_section'
+		);
+
+		add_settings_field(
+			'wcpimh_remove_free_others',
+			__( 'Remove other shipping methods when free is possible?', 'connect-woocommerce-neo' ),
+			array( $this, 'wcpimh_remove_free_others_callback' ),
+			'connect-woocommerce-public',
+			'imhset_pub_setting_section'
+		);
+
+		add_settings_field(
+			'wcpimh_terms_registration',
+			__( 'Adds terms and conditions in registration page?', 'connect-woocommerce-neo' ),
+			array( $this, 'wcpimh_terms_registration_callback' ),
+			'connect-woocommerce-public',
+			'imhset_pub_setting_section'
+		);
 	}
 
 	/**
-	 * CallBack for Sync Settings
+	 * Page Sync Orders
 	 *
 	 * @return void
 	 */
-	public function meta_sync_callback() {
-		$value = get_site_option( 'wpat_meta_sync' );
+	public function page_sync_orders() {
+		if ( connwoo_is_pro() ) {
+			echo '<div id="sync-holded-engine-orders"></div>';
+		} else {
+			echo '<h2>' . esc_html__( 'Sync Orders', 'connect-woocommerce-neo' ) . '</h2>';
+			esc_html_e( 'Section only for PRO version', 'connect-woocommerce-neo' );
 
-		$options_sync = array(
-			'no'   => __( 'Do not sync metadata', 'wpautotranslate' ),
-			'sync' => __( 'Sync all metadata', 'wpautotranslate' ),
+			echo ' ' . $this->show_get_pro();
+		}
+	}
+
+	/**
+	 * Sanitize fiels before saves in DB
+	 *
+	 * @param array $input Input fields.
+	 * @return array
+	 */
+	public function sanitize_fields_settings( $input ) {
+		$sanitary_values = array();
+		$imh_settings    = get_option( 'imhset' );
+
+		$admin_settings = array(
+			'wcpimh_api'        => '',
+			'wcpimh_idcentre'   => '',
+			'wcpimh_stock'      => 'no',
+			'wcpimh_prodst'     => 'draft',
+			'wcpimh_virtual'    => 'no',
+			'wcpimh_backorders' => 'no',
+			'wcpimh_catsep'     => '',
+			'wcpimh_filter'     => '',
+			'wcpimh_rates'      => 'default',
+			'wcpimh_catnp'      => 'yes',
+			'wcpimh_doctype'    => 'invoice',
+			'wcpimh_freeorder'  => 'no',
+			'wcpimh_ecstatus'   => 'all',
+			'wcpimh_design_id'  => '',
+			'wcpimh_sync'       => 'no',
+			'wcpimh_sync_num'   => 5,
+			'wcpimh_sync_email' => 'yes',
 		);
+
+		foreach ( $admin_settings as $setting => $default_value ) {
+			if ( isset( $input[ $setting ] ) ) {
+				$sanitary_values[ $setting ] = sanitize_text_field( $input[ $setting ] );
+			} elseif ( isset( $imh_settings[ $setting ] ) ) {
+				$sanitary_values[ $setting ] = $imh_settings[ $setting ];
+			} else {
+				$sanitary_values[ $setting ] = $default_value;
+			}
+		}
+
+		return $sanitary_values;
+	}
+
+	/**
+	 * Shows message for pro
+	 *
+	 * @return html
+	 */
+	private function show_get_pro() {
+		// Purchase notification.
+		$get_pro = sprintf(
+			wp_kses(
+				__( '<a href="%s" target="_blank">Get Pro version</a> to enable functionalities.', 'connect-woocommerce-neo' ),
+				array(
+					'a'      => array(
+					'href'   => array(),
+					'target' => array(),
+					),
+				)
+			),
+			esc_url( WCPIMH_PURCHASE_URL )
+		);
+		return $get_pro;
+
+	}
+	/**
+	 * Info for holded section.
+	 *
+	 * @return void
+	 */
+	public function connect_woocommerce_section_automate() {
+		global $wpdb;
+		if ( connwoo_is_pro() ) {
+			$count        = $wpdb->get_var( "SELECT COUNT(*) FROM $this->table_sync WHERE synced = 1" );
+			$total_count  = $wpdb->get_var( "SELECT COUNT(*) FROM $this->table_sync" );
+			$count_return = $count . ' / ' . $total_count;
+
+			$total_api_products = (int) get_option( 'wcpimh_total_api_products' );
+			if ( $total_api_products || $total_count !== $total_api_products ) {
+				$count_return .= ' ' . esc_html__( 'filtered', 'connect-woocommerce-neo' );
+				$count_return .= ' ( ' . $total_api_products . ' ' . esc_html__( 'total', 'connect-woocommerce-neo' ) . ' )';
+			}
+			$percentage = intval( $count / $total_count * 100 );
+			esc_html_e( 'Make your settings to automate the sync.', 'connect-woocommerce-neo' );
+			echo '<div class="sync-status" style="text-align:right;">';
+			echo '<strong>';
+			esc_html_e( 'Actual Automate status:', 'connect-woocommerce-neo' );
+			echo '</strong> ' . esc_html( $count_return ) . ' ';
+			esc_html_e( 'products synced with Holded.', 'connect-woocommerce-neo' );
+			echo '</div>';
+			echo '
+			<style>
+			.progress-bar {
+				background-color: #1a1a1a;
+				height: 16px;
+				padding: 5px;
+				width: 100%;
+				margin: 5px 0;
+				border-radius: 5px;
+				box-shadow: 0 1px 5px #000 inset, 0 1px 0 #444;
+				}
+				.progress-bar span {
+				display: inline-block;
+				float: left;
+				height: 100%;
+				border-radius: 3px;
+				box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset;
+				transition: width .4s ease-in-out;
+				}
+				.blue span {
+				background-color: #2271b1;
+				}
+				.progress-text {
+				text-align: right;
+				color: white;
+				margin: 0;
+				font-size: 18px;
+				}
+			</style>
+			<div class="progress-bar blue">
+			<span style="width:' . esc_html( $percentage ) . '%"></span>
+			<div class="progress-text">' . esc_html( $percentage ) . '%</div>
+			</div>';
+		} else {
+			esc_html_e( 'Section only for PRO version', 'connect-woocommerce-neo' );
+
+			echo ' ' . $this->show_get_pro();
+		}
+	}
+
+	/**
+	 * Info for holded automate section.
+	 *
+	 * @return void
+	 */
+	public function connect_woocommerce_section_info() {
+		global $conn_woo_admin_message;
+		echo $conn_woo_admin_message;
+
+		if ( ! connwoo_is_pro() ) {
+			echo $this->show_get_pro();
+		}
+	}
+
+	/**
+	 * NEO ID Centre
+	 *
+	 * @return void
+	 */
+	public function idcentre_callback() {
+		printf(
+			'<input class="regular-text" type="password" name="imhset[wcpimh_idcentre]" id="wcpimh_idcentre" value="%s">',
+			isset( $this->imh_settings['wcpimh_idcentre'] ) ? esc_attr( $this->imh_settings['wcpimh_idcentre'] ) : ''
+		);
+	}
+
+	public function api_callback() {
+		printf(
+			'<input class="regular-text" type="password" name="imhset[wcpimh_api]" id="wcpimh_api" value="%s">',
+			isset( $this->imh_settings['wcpimh_api'] ) ? esc_attr( $this->imh_settings['wcpimh_api'] ) : ''
+		);
+	}
+
+	public function wcpimh_stock_callback() {
 		?>
-		<select name="wpat_meta_sync" id="wpat_meta_sync">
+		<select name="imhset[wcpimh_stock]" id="wcpimh_stock">
+			<?php $selected = ( isset( $this->imh_settings['wcpimh_stock'] ) && $this->imh_settings['wcpimh_stock'] === 'yes' ) ? 'selected' : ''; ?>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-neo' ); ?></option>
+			<?php $selected = ( isset( $this->imh_settings['wcpimh_stock'] ) && $this->imh_settings['wcpimh_stock'] === 'no' ) ? 'selected' : ''; ?>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
+		</select>
+		<?php
+	}
+
+	public function wcpimh_prodst_callback() {
+		?>
+		<select name="imhset[wcpimh_prodst]" id="wcpimh_prodst">
+			<?php $selected = ( isset( $this->imh_settings['wcpimh_prodst'] ) && 'draft' === $this->imh_settings['wcpimh_prodst'] ) ? 'selected' : ''; ?>
+			<option value="draft" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Draft', 'connect-woocommerce-neo' ); ?></option>
+			<?php $selected = ( isset( $this->imh_settings['wcpimh_prodst'] ) && 'publish' === $this->imh_settings['wcpimh_prodst'] ) ? 'selected' : ''; ?>
+			<option value="publish" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Publish', 'connect-woocommerce-neo' ); ?></option>
+			<?php $selected = ( isset( $this->imh_settings['wcpimh_prodst'] ) && 'pending' === $this->imh_settings['wcpimh_prodst'] ) ? 'selected' : ''; ?>
+			<option value="pending" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Pending', 'connect-woocommerce-neo' ); ?></option>
+			<?php $selected = ( isset( $this->imh_settings['wcpimh_prodst'] ) && 'private' === $this->imh_settings['wcpimh_prodst'] ) ? 'selected' : ''; ?>
+			<option value="private" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Private', 'connect-woocommerce-neo' ); ?></option>
+		</select>
+		<?php
+	}
+
+	public function wcpimh_virtual_callback() {
+		?>
+		<select name="imhset[wcpimh_virtual]" id="wcpimh_virtual">
+			<?php $selected = ( isset( $this->imh_settings['wcpimh_virtual'] ) && $this->imh_settings['wcpimh_virtual'] === 'no' ) ? 'selected' : ''; ?>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
+			<?php $selected = ( isset( $this->imh_settings['wcpimh_virtual'] ) && $this->imh_settings['wcpimh_virtual'] === 'yes' ) ? 'selected' : ''; ?>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-neo' ); ?></option>
+		</select>
+		<?php
+	}
+
+	public function wcpimh_backorders_callback() {
+		?>
+		<select name="imhset[wcpimh_backorders]" id="wcpimh_backorders">
+			<?php $selected = ( isset( $this->imh_settings['wcpimh_backorders'] ) && $this->imh_settings['wcpimh_backorders'] === 'no' ) ? 'selected' : ''; ?>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
+			<?php $selected = ( isset( $this->imh_settings['wcpimh_backorders'] ) && $this->imh_settings['wcpimh_backorders'] === 'yes' ) ? 'selected' : ''; ?>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-neo' ); ?></option>
+			<?php $selected = ( isset( $this->imh_settings['wcpimh_backorders'] ) && $this->imh_settings['wcpimh_backorders'] === 'notify' ) ? 'selected' : ''; ?>
+			<option value="notify" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Notify', 'connect-woocommerce-neo' ); ?></option>
+		</select>
+		<?php
+	}
+
+	/**
+	 * Call back for category separation
+	 *
+	 * @return void
+	 */
+	public function wcpimh_catsep_callback() {
+		printf(
+			'<input class="regular-text" type="text" name="imhset[wcpimh_catsep]" id="wcpimh_catsep" value="%s">',
+			isset( $this->imh_settings['wcpimh_catsep'] ) ? esc_attr( $this->imh_settings['wcpimh_catsep'] ) : ''
+		);
+	}
+
+	public function wcpimh_filter_callback() {
+		printf(
+			'<input class="regular-text" type="text" name="imhset[wcpimh_filter]" id="wcpimh_filter" value="%s">',
+			isset( $this->imh_settings['wcpimh_filter'] ) ? esc_attr( $this->imh_settings['wcpimh_filter'] ) : ''
+		);
+	}
+
+	public function tax_option_callback() {
+		?>
+		<select name="imhset[wcpimh_tax_price_option]" id="wcsen_tax">
+			<?php $selected = ( isset( $this->sync_settings['wcpimh_tax_price_option'] ) && $this->sync_settings['wcpimh_tax_price_option'] === 'yes' ) ? 'selected' : ''; ?>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes, tax included', 'connect-woocommerce-neo' ); ?></option>
+			<?php $selected = ( isset( $this->sync_settings['wcpimh_tax_price_option'] ) && $this->sync_settings['wcpimh_tax_price_option'] === 'notify' ) ? 'selected' : ''; ?>
+			<?php $selected = ( isset( $this->sync_settings['wcpimh_tax_price_option'] ) && $this->sync_settings['wcpimh_tax_price_option'] === 'no' ) ? 'selected' : ''; ?>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No, tax not included', 'connect-woocommerce-neo' ); ?></option>
+		</select>
+		<?php
+	}
+
+	public function wcpimh_rates_callback() {
+		global $connapi_erp;
+		$rates_options = $connapi_erp->get_rates();
+		if ( empty( $rates_options ) ) {
+			return false;
+		}
+		?>
+		<select name="imhset[wcpimh_rates]" id="wcpimh_rates">
 			<?php
-			foreach ( $options_sync as $key => $label ) {
-				$selected = ( isset( $value ) && $value === $key ) ? 'selected' : '';
-				echo '<option value="' . esc_html( $key ) . '" ' . esc_html( $selected ) . '>';
-				echo esc_html( $label ) . '</option>';
+			foreach ( $rates_options as $value => $label ) {
+				$selected = ( isset( $this->imh_settings['wcpimh_rates'] ) && $this->imh_settings['wcpimh_rates'] === $value ) ? 'selected' : '';
+				echo '<option value="' . esc_html( $value ) . '" ' . esc_html( $selected ) . '>' . esc_html( $label ) . '</option>';
 			}
 			?>
 		</select>
 		<?php
-    echo '<p>' . esc_html__( 'Making a translation synchronizes the default WordPress title, content, tags, categories, and other metadata. It also synchronizes SEO content (Yoast, Rank Math). The rest of the metadata that exists from other plugins will be synchronized or not as selected.', 'wpautotranslate' ) . '</p>';
+	}
+
+	public function wcpimh_catnp_callback() {
+		?>
+		<select name="imhset[wcpimh_catnp]" id="wcpimh_catnp">
+			<?php $selected = ( isset( $this->imh_settings['wcpimh_catnp'] ) && $this->imh_settings['wcpimh_catnp'] === 'yes' ) ? 'selected' : ''; ?>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-neo' ); ?></option>
+			<?php $selected = ( isset( $this->imh_settings['wcpimh_catnp'] ) && $this->imh_settings['wcpimh_catnp'] === 'no' ) ? 'selected' : ''; ?>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
+		</select>
+		<?php
+	}
+
+	public function wcpimh_doctype_callback() {
+		$set_doctype = isset( $this->imh_settings['wcpimh_doctype'] ) ? $this->imh_settings['wcpimh_doctype'] : '';
+		?>
+		<select name="imhset[wcpimh_doctype]" id="wcpimh_doctype">
+			<?php $selected = ( $set_doctype === 'nosync' || $set_doctype === '' ) ? 'selected' : ''; ?>
+			<option value="nosync" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Not sync', 'connect-woocommerce-neo' ); ?></option>
+
+			<?php $selected = ( isset( $set_doctype ) && 'invoice' === $set_doctype ) ? 'selected' : ''; ?>
+			<option value="invoice" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Invoice', 'connect-woocommerce-neo' ); ?></option>
+
+			<?php $selected = ( isset( $set_doctype ) && 'salesreceipt' === $set_doctype ) ? 'selected' : ''; ?>
+			<option value="salesreceipt" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Sales receipt', 'connect-woocommerce-neo' ); ?></option>
+
+			<?php $selected = ( isset( $set_doctype ) && 'salesorder' === $set_doctype ) ? 'selected' : ''; ?>
+			<option value="salesorder" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Sales order', 'connect-woocommerce-neo' ); ?></option>
+
+			<?php $selected = ( isset( $set_doctype ) && 'waybill' === $set_doctype ) ? 'selected' : ''; ?>
+			<option value="waybill" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Waybill', 'connect-woocommerce-neo' ); ?></option>
+		</select>
+		<?php
+	}
+
+	public function wcpimh_freeorder_callback() {
+		$set_freeorder = isset( $this->imh_settings['wcpimh_freeorder'] ) ? $this->imh_settings['wcpimh_freeorder'] : '';
+		?>
+		<select name="imhset[wcpimh_freeorder]" id="wcpimh_freeorder">
+			<?php $selected = ( $set_freeorder === 'no' || $set_freeorder === '' ) ? 'selected' : ''; ?>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
+
+			<?php $selected = ( isset( $set_freeorder ) && 'yes' === $set_freeorder ) ? 'selected' : ''; ?>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-neo' ); ?></option>
+
+		</select>
+		<?php
+	}
+
+	public function wcpimh_ecstatus_callback() {
+		$set_ecstatus = isset( $this->imh_settings['wcpimh_ecstatus'] ) ? $this->imh_settings['wcpimh_ecstatus'] : '';
+		?>
+		<select name="imhset[wcpimh_ecstatus]" id="wcpimh_ecstatus">
+			<?php $selected = ( $set_ecstatus === 'nosync' || $set_ecstatus === '' ) ? 'selected' : ''; ?>
+			<option value="all" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'All status orders', 'connect-woocommerce-neo' ); ?></option>
+
+			<?php $selected = ( isset( $set_ecstatus ) && 'completed' === $set_ecstatus ) ? 'selected' : ''; ?>
+			<option value="completed" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Only Completed', 'connect-woocommerce-neo' ); ?></option>
+		</select>
+		<?php
 	}
 
 	/**
-	 * CallBack for Sync Settings
+	 * Callback Billing nif key
 	 *
 	 * @return void
 	 */
-	public function status_sync_callback() {
-		$value = get_site_option( 'wpat_status_sync' );
-
-		$options_sync = array(
-			'no'   => __( 'Do not sync status', 'wpautotranslate' ),
-			'sync' => __( 'Sync status', 'wpautotranslate' ),
+	public function wcpimh_design_id_callback() {
+		printf(
+			'<input class="regular-text" type="text" name="imhset[wcpimh_design_id]" id="wcpimh_design_id" value="%s">',
+			isset( $this->imh_settings['wcpimh_design_id'] ) ? esc_attr( $this->imh_settings['wcpimh_design_id'] ) : ''
 		);
+	}
+
+	/**
+	 * Callback sync field.
+	 *
+	 * @return void
+	 */
+	public function wcpimh_sync_callback() {
+		global $cron_options;
 		?>
-		<select name="wpat_status_sync" id="wpat_status_sync">
+		<select name="imhset[wcpimh_sync]" id="wcpimh_sync">
+			<?php $selected = ( isset( $this->imh_settings['wcpimh_sync'] ) && 'no' === $this->imh_settings['wcpimh_sync'] ) ? 'selected' : ''; ?>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
+
 			<?php
-			foreach ( $options_sync as $key => $label ) {
-				$selected = ( isset( $value ) && $value === $key ) ? 'selected' : '';
-				echo '<option value="' . esc_html( $key ) . '" ' . esc_html( $selected ) . '>';
-				echo esc_html( $label ) . '</option>';
+			if ( ! empty( $cron_options ) ) {
+				foreach ( $cron_options as $cron_option ) {
+					$selected = ( isset( $this->imh_settings['wcpimh_sync'] ) && $cron_option['cron'] === $this->imh_settings['wcpimh_sync'] ) ? 'selected' : '';
+					echo '<option value="' . esc_html( $cron_option['cron'] ) . '" ' . esc_html( $selected ) . '>';
+					echo esc_html( $cron_option['display'] ) . '</option>';
+				}
 			}
 			?>
 		</select>
 		<?php
-    echo '<p>' . esc_html__( 'When a translation is made, by default the target content is in Draft. Although you can adjust language to language, with this option you can force it to synchronize with the same state of the original content.', 'wpautotranslate' ) . '</p>';
 	}
 
 	/**
-	 * Callback for Setting Amazon Access Key
+	 * Callback sync field.
 	 *
 	 * @return void
 	 */
-	public function amazon_accesskey_callback() {
-		$value = get_site_option( $this->option_name . 'amazon_accesskey' );
-		echo '<input type="text" class="regular-text" name="' . esc_html( $this->option_name ) . 'amazon_accesskey" id="' . esc_html( $this->option_name ) . 'amazon_accesskey" value="' . esc_html( $value ) . '">';
+	public function wcpimh_sync_num_callback() {
+		printf(
+			'<input class="regular-text" type="text" name="imhset[wcpimh_sync_num]" id="wcpimh_sync_num" value="%s">',
+			isset( $this->imh_settings['wcpimh_sync_num'] ) ? esc_attr( $this->imh_settings['wcpimh_sync_num'] ) : 5
+		);
+	}
+
+	public function wcpimh_sync_email_callback() {
+		?>
+		<select name="imhset[wcpimh_sync_email]" id="wcpimh_sync_email">
+			<?php $selected = ( isset( $this->imh_settings['wcpimh_sync_email'] ) && $this->imh_settings['wcpimh_sync_email'] === 'yes' ) ? 'selected' : ''; ?>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-neo' ); ?></option>
+			<?php $selected = ( isset( $this->imh_settings['wcpimh_sync_email'] ) && $this->imh_settings['wcpimh_sync_email'] === 'no' ) ? 'selected' : ''; ?>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
+		</select>
+		<?php
+	}
+	/**
+	 * # Public
+	 * ---------------------------------------------------------------------------------------------------- */
+	/**
+	 * Sanitize fiels before saves in DB
+	 *
+	 * @param array $input Input fields.
+	 * @return array
+	 */
+	public function sanitize_fields_public( $input ) {
+		$sanitary_values = array();
+
+		if ( isset( $input['vat_show'] ) ) {
+			$sanitary_values['vat_show'] = sanitize_text_field( $input['vat_show'] );
+		}
+
+		if ( isset( $input['vat_mandatory'] ) ) {
+			$sanitary_values['vat_mandatory'] = $input['vat_mandatory'];
+		}
+
+		if ( isset( $input['company_field'] ) ) {
+			$sanitary_values['company_field'] = $input['company_field'];
+		}
+
+		if ( isset( $input['opt_checkout'] ) ) {
+			$sanitary_values['opt_checkout'] = $input['opt_checkout'];
+		}
+
+		if ( isset( $input['terms_registration'] ) ) {
+			$sanitary_values['terms_registration'] = $input['terms_registration'];
+		}
+
+		if ( isset( $input['remove_free'] ) ) {
+			$sanitary_values['remove_free'] = $input['remove_free'];
+		}
+
+		return $sanitary_values;
 	}
 
 	/**
-	 * Callback for Setting Amazon Secret Key
+	 * Info for holded automate section.
 	 *
 	 * @return void
 	 */
-	public function amazon_secretkey_callback() {
-		$value = get_site_option( $this->option_name . 'amazon_secretkey' );
-		echo '<input type="text" class="regular-text" name="' . esc_html( $this->option_name ) . 'amazon_secretkey" id="' . esc_html( $this->option_name ) . 'amazon_secretkey" value="' . esc_html( $value ) . '">';
+	public function section_info_public() {
+		esc_html_e( 'Please select the following settings in order customize your eCommerce. ', 'connect-woocommerce-neo' );
 	}
 
 	/**
-	 * Callback for Setting Amazon Region
+	 * Vat show setting
 	 *
 	 * @return void
 	 */
-	public function amazon_region_callback() {
-		$value = get_site_option( $this->option_name . 'amazon_region' );
-		echo '<input type="text" class="regular-text" name="' . esc_html( $this->option_name ) . 'amazon_region" id="' . esc_html( $this->option_name ) . 'amazon_region" value="' . esc_html( $value ) . '">';
+	public function vat_show_callback() {
+		?>
+		<select name="imhset_public[vat_show]" id="vat_show">
+			<?php 
+			$selected = ( isset( $this->imhset_public['vat_show'] ) && $this->imhset_public['vat_show'] === 'no' ? 'selected' : '' );
+			?>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
+			<?php 
+			$selected = ( isset( $this->imhset_public['vat_show'] ) && $this->imhset_public['vat_show'] === 'yes' ? 'selected' : '' );
+			?>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-neo' ); ?></option>
+		</select>
+		<?php
 	}
 
 	/**
-	 * Callback for Setting DeepL Key
+	 * Vat show mandatory setting
 	 *
 	 * @return void
 	 */
-	public function deepl_key_callback() {
-		$value = get_site_option( $this->option_name . 'deepl_key' );
-		echo '<input type="text" class="regular-text" name="' . esc_html( $this->option_name ) . 'deepl_key" id="' . esc_html( $this->option_name ) . 'deepl_key" value="' . esc_html( $value ) . '">';
+	public function vat_mandatory_callback() {
+		$wcpimh_vat_mandatory = get_option( 'wcpimh_vat_mandatory' );
+		?>
+		<select name="imhset_public[vat_mandatory]" id="vat_mandatory">
+			<?php 
+			$selected = ( isset( $this->imhset_public['vat_mandatory'] ) && $this->imhset_public['vat_mandatory'] === 'no' ? 'selected' : '' );
+			?>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
+			<?php 
+			$selected = ( isset( $this->imhset_public['vat_mandatory'] ) && $this->imhset_public['vat_mandatory'] === 'yes' ? 'selected' : '' );
+			?>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-neo' ); ?></option>
+		</select>
+		<?php
 	}
 
 	/**
-	 * Callback for Setting Google Translate Key
+	 * Vat show company field
 	 *
 	 * @return void
 	 */
-	public function google_jsonkey_callback() {
-		$value = get_site_option( $this->option_name . 'google_jsonkey' );
-		echo '<textarea name="' . esc_html( $this->option_name ) . 'google_jsonkey" rows="5" cols="50" id="' . esc_html( $this->option_name ) . 'google_jsonkey">' . $value . '</textarea>';
+	public function company_field_callback() {
+		?>
+		<select name="imhset_public[company_field]" id="company_field">
+			<?php 
+			$selected = ( isset( $this->imhset_public['company_field'] ) && $this->imhset_public['company_field'] === 'no' ? 'selected' : '' );
+			?>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
+			<?php 
+			$selected = ( isset( $this->imhset_public['company_field'] ) && $this->imhset_public['company_field'] === 'yes' ? 'selected' : '' );
+			?>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-neo' ); ?></option>
+		</select>
+		<?php
 	}
 
 	/**
-	 * Callback for Setting IBM Key
+	 * Vat show term conditions
 	 *
 	 * @return void
 	 */
-	public function ibm_key_callback() {
-		$value = get_site_option( $this->option_name . 'ibm_key' );
-		echo '<input type="text" class="regular-text" name="' . esc_html( $this->option_name ) . 'ibm_key" id="' . esc_html( $this->option_name ) . 'ibm_key" value="' . esc_html( $value ) . '">';
+	public function wcpimh_terms_registration_callback() {
+		?>
+		<select name="imhset_public[terms_registration]" id="terms_registration">
+			<?php 
+			$selected = ( isset( $this->imhset_public['terms_registration'] ) && $this->imhset_public['terms_registration'] === 'no' ? 'selected' : '' );
+			?>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
+			<?php 
+			$selected = ( isset( $this->imhset_public['terms_registration'] ) && $this->imhset_public['terms_registration'] === 'yes' ? 'selected' : '' );
+			?>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-neo' ); ?></option>
+		</select>
+		<?php
 	}
 
 	/**
-	 * Callback for Setting IBM url
+	 * Vat show free shipping
 	 *
 	 * @return void
 	 */
-	public function ibm_url_callback() {
-		$value = get_site_option( $this->option_name . 'ibm_url' );
-		echo '<input type="text" class="regular-text" name="' . esc_html( $this->option_name ) . 'ibm_url" id="' . esc_html( $this->option_name ) . 'ibm_url" value="' . esc_html( $value ) . '">';
+	public function wcpimh_remove_free_others_callback() {
+		?>
+		<select name="imhset_public[remove_free]" id="remove_free">
+			<?php 
+			$selected = ( isset( $this->imhset_public['remove_free'] ) && $this->imhset_public['remove_free'] === 'no' ? 'selected' : '' );
+			?>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
+			<?php 
+			$selected = ( isset( $this->imhset_public['remove_free'] ) && $this->imhset_public['remove_free'] === 'yes' ? 'selected' : '' );
+			?>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-neo' ); ?></option>
+		</select>
+		<?php
 	}
 
 
 	/**
-	 * Callback for Setting Bing Key
+	 * Custom CSS for admin
 	 *
 	 * @return void
 	 */
-	public function bing_key_callback() {
-		$value = get_site_option( $this->option_name . 'bing_key' );
-		echo '<input class="regular-text" type="text" name="' . esc_html( $this->option_name ) . 'bing_key" id="' . esc_html( $this->option_name ) . 'bing_key" value="' . esc_html( $value ) . '">';
+	public function custom_css() {
+		// Free Version.
+		echo '
+			<style>
+			.wp-admin .wcpimh-plugin span.wcpimh-pro{ 
+				color: #b4b9be;
+			}
+			.wp-admin.wcpimh-plugin #wcpimh_catnp,
+			.wp-admin.wcpimh-plugin #wcpimh_stock,
+			.wp-admin.wcpimh-plugin #wcpimh_catsep {
+				width: 70px;
+			}
+			.wp-admin.wcpimh-plugin #wcpimh_idcentre,
+			.wp-admin.wcpimh-plugin #wcpimh_sync_num {
+				width: 50px;
+			}
+			.wp-admin.wcpimh-plugin #wcpimh_prodst {
+				width: 150px;
+			}
+			.wp-admin.wcpimh-plugin #wcpimh_api,
+			.wp-admin.wcpimh-plugin #wcpimh_taxinc {
+				width: 270px;
+			}';
+		// Not pro version.
+		if ( ! connwoo_is_pro() ) {
+			echo '.wp-admin.wcpimh-plugin #wcpimh_catsep, .wp-admin.wcpimh-plugin #wcpimh_filter, .wp-admin.wcpimh-plugin #wcpimh_sync  {
+				pointer-events:none;
+			}';
+		}
+		echo '</style>';
 	}
 
-	/**
-	 * Callback for Setting Bing Region
-	 *
-	 * @return void
-	 */
-	public function bing_region_callback() {
-		$value = get_site_option( $this->option_name . 'bing_region' );
-		echo '<input type="text" class="regular-text" name="' . esc_html( $this->option_name ) . 'bing_region" id="' . esc_html( $this->option_name ) . 'bing_region" value="' . esc_html( $value ) . '">';
-	}
-
-	/**
-	 * Callback for Setting Yandex Folder
-	 *
-	 * @return void
-	 */
-	public function yandex_folder_callback() {
-		$value = get_site_option( $this->option_name . 'yandex_folder' );
-		echo '<input type="text" class="regular-text" name="' . esc_html( $this->option_name ) . 'yandex_folder" id="' . esc_html( $this->option_name ) . 'yandex_folder" value="' . esc_html( $value ) . '">';
-	}
-
-	/**
-	 * Callback for Setting Yandex API key
-	 *
-	 * @return void
-	 */
-	public function yandex_api_callback() {
-		$value = get_site_option( $this->option_name . 'yandex_api' );
-		echo '<input type="text" class="regular-text" name="' . esc_html( $this->option_name ) . 'yandex_api" id="' . esc_html( $this->option_name ) . 'yandex_api" value="' . esc_html( $value ) . '">';
-	}
-
-	/**
-	 * Callback for Setting Yandex Secret key
-	 *
-	 * @return void
-	 */
-	public function yandex_secret_callback() {
-		$value = get_site_option( $this->option_name . 'yandex_secret' );
-		echo '<input type="text" class="regular-text" name="' . esc_html( $this->option_name ) . 'yandex_secret" id="' . esc_html( $this->option_name ) . 'yandex_secret" value="' . esc_html( $value ) . '">';
-	}
+}
+if ( is_admin() ) {
+	new WCIMPH_Admin();
 }

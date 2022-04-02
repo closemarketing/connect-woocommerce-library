@@ -16,15 +16,13 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WCSEN_VERSION', '2.0' );
-define( 'WCSEN_PLUGIN', __FILE__ );
-define( 'WCSEN_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'WCSEN_PLUGIN_DIR', untrailingslashit( dirname( WCSEN_PLUGIN ) ) );
-define( 'WCSEN_TABLE_SYNC', 'wcsen_product_sync' );
-define( 'PLUGIN_SLUG', 'connect-woocommerce-neo' );
-define( 'PLUGIN_PREFIX', 'wcsync_' );
-define( 'PLUGIN_OPTIONS', 'sync_ecommerce_neo' );
-define( 'EXPIRE_TOKEN', 259200 );
+define( 'WCPIMH_VERSION', '2.0' );
+define( 'WCPIMH_PLUGIN', __FILE__ );
+define( 'WCPIMH_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'WCPIMH_PLUGIN_DIR', untrailingslashit( dirname( WCPIMH_PLUGIN ) ) );
+define( 'WCPIMH_PLUGIN_SLUG', 'connect-woocommerce-neo' );
+define( 'WCPIMH_PLUGIN_OPTIONS', 'sync_ecommerce_neo' );
+define( 'WCPIMH_EXPIRE_TOKEN', 259200 );
 
 // Loads translation.
 add_action( 'init', 'wcsen_load_textdomain' );
@@ -36,10 +34,16 @@ function wcsen_load_textdomain() {
 }
 
 // Includes files.
+require_once dirname( __FILE__ ) . '/includes/class-api-erp-neo.php';
 require_once dirname( __FILE__ ) . '/includes/base/helpers-functions.php';
+require_once dirname( __FILE__ ) . '/includes/base/helpers-cron.php';
 require_once dirname( __FILE__ ) . '/includes/base/class-connect-admin.php';
 require_once dirname( __FILE__ ) . '/includes/base/class-connect-import.php';
 require_once dirname( __FILE__ ) . '/includes/base/class-connect-import-pro.php';
+
+/**
+ * Default values
+ */
 
 // Make premium.
 add_filter(
@@ -49,55 +53,43 @@ add_filter(
 	}
 );
 
-// Make premium.
 add_filter(
-	'connwoo_remote',
+	'connwoo_remote_name',
 	function() {
 		return 'NEO';
 	}
 );
 
+add_filter(
+	'connwoo_remote_price_tax_option',
+	function() {
+		return true;
+	}
+);
 
-register_activation_hook( __FILE__, 'wcsen_create_db' );
-/**
- * Creates the database
- *
- * @since  1.0
- * @access private
- * @return void
- */
-function wcsen_create_db() {
-	global $wpdb;
-	$charset_collate = $wpdb->get_charset_collate();
+add_filter(
+	'connwoo_remote_price_rate_option',
+	function() {
+		return false;
+	}
+);
 
-	$table_name = $wpdb->prefix . WCSEN_TABLE_SYNC;
+$conn_woo_admin_message = sprintf(
+	// translators: %s url of contact.
+	__( 'Put the connection ID Centre and API key settings in order to connect and sync products. You have to contract before to <a href="%s" target="_blank">Bartolomé Consultores</a>. ', 'connect-woocommerce-products-woocommerce' ),
+	'https://www.bartolomeconsultores.com/contactar/?utm_source=WordPressPlugin'
+);
 
-	// DB Tasks.
-	$sql = "CREATE TABLE $table_name (
-	    sync_prodid INT NOT NULL,
-	    synced bit(1) NOT NULL DEFAULT b'0',
-          UNIQUE KEY sync_prodid (sync_prodid)
-    	) $charset_collate;";
-
-	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-	dbDelta( $sql );
-}
 
 
 class WCSEN_Orders {
 
-	/**
-	 * @var WC_Holded_Integration
-	 */
 	private $integration;
-
-	/**
-	* Construct the plugin.
-	*/
+/*
 	public function __construct() {
 		add_action( 'plugins_loaded', array( $this, 'init' ) );
 	}
-
+*/
 	/**
 	* Initialize the plugin.
 	*/
@@ -106,7 +98,7 @@ class WCSEN_Orders {
 		// Checks if WooCommerce is installed.
 		if ( class_exists( 'WC_Integration' ) ) {
 			// Include our integration class.
-			require_once 'includes/class-sync-orders.php';
+			require_once 'includes/base/class-connect-orders.php';
 
 			// Register the integration.
 			add_filter( 'woocommerce_integrations', array( $this, 'add_integration' ) );
@@ -120,7 +112,7 @@ class WCSEN_Orders {
 	 * Add a new integration to WooCommerce.
 	 */
 	public function add_integration( $integrations ) {
-		$integrations[] = 'WC_NEO_Integration';
+		$integrations[] = 'Connect_WooCommerce_Orders';
 		return $integrations;
 	}
 

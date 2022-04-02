@@ -20,13 +20,26 @@ defined( 'ABSPATH' ) || exit;
 class CONNAPI_NEO_ERP {
 
 	/**
+	 * Checks if can sync
+	 *
+	 * @return boolean
+	 */
+	public function check_can_sync() {
+		$imh_settings = get_option( 'imhset' );
+		if ( ! isset( $imh_settings['wcpimh_api'] ) ) {
+			return false;
+		}
+		return true;
+	}
+
+	/**
 	 * Converts product from API to SYNC
 	 *
 	 * @param array $products_original API NEO Product.
 	 * @return array Products converted to manage internally.
 	 */
-	public function sync_convert_products( $products_original ) {
-		$sync_settings      = get_option( PLUGIN_OPTIONS );
+	public function convert_products( $products_original ) {
+		$sync_settings      = get_option( 'imhset' );
 		$product_tax        = isset( $sync_settings[ PLUGIN_PREFIX . 'tax' ] ) ? $sync_settings[ PLUGIN_PREFIX . 'tax' ] : 'yes';
 		$products_converted = array();
 		$i                  = 0;
@@ -91,8 +104,8 @@ class CONNAPI_NEO_ERP {
 	 * @param  boolean $renew_token Renew token.
 	 * @return string Array of products imported via API.
 	 */
-	function sync_get_token( $renew_token = false ) {
-		$sync_settings = get_option( PLUGIN_OPTIONS );
+	private function get_token( $renew_token = false ) {
+		$sync_settings = get_option( 'imhset' );
 		$token         = get_transient( PLUGIN_PREFIX . 'token' );
 
 		if ( ! $token || ! $renew_token ) {
@@ -143,8 +156,8 @@ class CONNAPI_NEO_ERP {
 	 * @param string $period Date to get YYYYMMDD.
 	 * @return array Array of products imported via API.
 	 */
-	function sync_get_products( $id = null, $page = null, $period = null ) {
-		$token = sync_get_token();
+	public function get_products( $id = null, $page = null, $period = null ) {
+		$token = $this->get_token();
 		$args  = array(
 			'body'    => array(
 				'token' => $token,
@@ -176,7 +189,7 @@ class CONNAPI_NEO_ERP {
 	 * @return array Array of products imported via API.
 	 */
 	function sync_get_products_stock( $period = null ) {
-		$token         = sync_get_token();
+		$token         = $this->get_token();
 		$args = array(
 			'body'    => array(
 				'token' => $token,
@@ -208,7 +221,7 @@ class CONNAPI_NEO_ERP {
 	* @return array Array of products imported via API.
 	*/
 	function sync_get_properties_order() {
-		$token = sync_get_token();
+		$token = $this->get_token();
 
 		$args = array(
 			'body'    => array(
@@ -237,7 +250,7 @@ class CONNAPI_NEO_ERP {
 	 * @return array NumPedido.
 	 */
 	function sync_post_order( $order ) {
-		$token      = sync_get_token();
+		$token      = $this->get_token();
 		$order_json = wp_json_encode( $order );
 
 		$args = array(
@@ -262,4 +275,4 @@ class CONNAPI_NEO_ERP {
 
 }
 
-$connapi_erp = new CONNAPI_ERP();
+$connapi_erp = new CONNAPI_NEO_ERP();

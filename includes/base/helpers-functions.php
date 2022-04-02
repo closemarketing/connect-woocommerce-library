@@ -24,3 +24,59 @@ if ( ! function_exists( 'error_admin_message' ) ) {
 		echo '</div>';
 	}
 }
+
+/**
+ * Returns Version.
+ *
+ * @return array
+ */
+if ( ! function_exists( 'connwoo_is_pro' ) ) {
+	function connwoo_is_pro() {
+		return apply_filters(
+			'connwoo_is_pro',
+			false
+		);
+	}
+}
+
+if ( ! function_exists( 'connwoo_remote_name' ) ) {
+	/**
+	 * Returns Version.
+	 *
+	 * @return array
+	 */
+	function connwoo_remote_name() {
+		return apply_filters(
+			'connwoo_remote_name',
+			false
+		);
+	}
+}
+
+if ( ! function_exists( 'connwoo_remote_price_tax_option' ) ) {
+	/**
+	 * Returns Version.
+	 *
+	 * @return array
+	 */
+	function connwoo_remote_price_tax_option() {
+		return apply_filters(
+			'connwoo_remote_price_tax_option',
+			false
+		);
+	}
+}
+
+if ( ! function_exists( 'connwoo_remote_price_rate_option' ) ) {
+	/**
+	 * Returns Version.
+	 *
+	 * @return array
+	 */
+	function connwoo_remote_price_rate_option() {
+		return apply_filters(
+			'connwoo_remote_price_rate_option',
+			false
+		);
+	}
+}

@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
  * @copyright  2019 Closemarketing
  * @version    0.1
  */
-class CONNWOO_Import_PRO {
+class Connect_WooCommerce_Import_PRO {
 	/**
 	 * The plugin file
 	 *
@@ -811,4 +811,4 @@ class CONNWOO_Import_PRO {
 	}
 }
 
-$connwoo_pro = new CONNWOO_Import_PRO();
+$connwoo_pro = new Connect_WooCommerce_Import_PRO();

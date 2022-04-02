@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Holded integration
  */
-class WCIMH_Holded_Integration {
+class Connect_WooCommerce_Orders {
 
 	/**
 	 * Array of orders to export
@@ -580,4 +580,4 @@ class WCIMH_Holded_Integration {
 
 }
 
-new WCIMH_Holded_Integration();
+new Connect_WooCommerce_Orders();
