@@ -40,8 +40,8 @@ class WCIMPH_Admin {
 	 */
 	public function __construct() {
 		global $wpdb;
-		$this->table_sync = $wpdb->prefix . 'wcpimh_product_sync';
-		$this->label_pro  = __( '(ONLY PRO VERSION)', 'connect-woocommerce-products-woocommerce' );
+		$this->table_sync = $wpdb->prefix . 'connwoo_product_sync';
+		$this->label_pro  = __( '(ONLY PRO VERSION)', 'connect-woocommerce-neo' );
 		add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
 		add_action( 'admin_init', array( $this, 'page_init' ) );
 		add_action( 'admin_head', array( $this, 'custom_css' ) );
@@ -56,10 +56,10 @@ class WCIMPH_Admin {
 
 		add_submenu_page(
 			'woocommerce',
-			__( 'Connect WooCommerce', 'connect-woocommerce-products-woocommerce' ) . connwoo_remote_name(),
-			__( 'Connect ', 'connect-woocommerce-products-woocommerce' ) . connwoo_remote_name(),
+			__( 'Connect WooCommerce', 'connect-woocommerce-neo' ) . connwoo_remote_name(),
+			__( 'Connect ', 'connect-woocommerce-neo' ) . connwoo_remote_name(),
 			'manage_options',
-			'import_holded',
+			'connect_woocommerce',
 			array( $this, 'create_admin_page' ),
 		);
 	}
@@ -70,34 +70,39 @@ class WCIMPH_Admin {
 	 * @return void
 	 */
 	public function create_admin_page() {
-		$this->imh_settings = get_option( 'imhset' );
+		$this->imh_settings  = get_option( 'imhset' );
 		$this->imhset_public = get_option( 'imhset_public' );
 		?>
 
 		<div class="wrap">
-			<h2><?php esc_html_e( 'WooCommerce Connection Settings with ', 'connect-woocommerce-products-woocommerce' ); esc_html_e( connwoo_remote_name() ); ?></h2>
+			<h2>
+				<?php
+				esc_html_e( 'WooCommerce Connection Settings with ', 'connect-woocommerce-neo' );
+				echo esc_html( connwoo_remote_name() );
+				?>
+			</h2>
 			<p></p>
 			<?php settings_errors(); ?>
 
 			<?php $active_tab = isset( $_GET['tab'] ) ? strval( $_GET['tab'] ) : 'sync'; ?>
 
 			<h2 class="nav-tab-wrapper">
-				<a href="?page=import_holded&tab=sync" class="nav-tab <?php echo 'sync' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sync products', 'connect-woocommerce-products-woocommerce' ); ?></a>
-				<a href="?page=import_holded&tab=orders" class="nav-tab <?php echo 'orders' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sync Orders', 'connect-woocommerce-products-woocommerce' ); ?></a>
-				<a href="?page=import_holded&tab=automate" class="nav-tab <?php echo 'automate' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Automate', 'connect-woocommerce-products-woocommerce' ); ?></a>
-				<a href="?page=import_holded&tab=settings" class="nav-tab <?php echo 'settings' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Settings', 'connect-woocommerce-products-woocommerce' ); ?></a>
-				<a href="?page=import_holded&tab=public" class="nav-tab <?php echo 'public' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Frontend Settings', 'connect-woocommerce-products-woocommerce' ); ?></a>
+				<a href="?page=connect_woocommerce&tab=sync" class="nav-tab <?php echo 'sync' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sync products', 'connect-woocommerce-neo' ); ?></a>
+				<a href="?page=connect_woocommerce&tab=orders" class="nav-tab <?php echo 'orders' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sync Orders', 'connect-woocommerce-neo' ); ?></a>
+				<a href="?page=connect_woocommerce&tab=automate" class="nav-tab <?php echo 'automate' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Automate', 'connect-woocommerce-neo' ); ?></a>
+				<a href="?page=connect_woocommerce&tab=settings" class="nav-tab <?php echo 'settings' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Settings', 'connect-woocommerce-neo' ); ?></a>
+				<a href="?page=connect_woocommerce&tab=public" class="nav-tab <?php echo 'public' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Frontend Settings', 'connect-woocommerce-neo' ); ?></a>
 				<?php
 				if ( connwoo_is_pro() ) {
 					?>
-					<a href="?page=import_holded&tab=license" class="nav-tab <?php echo 'license' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'License', 'connect-woocommerce-products-woocommerce' ); ?></a>
+					<a href="?page=connect_woocommerce&tab=license" class="nav-tab <?php echo 'license' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'License', 'connect-woocommerce-neo' ); ?></a>
 					<?php
 				}
 				?>
 			</h2>
 
 			<?php	if ( 'sync' === $active_tab ) { ?>
-				<div id="sync-holded-engine"></div>
+				<div id="connect-woocommerce-engine"></div>
 			<?php } ?>
 			<?php	if ( 'settings' === $active_tab ) { ?>
 				<form method="post" action="options.php">
@@ -105,7 +110,7 @@ class WCIMPH_Admin {
 						settings_fields( 'wcpimh_settings' );
 						do_settings_sections( 'connect-woocommerce-admin' );
 						submit_button(
-							__( 'Save settings', 'connect-woocommerce-products-woocommerce' ),
+							__( 'Save settings', 'connect-woocommerce-neo' ),
 							'primary',
 							'submit_settings'
 						);
@@ -120,7 +125,7 @@ class WCIMPH_Admin {
 
 					if ( connwoo_is_pro() ) {
 						submit_button(
-							__( 'Save automate', 'connect-woocommerce-products-woocommerce' ),
+							__( 'Save automate', 'connect-woocommerce-neo' ),
 							'primary',
 							'submit_automate'
 						);
@@ -134,7 +139,7 @@ class WCIMPH_Admin {
 					settings_fields( 'wcpimhset_public' );
 					do_settings_sections( 'connect-woocommerce-public' );
 					submit_button(
-						__( 'Save public', 'connect-woocommerce-products-woocommerce' ),
+						__( 'Save public', 'connect-woocommerce-neo' ),
 						'primary',
 						'submit_public'
 					);
@@ -164,12 +169,12 @@ class WCIMPH_Admin {
 		register_setting(
 			'wcpimh_settings',
 			'imhset',
-			array( $this, 'sanitize_fields' )
+			array( $this, 'sanitize_fields_settings' )
 		);
 
 		add_settings_section(
 			'connect_woocommerce_setting_section',
-			__( 'Settings for Importing in WooCommerce', 'connect-woocommerce-products-woocommerce' ),
+			__( 'Settings for Importing in WooCommerce', 'connect-woocommerce-neo' ),
 			array( $this, 'connect_woocommerce_section_info' ),
 			'connect-woocommerce-admin'
 		);
@@ -177,34 +182,24 @@ class WCIMPH_Admin {
 		if ( 'NEO' === connwoo_remote_name() ) {
 			add_settings_field(
 				'wcpimh_idcentre',
-				__( 'NEO ID Centre', 'sync-ecommerce-neo' ),
+				__( 'NEO ID Centre', 'connect-woocommerce-neo' ),
 				array( $this, 'idcentre_callback' ),
-				'connect-woocommerce-admin',
-				'connect_woocommerce_setting_section'
-			);
-
-			add_settings_field(
-				'wcsen_api',
-				__( 'NEO API Key', 'sync-ecommerce-neo' ),
-				array( $this, 'api_callback' ),
-				'connect-woocommerce-admin',
-				'connect_woocommerce_setting_section'
-			);
-		}
-
-		if ( 'Holded' === connwoo_remote_name() ) {
-			add_settings_field(
-				'wcpimh_api',
-				__( 'Holded API Key', 'connect-woocommerce-products-woocommerce' ),
-				array( $this, 'wcpimh_api_callback' ),
 				'connect-woocommerce-admin',
 				'connect_woocommerce_setting_section'
 			);
 		}
 
 		add_settings_field(
+			'wcpimh_api',
+			__( 'API Key', 'connect-woocommerce-neo' ),
+			array( $this, 'api_callback' ),
+			'connect-woocommerce-admin',
+			'connect_woocommerce_setting_section'
+		);
+
+		add_settings_field(
 			'wcpimh_stock',
-			__( 'Import stock?', 'connect-woocommerce-products-woocommerce' ),
+			__( 'Import stock?', 'connect-woocommerce-neo' ),
 			array( $this, 'wcpimh_stock_callback' ),
 			'connect-woocommerce-admin',
 			'connect_woocommerce_setting_section'
@@ -212,7 +207,7 @@ class WCIMPH_Admin {
 
 		add_settings_field(
 			'wcpimh_prodst',
-			__( 'Default status for new products?', 'connect-woocommerce-products-woocommerce' ),
+			__( 'Default status for new products?', 'connect-woocommerce-neo' ),
 			array( $this, 'wcpimh_prodst_callback' ),
 			'connect-woocommerce-admin',
 			'connect_woocommerce_setting_section'
@@ -220,7 +215,7 @@ class WCIMPH_Admin {
 
 		add_settings_field(
 			'wcpimh_virtual',
-			__( 'Virtual products?', 'connect-woocommerce-products-woocommerce' ),
+			__( 'Virtual products?', 'connect-woocommerce-neo' ),
 			array( $this, 'wcpimh_virtual_callback' ),
 			'connect-woocommerce-admin',
 			'connect_woocommerce_setting_section'
@@ -228,13 +223,13 @@ class WCIMPH_Admin {
 
 		add_settings_field(
 			'wcpimh_backorders',
-			__( 'Allow backorders?', 'connect-woocommerce-products-woocommerce' ),
+			__( 'Allow backorders?', 'connect-woocommerce-neo' ),
 			array( $this, 'wcpimh_backorders_callback' ),
 			'connect-woocommerce-admin',
 			'connect_woocommerce_setting_section'
 		);
 
-		$label_cat = __( 'Category separator', 'connect-woocommerce-products-woocommerce' );
+		$label_cat = __( 'Category separator', 'connect-woocommerce-neo' );
 		if ( ! connwoo_is_pro() ) {
 			$label_cat .= ' ' . $this->label_pro;
 		}
@@ -248,7 +243,7 @@ class WCIMPH_Admin {
 
 		add_settings_field(
 			'wcpimh_filter',
-			__( 'Filter products by tags? (separated by comma and no space)', 'connect-woocommerce-products-woocommerce' ),
+			__( 'Filter products by tags? (separated by comma and no space)', 'connect-woocommerce-neo' ),
 			array( $this, 'wcpimh_filter_callback' ),
 			'connect-woocommerce-admin',
 			'connect_woocommerce_setting_section'
@@ -258,7 +253,7 @@ class WCIMPH_Admin {
 
 			add_settings_field(
 				'wcpimh_tax_option',
-				__( 'Get prices with Tax?', 'sync-ecommerce-neo' ),
+				__( 'Get prices with Tax?', 'connect-woocommerce-neo' ),
 				array( $this, 'tax_option_callback' ),
 				'connect-woocommerce-admin',
 				'connect_woocommerce_setting_section'
@@ -266,8 +261,8 @@ class WCIMPH_Admin {
 		}
 
 		if ( connwoo_remote_price_rate_option() ) {
-			$label_filter = __( 'Product price rate for this eCommerce', 'connect-woocommerce-products-woocommerce' );
-			$desc_tip = __( 'Copy and paste the ID of the rates for publishing in the web', 'connect-woocommerce-products-woocommerce' );
+			$label_filter = __( 'Product price rate for this eCommerce', 'connect-woocommerce-neo' );
+			$desc_tip = __( 'Copy and paste the ID of the rates for publishing in the web', 'connect-woocommerce-neo' );
 			if ( ! connwoo_is_pro() ) {
 				$label_filter .= ' ' . $this->label_pro;
 			}
@@ -280,7 +275,7 @@ class WCIMPH_Admin {
 			);
 		}
 
-		$name_catnp = __( 'Import category only in new products?', 'connect-woocommerce-products-woocommerce' );
+		$name_catnp = __( 'Import category only in new products?', 'connect-woocommerce-neo' );
 		if ( connwoo_is_pro() ) {
 			add_settings_field(
 				'wcpimh_catnp',
@@ -292,7 +287,7 @@ class WCIMPH_Admin {
 		}
 
 		if ( 'Holded' === connwoo_remote_name() ) {
-			$name_docorder = __( 'Document to create after order completed?', 'connect-woocommerce-products-woocommerce' );
+			$name_docorder = __( 'Document to create after order completed?', 'connect-woocommerce-neo' );
 			if ( connwoo_is_pro() ) {
 				add_settings_field(
 					'wcpimh_doctype',
@@ -303,7 +298,7 @@ class WCIMPH_Admin {
 				);
 			}
 
-			$name_docorder = __( 'Create document for free Orders?', 'connect-woocommerce-products-woocommerce' );
+			$name_docorder = __( 'Create document for free Orders?', 'connect-woocommerce-neo' );
 			if ( connwoo_is_pro() ) {
 				add_settings_field(
 					'wcpimh_freeorder',
@@ -314,7 +309,7 @@ class WCIMPH_Admin {
 				);
 			}
 
-			$name_docorder = __( 'Status to sync Orders?', 'connect-woocommerce-products-woocommerce' );
+			$name_docorder = __( 'Status to sync Orders?', 'connect-woocommerce-neo' );
 			if ( connwoo_is_pro() ) {
 				add_settings_field(
 					'wcpimh_ecstatus',
@@ -325,7 +320,7 @@ class WCIMPH_Admin {
 				);
 			}
 
-			$name_nif = __( 'ID Holded design for document', 'connect-woocommerce-products-woocommerce' );
+			$name_nif = __( 'ID Holded design for document', 'connect-woocommerce-neo' );
 			if ( connwoo_is_pro() ) {
 				add_settings_field(
 					'wcpimh_design_id',
@@ -340,14 +335,15 @@ class WCIMPH_Admin {
 		/**
 		 * # Automate
 		 * ---------------------------------------------------------------------------------------------------- */
+
 		add_settings_section(
 			'connect_woocommerce_setting_automate',
-			__( 'Automate', 'connect-woocommerce-products-woocommerce' ),
+			__( 'Automate', 'connect-woocommerce-neo' ),
 			array( $this, 'connect_woocommerce_section_automate' ),
 			'connect-woocommerce-automate'
 		);
 		if ( connwoo_is_pro() ) {
-			$name_sync = __( 'When do you want to sync?', 'connect-woocommerce-products-woocommerce' );
+			$name_sync = __( 'When do you want to sync?', 'connect-woocommerce-neo' );
 			if ( connwoo_is_pro() ) {
 				add_settings_field(
 					'wcpimh_sync',
@@ -358,7 +354,7 @@ class WCIMPH_Admin {
 				);
 			}
 
-			$name_sync = __( 'How many products do you want to sync each time?', 'connect-woocommerce-products-woocommerce' );
+			$name_sync = __( 'How many products do you want to sync each time?', 'connect-woocommerce-neo' );
 			if ( connwoo_is_pro() ) {
 				add_settings_field(
 					'wcpimh_sync_num',
@@ -371,7 +367,7 @@ class WCIMPH_Admin {
 			if ( connwoo_is_pro() ) {
 				add_settings_field(
 					'wcpimh_sync_email',
-					__( 'Do you want to receive an email when all products are synced?', 'connect-woocommerce-products-woocommerce' ),
+					__( 'Do you want to receive an email when all products are synced?', 'connect-woocommerce-neo' ),
 					array( $this, 'wcpimh_sync_email_callback' ),
 					'connect-woocommerce-automate',
 					'connect_woocommerce_setting_automate'
@@ -394,21 +390,21 @@ class WCIMPH_Admin {
 
 		add_settings_section(
 			'imhset_pub_setting_section',
-			__( 'Settings for Woocommerce Shop', 'connect-woocommerce-products-woocommerce' ),
+			__( 'Settings for Woocommerce Shop', 'connect-woocommerce-neo' ),
 			array( $this, 'section_info_public' ),
 			'connect-woocommerce-public'
 		);
 
 		add_settings_field(
 			'wcpimh_vat_show',
-			__( 'Ask for VAT in Checkout?', 'connect-woocommerce-products-woocommerce' ),
+			__( 'Ask for VAT in Checkout?', 'connect-woocommerce-neo' ),
 			array( $this, 'vat_show_callback' ),
 			'connect-woocommerce-public',
 			'imhset_pub_setting_section'
 		);
 		add_settings_field(
 			'wcpimh_vat_mandatory',
-			__( 'VAT info mandatory?', 'connect-woocommerce-products-woocommerce' ),
+			__( 'VAT info mandatory?', 'connect-woocommerce-neo' ),
 			array( $this, 'vat_mandatory_callback' ),
 			'connect-woocommerce-public',
 			'imhset_pub_setting_section'
@@ -416,7 +412,7 @@ class WCIMPH_Admin {
 
 		add_settings_field(
 			'wcpimh_company_field',
-			__( 'Show Company field?', 'connect-woocommerce-products-woocommerce' ),
+			__( 'Show Company field?', 'connect-woocommerce-neo' ),
 			array( $this, 'company_field_callback' ),
 			'connect-woocommerce-public',
 			'imhset_pub_setting_section'
@@ -424,7 +420,7 @@ class WCIMPH_Admin {
 
 		add_settings_field(
 			'wcpimh_remove_free_others',
-			__( 'Remove other shipping methods when free is possible?', 'connect-woocommerce-products-woocommerce' ),
+			__( 'Remove other shipping methods when free is possible?', 'connect-woocommerce-neo' ),
 			array( $this, 'wcpimh_remove_free_others_callback' ),
 			'connect-woocommerce-public',
 			'imhset_pub_setting_section'
@@ -432,7 +428,7 @@ class WCIMPH_Admin {
 
 		add_settings_field(
 			'wcpimh_terms_registration',
-			__( 'Adds terms and conditions in registration page?', 'connect-woocommerce-products-woocommerce' ),
+			__( 'Adds terms and conditions in registration page?', 'connect-woocommerce-neo' ),
 			array( $this, 'wcpimh_terms_registration_callback' ),
 			'connect-woocommerce-public',
 			'imhset_pub_setting_section'
@@ -448,8 +444,8 @@ class WCIMPH_Admin {
 		if ( connwoo_is_pro() ) {
 			echo '<div id="sync-holded-engine-orders"></div>';
 		} else {
-			echo '<h2>' . esc_html__( 'Sync Orders', 'connect-woocommerce-products-woocommerce' ) . '</h2>';
-			esc_html_e( 'Section only for PRO version', 'connect-woocommerce-products-woocommerce' );
+			echo '<h2>' . esc_html__( 'Sync Orders', 'connect-woocommerce-neo' ) . '</h2>';
+			esc_html_e( 'Section only for PRO version', 'connect-woocommerce-neo' );
 
 			echo ' ' . $this->show_get_pro();
 		}
@@ -461,92 +457,38 @@ class WCIMPH_Admin {
 	 * @param array $input Input fields.
 	 * @return array
 	 */
-	public function sanitize_fields( $input ) {
+	public function sanitize_fields_settings( $input ) {
 		$sanitary_values = array();
 		$imh_settings    = get_option( 'imhset' );
 
-		if ( isset( $_POST['submit_settings'] ) ) {
-			if ( isset( $input['wcpimh_api'] ) ) {
-				$sanitary_values['wcpimh_api'] = sanitize_text_field( $input['wcpimh_api'] );
-			}
+		$admin_settings = array(
+			'wcpimh_api'        => '',
+			'wcpimh_idcentre'   => '',
+			'wcpimh_stock'      => 'no',
+			'wcpimh_prodst'     => 'draft',
+			'wcpimh_virtual'    => 'no',
+			'wcpimh_backorders' => 'no',
+			'wcpimh_catsep'     => '',
+			'wcpimh_filter'     => '',
+			'wcpimh_rates'      => 'default',
+			'wcpimh_catnp'      => 'yes',
+			'wcpimh_doctype'    => 'invoice',
+			'wcpimh_freeorder'  => 'no',
+			'wcpimh_ecstatus'   => 'all',
+			'wcpimh_design_id'  => '',
+			'wcpimh_sync'       => 'no',
+			'wcpimh_sync_num'   => 5,
+			'wcpimh_sync_email' => 'yes',
+		);
 
-			if ( isset( $input['wcpimh_stock'] ) ) {
-				$sanitary_values['wcpimh_stock'] = $input['wcpimh_stock'];
+		foreach ( $admin_settings as $setting => $default_value ) {
+			if ( isset( $input[ $setting ] ) ) {
+				$sanitary_values[ $setting ] = sanitize_text_field( $input[ $setting ] );
+			} elseif ( isset( $imh_settings[ $setting ] ) ) {
+				$sanitary_values[ $setting ] = $imh_settings[ $setting ];
+			} else {
+				$sanitary_values[ $setting ] = $default_value;
 			}
-
-			if ( isset( $input['wcpimh_prodst'] ) ) {
-				$sanitary_values['wcpimh_prodst'] = $input['wcpimh_prodst'];
-			}
-
-			if ( isset( $input['wcpimh_virtual'] ) ) {
-				$sanitary_values['wcpimh_virtual'] = $input['wcpimh_virtual'];
-			}
-
-			if ( isset( $input['wcpimh_backorders'] ) ) {
-				$sanitary_values['wcpimh_backorders'] = $input['wcpimh_backorders'];
-			}
-
-			if ( isset( $input['wcpimh_catsep'] ) ) {
-				$sanitary_values['wcpimh_catsep'] = sanitize_text_field( $input['wcpimh_catsep'] );
-			}
-
-			if ( isset( $input['wcpimh_filter'] ) ) {
-				$sanitary_values['wcpimh_filter'] = sanitize_text_field( $input['wcpimh_filter'] );
-			}
-
-			if ( isset( $input['wcpimh_rates'] ) ) {
-				$sanitary_values['wcpimh_rates'] = $input['wcpimh_rates'];
-			}
-
-			if ( isset( $input['wcpimh_catnp'] ) ) {
-				$sanitary_values['wcpimh_catnp'] = $input['wcpimh_catnp'];
-			}
-
-			if ( isset( $input['wcpimh_doctype'] ) ) {
-				$sanitary_values['wcpimh_doctype'] = $input['wcpimh_doctype'];
-			}
-
-			if ( isset( $input['wcpimh_freeorder'] ) ) {
-				$sanitary_values['wcpimh_freeorder'] = $input['wcpimh_freeorder'];
-			}
-
-			if ( isset( $input['wcpimh_ecstatus'] ) ) {
-				$sanitary_values['wcpimh_ecstatus'] = $input['wcpimh_ecstatus'];
-			}
-
-			if ( isset( $input['wcpimh_design_id'] ) ) {
-				$sanitary_values['wcpimh_design_id'] = $input['wcpimh_design_id'];
-			}
-			// Other tab.
-			$sanitary_values['wcpimh_sync']     = isset( $imh_settings['wcpimh_sync'] ) ? $imh_settings['wcpimh_sync'] : 'no';
-			$sanitary_values['wcpimh_sync_num'] = isset( $imh_settings['wcpimh_sync_num'] ) ? $imh_settings['wcpimh_sync_num'] : 5;
-			$sanitary_values['wcpimh_sync_email'] = isset( $imh_settings['wcpimh_sync_email'] ) ? $imh_settings['wcpimh_sync_email'] : 'yes';
-		} elseif ( isset( $_POST['submit_automate'] ) ) {
-			if ( isset( $input['wcpimh_sync'] ) ) {
-				$sanitary_values['wcpimh_sync'] = $input['wcpimh_sync'];
-			}
-
-			if ( isset( $input['wcpimh_sync_num'] ) ) {
-				$sanitary_values['wcpimh_sync_num'] = $input['wcpimh_sync_num'];
-			}
-
-			if ( isset( $input['wcpimh_sync_email'] ) ) {
-				$sanitary_values['wcpimh_sync_email'] = $input['wcpimh_sync_email'];
-			}
-			// Other tab.
-			$sanitary_values['wcpimh_api']        = isset( $imh_settings['wcpimh_api'] ) ? $imh_settings['wcpimh_api'] : '';
-			$sanitary_values['wcpimh_stock']      = isset( $imh_settings['wcpimh_stock'] ) ? $imh_settings['wcpimh_stock'] : 'no';
-			$sanitary_values['wcpimh_prodst']     = isset( $imh_settings['wcpimh_prodst'] ) ? $imh_settings['wcpimh_prodst'] : 'draft';
-			$sanitary_values['wcpimh_virtual']    = isset( $imh_settings['wcpimh_virtual'] ) ? $imh_settings['wcpimh_virtual'] : 'no';
-			$sanitary_values['wcpimh_backorders'] = isset( $imh_settings['wcpimh_backorders'] ) ? $imh_settings['wcpimh_backorders']: 'no';
-			$sanitary_values['wcpimh_catsep']     = isset( $imh_settings['wcpimh_catsep'] ) ? $imh_settings['wcpimh_catsep'] : '';
-			$sanitary_values['wcpimh_filter']     = isset( $imh_settings['wcpimh_filter'] ) ? $imh_settings['wcpimh_filter'] : '';
-			$sanitary_values['wcpimh_rates']      = isset( $imh_settings['wcpimh_rates'] ) ? $imh_settings['wcpimh_rates'] : 'default';
-			$sanitary_values['wcpimh_catnp']      = isset( $imh_settings['wcpimh_catnp'] ) ? $imh_settings['wcpimh_catnp'] : 'yes';
-			$sanitary_values['wcpimh_doctype']   = isset( $imh_settings['wcpimh_doctype'] ) ? $imh_settings['wcpimh_doctype'] : 'invoice';
-			$sanitary_values['wcpimh_freeorder']   = isset( $imh_settings['wcpimh_freeorder'] ) ? $imh_settings['wcpimh_freeorder'] : 'no';
-			$sanitary_values['wcpimh_ecstatus']   = isset( $imh_settings['wcpimh_ecstatus'] ) ? $imh_settings['wcpimh_ecstatus'] : 'all';
-			$sanitary_values['wcpimh_design_id']   = isset( $imh_settings['wcpimh_design_id'] ) ? $imh_settings['wcpimh_design_id'] : 'invoice';
 		}
 
 		return $sanitary_values;
@@ -561,7 +503,7 @@ class WCIMPH_Admin {
 		// Purchase notification.
 		$get_pro = sprintf(
 			wp_kses(
-				__( '<a href="%s" target="_blank">Get Pro version</a> to enable functionalities.', 'connect-woocommerce-products-woocommerce' ),
+				__( '<a href="%s" target="_blank">Get Pro version</a> to enable functionalities.', 'connect-woocommerce-neo' ),
 				array(
 					'a'      => array(
 					'href'   => array(),
@@ -588,16 +530,16 @@ class WCIMPH_Admin {
 
 			$total_api_products = (int) get_option( 'wcpimh_total_api_products' );
 			if ( $total_api_products || $total_count !== $total_api_products ) {
-				$count_return .= ' ' . esc_html__( 'filtered', 'connect-woocommerce-products-woocommerce' );
-				$count_return .= ' ( ' . $total_api_products . ' ' . esc_html__( 'total', 'connect-woocommerce-products-woocommerce' ) . ' )';
+				$count_return .= ' ' . esc_html__( 'filtered', 'connect-woocommerce-neo' );
+				$count_return .= ' ( ' . $total_api_products . ' ' . esc_html__( 'total', 'connect-woocommerce-neo' ) . ' )';
 			}
-			$percentage = intval( $count / $total_count * 100 );
-			esc_html_e( 'Make your settings to automate the sync.', 'connect-woocommerce-products-woocommerce' );
+			$percentage = 0 > $total_count ? intval( $count / $total_count * 100 ) : 0;
+			esc_html_e( 'Make your settings to automate the sync.', 'connect-woocommerce-neo' );
 			echo '<div class="sync-status" style="text-align:right;">';
 			echo '<strong>';
-			esc_html_e( 'Actual Automate status:', 'connect-woocommerce-products-woocommerce' );
+			esc_html_e( 'Actual Automate status:', 'connect-woocommerce-neo' );
 			echo '</strong> ' . esc_html( $count_return ) . ' ';
-			esc_html_e( 'products synced with Holded.', 'connect-woocommerce-products-woocommerce' );
+			esc_html_e( 'products synced with Holded.', 'connect-woocommerce-neo' );
 			echo '</div>';
 			echo '
 			<style>
@@ -633,7 +575,7 @@ class WCIMPH_Admin {
 			<div class="progress-text">' . esc_html( $percentage ) . '%</div>
 			</div>';
 		} else {
-			esc_html_e( 'Section only for PRO version', 'connect-woocommerce-products-woocommerce' );
+			esc_html_e( 'Section only for PRO version', 'connect-woocommerce-neo' );
 
 			echo ' ' . $this->show_get_pro();
 		}
@@ -653,24 +595,22 @@ class WCIMPH_Admin {
 		}
 	}
 
-	public function wcpimh_api_callback() {
-		printf(
-			'<input class="regular-text" type="password" name="imhset[wcpimh_api]" id="wcpimh_api" value="%s">',
-			isset( $this->imh_settings['wcpimh_api'] ) ? esc_attr( $this->imh_settings['wcpimh_api'] ) : ''
-		);
-	}
-
+	/**
+	 * NEO ID Centre
+	 *
+	 * @return void
+	 */
 	public function idcentre_callback() {
 		printf(
 			'<input class="regular-text" type="password" name="imhset[wcpimh_idcentre]" id="wcpimh_idcentre" value="%s">',
-			isset( $this->sync_settings['wcpimh_idcentre'] ) ? esc_attr( $this->sync_settings['wcpimh_idcentre'] ) : ''
+			isset( $this->imh_settings['wcpimh_idcentre'] ) ? esc_attr( $this->imh_settings['wcpimh_idcentre'] ) : ''
 		);
 	}
 
 	public function api_callback() {
 		printf(
 			'<input class="regular-text" type="password" name="imhset[wcpimh_api]" id="wcpimh_api" value="%s">',
-			isset( $this->sync_settings['wcpimh_api'] ) ? esc_attr( $this->sync_settings['wcpimh_api'] ) : ''
+			isset( $this->imh_settings['wcpimh_api'] ) ? esc_attr( $this->imh_settings['wcpimh_api'] ) : ''
 		);
 	}
 
@@ -678,9 +618,9 @@ class WCIMPH_Admin {
 		?>
 		<select name="imhset[wcpimh_stock]" id="wcpimh_stock">
 			<?php $selected = ( isset( $this->imh_settings['wcpimh_stock'] ) && $this->imh_settings['wcpimh_stock'] === 'yes' ) ? 'selected' : ''; ?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-neo' ); ?></option>
 			<?php $selected = ( isset( $this->imh_settings['wcpimh_stock'] ) && $this->imh_settings['wcpimh_stock'] === 'no' ) ? 'selected' : ''; ?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
 		</select>
 		<?php
 	}
@@ -689,13 +629,13 @@ class WCIMPH_Admin {
 		?>
 		<select name="imhset[wcpimh_prodst]" id="wcpimh_prodst">
 			<?php $selected = ( isset( $this->imh_settings['wcpimh_prodst'] ) && 'draft' === $this->imh_settings['wcpimh_prodst'] ) ? 'selected' : ''; ?>
-			<option value="draft" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Draft', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="draft" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Draft', 'connect-woocommerce-neo' ); ?></option>
 			<?php $selected = ( isset( $this->imh_settings['wcpimh_prodst'] ) && 'publish' === $this->imh_settings['wcpimh_prodst'] ) ? 'selected' : ''; ?>
-			<option value="publish" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Publish', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="publish" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Publish', 'connect-woocommerce-neo' ); ?></option>
 			<?php $selected = ( isset( $this->imh_settings['wcpimh_prodst'] ) && 'pending' === $this->imh_settings['wcpimh_prodst'] ) ? 'selected' : ''; ?>
-			<option value="pending" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Pending', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="pending" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Pending', 'connect-woocommerce-neo' ); ?></option>
 			<?php $selected = ( isset( $this->imh_settings['wcpimh_prodst'] ) && 'private' === $this->imh_settings['wcpimh_prodst'] ) ? 'selected' : ''; ?>
-			<option value="private" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Private', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="private" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Private', 'connect-woocommerce-neo' ); ?></option>
 		</select>
 		<?php
 	}
@@ -704,9 +644,9 @@ class WCIMPH_Admin {
 		?>
 		<select name="imhset[wcpimh_virtual]" id="wcpimh_virtual">
 			<?php $selected = ( isset( $this->imh_settings['wcpimh_virtual'] ) && $this->imh_settings['wcpimh_virtual'] === 'no' ) ? 'selected' : ''; ?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
 			<?php $selected = ( isset( $this->imh_settings['wcpimh_virtual'] ) && $this->imh_settings['wcpimh_virtual'] === 'yes' ) ? 'selected' : ''; ?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-neo' ); ?></option>
 		</select>
 		<?php
 	}
@@ -715,11 +655,11 @@ class WCIMPH_Admin {
 		?>
 		<select name="imhset[wcpimh_backorders]" id="wcpimh_backorders">
 			<?php $selected = ( isset( $this->imh_settings['wcpimh_backorders'] ) && $this->imh_settings['wcpimh_backorders'] === 'no' ) ? 'selected' : ''; ?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
 			<?php $selected = ( isset( $this->imh_settings['wcpimh_backorders'] ) && $this->imh_settings['wcpimh_backorders'] === 'yes' ) ? 'selected' : ''; ?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-neo' ); ?></option>
 			<?php $selected = ( isset( $this->imh_settings['wcpimh_backorders'] ) && $this->imh_settings['wcpimh_backorders'] === 'notify' ) ? 'selected' : ''; ?>
-			<option value="notify" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Notify', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="notify" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Notify', 'connect-woocommerce-neo' ); ?></option>
 		</select>
 		<?php
 	}
@@ -747,10 +687,10 @@ class WCIMPH_Admin {
 		?>
 		<select name="imhset[wcpimh_tax_price_option]" id="wcsen_tax">
 			<?php $selected = ( isset( $this->sync_settings['wcpimh_tax_price_option'] ) && $this->sync_settings['wcpimh_tax_price_option'] === 'yes' ) ? 'selected' : ''; ?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes, tax included', 'sync-ecommerce-neo' ); ?></option>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes, tax included', 'connect-woocommerce-neo' ); ?></option>
 			<?php $selected = ( isset( $this->sync_settings['wcpimh_tax_price_option'] ) && $this->sync_settings['wcpimh_tax_price_option'] === 'notify' ) ? 'selected' : ''; ?>
 			<?php $selected = ( isset( $this->sync_settings['wcpimh_tax_price_option'] ) && $this->sync_settings['wcpimh_tax_price_option'] === 'no' ) ? 'selected' : ''; ?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No, tax not included', 'sync-ecommerce-neo' ); ?></option>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No, tax not included', 'connect-woocommerce-neo' ); ?></option>
 		</select>
 		<?php
 	}
@@ -777,9 +717,9 @@ class WCIMPH_Admin {
 		?>
 		<select name="imhset[wcpimh_catnp]" id="wcpimh_catnp">
 			<?php $selected = ( isset( $this->imh_settings['wcpimh_catnp'] ) && $this->imh_settings['wcpimh_catnp'] === 'yes' ) ? 'selected' : ''; ?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-neo' ); ?></option>
 			<?php $selected = ( isset( $this->imh_settings['wcpimh_catnp'] ) && $this->imh_settings['wcpimh_catnp'] === 'no' ) ? 'selected' : ''; ?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
 		</select>
 		<?php
 	}
@@ -789,19 +729,19 @@ class WCIMPH_Admin {
 		?>
 		<select name="imhset[wcpimh_doctype]" id="wcpimh_doctype">
 			<?php $selected = ( $set_doctype === 'nosync' || $set_doctype === '' ) ? 'selected' : ''; ?>
-			<option value="nosync" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Not sync', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="nosync" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Not sync', 'connect-woocommerce-neo' ); ?></option>
 
 			<?php $selected = ( isset( $set_doctype ) && 'invoice' === $set_doctype ) ? 'selected' : ''; ?>
-			<option value="invoice" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Invoice', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="invoice" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Invoice', 'connect-woocommerce-neo' ); ?></option>
 
 			<?php $selected = ( isset( $set_doctype ) && 'salesreceipt' === $set_doctype ) ? 'selected' : ''; ?>
-			<option value="salesreceipt" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Sales receipt', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="salesreceipt" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Sales receipt', 'connect-woocommerce-neo' ); ?></option>
 
 			<?php $selected = ( isset( $set_doctype ) && 'salesorder' === $set_doctype ) ? 'selected' : ''; ?>
-			<option value="salesorder" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Sales order', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="salesorder" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Sales order', 'connect-woocommerce-neo' ); ?></option>
 
 			<?php $selected = ( isset( $set_doctype ) && 'waybill' === $set_doctype ) ? 'selected' : ''; ?>
-			<option value="waybill" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Waybill', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="waybill" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Waybill', 'connect-woocommerce-neo' ); ?></option>
 		</select>
 		<?php
 	}
@@ -811,10 +751,10 @@ class WCIMPH_Admin {
 		?>
 		<select name="imhset[wcpimh_freeorder]" id="wcpimh_freeorder">
 			<?php $selected = ( $set_freeorder === 'no' || $set_freeorder === '' ) ? 'selected' : ''; ?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
 
 			<?php $selected = ( isset( $set_freeorder ) && 'yes' === $set_freeorder ) ? 'selected' : ''; ?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-neo' ); ?></option>
 
 		</select>
 		<?php
@@ -825,10 +765,10 @@ class WCIMPH_Admin {
 		?>
 		<select name="imhset[wcpimh_ecstatus]" id="wcpimh_ecstatus">
 			<?php $selected = ( $set_ecstatus === 'nosync' || $set_ecstatus === '' ) ? 'selected' : ''; ?>
-			<option value="all" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'All status orders', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="all" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'All status orders', 'connect-woocommerce-neo' ); ?></option>
 
 			<?php $selected = ( isset( $set_ecstatus ) && 'completed' === $set_ecstatus ) ? 'selected' : ''; ?>
-			<option value="completed" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Only Completed', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="completed" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Only Completed', 'connect-woocommerce-neo' ); ?></option>
 		</select>
 		<?php
 	}
@@ -855,7 +795,7 @@ class WCIMPH_Admin {
 		?>
 		<select name="imhset[wcpimh_sync]" id="wcpimh_sync">
 			<?php $selected = ( isset( $this->imh_settings['wcpimh_sync'] ) && 'no' === $this->imh_settings['wcpimh_sync'] ) ? 'selected' : ''; ?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
 
 			<?php
 			if ( ! empty( $cron_options ) ) {
@@ -886,9 +826,9 @@ class WCIMPH_Admin {
 		?>
 		<select name="imhset[wcpimh_sync_email]" id="wcpimh_sync_email">
 			<?php $selected = ( isset( $this->imh_settings['wcpimh_sync_email'] ) && $this->imh_settings['wcpimh_sync_email'] === 'yes' ) ? 'selected' : ''; ?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-neo' ); ?></option>
 			<?php $selected = ( isset( $this->imh_settings['wcpimh_sync_email'] ) && $this->imh_settings['wcpimh_sync_email'] === 'no' ) ? 'selected' : ''; ?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
 		</select>
 		<?php
 	}
@@ -937,7 +877,7 @@ class WCIMPH_Admin {
 	 * @return void
 	 */
 	public function section_info_public() {
-		esc_html_e( 'Please select the following settings in order customize your eCommerce. ', 'connect-woocommerce-products-woocommerce' );
+		esc_html_e( 'Please select the following settings in order customize your eCommerce. ', 'connect-woocommerce-neo' );
 	}
 
 	/**
@@ -951,11 +891,11 @@ class WCIMPH_Admin {
 			<?php 
 			$selected = ( isset( $this->imhset_public['vat_show'] ) && $this->imhset_public['vat_show'] === 'no' ? 'selected' : '' );
 			?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
 			<?php 
 			$selected = ( isset( $this->imhset_public['vat_show'] ) && $this->imhset_public['vat_show'] === 'yes' ? 'selected' : '' );
 			?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-neo' ); ?></option>
 		</select>
 		<?php
 	}
@@ -972,11 +912,11 @@ class WCIMPH_Admin {
 			<?php 
 			$selected = ( isset( $this->imhset_public['vat_mandatory'] ) && $this->imhset_public['vat_mandatory'] === 'no' ? 'selected' : '' );
 			?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
 			<?php 
 			$selected = ( isset( $this->imhset_public['vat_mandatory'] ) && $this->imhset_public['vat_mandatory'] === 'yes' ? 'selected' : '' );
 			?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-neo' ); ?></option>
 		</select>
 		<?php
 	}
@@ -992,11 +932,11 @@ class WCIMPH_Admin {
 			<?php 
 			$selected = ( isset( $this->imhset_public['company_field'] ) && $this->imhset_public['company_field'] === 'no' ? 'selected' : '' );
 			?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
 			<?php 
 			$selected = ( isset( $this->imhset_public['company_field'] ) && $this->imhset_public['company_field'] === 'yes' ? 'selected' : '' );
 			?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-neo' ); ?></option>
 		</select>
 		<?php
 	}
@@ -1012,11 +952,11 @@ class WCIMPH_Admin {
 			<?php 
 			$selected = ( isset( $this->imhset_public['terms_registration'] ) && $this->imhset_public['terms_registration'] === 'no' ? 'selected' : '' );
 			?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
 			<?php 
 			$selected = ( isset( $this->imhset_public['terms_registration'] ) && $this->imhset_public['terms_registration'] === 'yes' ? 'selected' : '' );
 			?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-neo' ); ?></option>
 		</select>
 		<?php
 	}
@@ -1032,11 +972,11 @@ class WCIMPH_Admin {
 			<?php 
 			$selected = ( isset( $this->imhset_public['remove_free'] ) && $this->imhset_public['remove_free'] === 'no' ? 'selected' : '' );
 			?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce-neo' ); ?></option>
 			<?php 
 			$selected = ( isset( $this->imhset_public['remove_free'] ) && $this->imhset_public['remove_free'] === 'yes' ? 'selected' : '' );
 			?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-products-woocommerce' ); ?></option>
+			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce-neo' ); ?></option>
 		</select>
 		<?php
 	}
