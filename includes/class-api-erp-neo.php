@@ -33,6 +33,15 @@ class CONNAPI_NEO_ERP {
 	}
 
 	/**
+	 * Compatibility for Library
+	 *
+	 * @return void
+	 */
+	public function get_image_product() {
+		return '';
+	}
+
+	/**
 	 * Converts product from API to SYNC
 	 *
 	 * @param array $products_original API NEO Product.
@@ -44,15 +53,11 @@ class CONNAPI_NEO_ERP {
 		$products_converted = array();
 		$i                  = 0;
 
-		echo '<pre style="margin-left:200px;">$products_original:';
-		print_r( $products_original );
-		echo '</pre>';
-		die();
-
 		foreach ( $products_original as $product ) {
 			$product_array = array();
-			$key           = array_search( $product['CodigoTextil'], array_column( $products_converted, 'sku' ) );
+			$key           = array_search( $product['CodigoTextil'], array_column( $products_converted, 'id' ) );
 			$product_array = array(
+				'id'    => ! empty( $product['CodigoTextil'] ) ? $product['CodigoTextil'] : $product['Codigo'],
 				'sku'   => $product['Codigo'],
 				'name'  => $product['Nombre'],
 				'desc'  => $product['DescripcionArticulo'],
@@ -189,8 +194,18 @@ class CONNAPI_NEO_ERP {
 			}
 			$products_json = wp_json_encode( $body_response['articulos'] );
 
-			set_transient( 'connect_woocommerce_api_products', $products_json, 3600 ); // 1 hour
+			set_transient( 'connect_woocommerce_api_products', $products_json, HOUR_IN_SECONDS * 3 );
 			$products_api = $body_response['articulos'];
+		}
+
+		if ( null !== $id ) {
+			$index = 0;
+			foreach ( $products_api as $product_api ) {
+				if ( $id !== $product_api['CodigoTextil'] ) {
+					unset( $products_api[ $index ] );
+				}
+				$index++;
+			}
 		}
 
 		return $this->convert_products( $products_api );
@@ -257,13 +272,64 @@ class CONNAPI_NEO_ERP {
 		return $body_response['propiedades'];
 	}
 
+	public function create_order( $order_id, $meta_key ) {
+
+		$order = new WC_Order( $order_id );
+		$order_neo = array(
+			'NombreCliente'    => get_post_meta( $order_id, '_billing_first_name', true) . ' ' . get_post_meta( $order_id, '_billing_last_name', true ) . ' ' . get_post_meta( $order_id, '_billing_company', true ),
+			'CifCliente'       => get_post_meta( $order_id, $billing_key, true ),
+			'DirCliente'       => get_post_meta( $order_id, '_billing_address_1', true ) . ',' . get_post_meta( $order_id, '_billing_address_2', true ),
+			'CiudadCliente'    => get_post_meta( $order_id, '_billing_city', true ),
+			'ProvinciaCliente' => get_post_meta( $order_id, '_billing_state', true ),
+			'PaisCliente'      => get_post_meta( $order_id, '_billing_country', true ),
+			'CPCliente'        => get_post_meta( $order_id, '_billing_postcode', true ),
+			'EmailCliente'     => get_post_meta( $order_id, '_billing_email', true ),
+			'TelefonoCliente'  => get_post_meta( $order_id, '_billing_phone', true ),
+			'GastosEnvio'      => get_post_meta( $order_id, '_order_shipping', true ),
+			'FormaPago'        => get_post_meta( $order_id, '_payment_method', true ),
+			'Observaciones'    => $order->get_customer_note(),
+			'CodTarifa'        => '',
+		);
+
+		$order_line = 1;
+		foreach ( $order->get_items() as $item_key => $item_values ) {
+			$item_data = $item_values->get_data();
+			if ( 0 != $item_data['variation_id'] ) {
+				// Producto compuesto.
+				$tipo_linea    = 3;
+				$tipo_elemento = get_post_meta( $item_data['product_id'], '_sku', true );
+				$item_id       = $item_data['variation_id'];
+			} else {
+				// Producto simple.
+				$tipo_linea    = 0;
+				$tipo_elemento = '';
+				$item_id       = $item_data['product_id'];
+			}
+			$order_neo['Lineas'][] = array(
+				'Linea'         => $order_line,
+				'CodArticulo'   => get_post_meta( $item_id, '_sku', true ),
+				'Cantidad'      => floatval( $item_data['quantity'] ),
+				'BaseImpUnit'   => floatval( $item_data['subtotal'] ),
+				'PorDto'        => 0,
+				'Observaciones' => '',
+				'TipoLinea'     => $tipo_linea,
+				'LineaPadre'    => 0,
+				'TipoElemento'  => $tipo_elemento,
+			);
+			$order_line++;
+		}
+		// Create sales order.
+		$result = $this->post_order( $order_neo );
+		update_post_meta( $order_id, '_sync_ecommerce_neo_oid', $result );
+	}
+
 	/**
 	 * Gets information from Holded products
 	 *
 	 * @param string $order Array order to NEO in ARRAY.
 	 * @return array NumPedido.
 	 */
-	public function post_order( $order ) {
+	private function post_order( $order ) {
 		$token      = $this->get_token();
 		$order_json = wp_json_encode( $order );
 
