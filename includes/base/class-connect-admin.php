@@ -40,7 +40,7 @@ class WCIMPH_Admin {
 	 */
 	public function __construct() {
 		global $wpdb;
-		$this->table_sync = $wpdb->prefix . 'wcpimh_product_sync';
+		$this->table_sync = $wpdb->prefix . 'connwoo_product_sync';
 		$this->label_pro  = __( '(ONLY PRO VERSION)', 'connect-woocommerce-neo' );
 		add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
 		add_action( 'admin_init', array( $this, 'page_init' ) );
@@ -533,7 +533,7 @@ class WCIMPH_Admin {
 				$count_return .= ' ' . esc_html__( 'filtered', 'connect-woocommerce-neo' );
 				$count_return .= ' ( ' . $total_api_products . ' ' . esc_html__( 'total', 'connect-woocommerce-neo' ) . ' )';
 			}
-			$percentage = intval( $count / $total_count * 100 );
+			$percentage = 0 > $total_count ? intval( $count / $total_count * 100 ) : 0;
 			esc_html_e( 'Make your settings to automate the sync.', 'connect-woocommerce-neo' );
 			echo '<div class="sync-status" style="text-align:right;">';
 			echo '<strong>';
