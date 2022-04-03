@@ -76,6 +76,5 @@ function connwoo_process_activation_premium() {
     	) $charset_collate;";
 
 	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-	error_log( 'sql' . print_r( $sql, true ) );
 	dbDelta( $sql );
 }
