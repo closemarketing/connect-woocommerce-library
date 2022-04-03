@@ -53,18 +53,9 @@ class WCPIMH_Import {
 	private $error_product_import;
 
 	/**
-	 * Table of Sync DB
-	 *
-	 * @var string
-	 */
-	private $table_sync;
-
-	/**
 	 * Constructs of class
 	 */
 	public function __construct() {
-		global $wpdb;
-		$this->table_sync = $wpdb->prefix . 'wcpimh_product_sync';
 
 		add_action( 'admin_print_footer_scripts', array( $this, 'admin_print_footer_scripts' ), 11, 1 );
 		add_action( 'wp_ajax_wcpimh_import_products', array( $this, 'wcpimh_import_products' ) );
@@ -128,7 +119,7 @@ class WCPIMH_Import {
 		$term_level_index = 1;
 		foreach ( $category_array as $category_name ) {
 			$category_name = $this->sanitize_text( $category_name );
-			$search_term = term_exists( $category_name, $taxonomy_slug );
+			$search_term   = term_exists( $category_name, $taxonomy_slug );
 
 			if ( 0 === $search_term || null === $search_term ) {
 				// Creates taxonomy.
@@ -463,14 +454,10 @@ class WCPIMH_Import {
 	 */
 	public function wcpimh_import_method_products() {
 		global $connapi_erp;
-		extract( $_REQUEST );
 		$not_sapi_cli = substr( php_sapi_name(), 0, 3 ) != 'cli' ? true : false;
 		$doing_ajax   = defined( 'DOING_AJAX' ) && DOING_AJAX;
 		$imh_settings = get_option( 'imhset' );
 		$prod_status  = ( isset( $imh_settings['wcpimh_prodst'] ) && $imh_settings['wcpimh_prodst'] ) ? $imh_settings['wcpimh_prodst'] : 'draft';
-
-		$post_type = 'product';
-		$sku_key   = '_sku';
 
 		if ( in_array( 'woo-product-bundle/wpc-product-bundles.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
 			$plugin_grouped_prod_active = true;
@@ -478,7 +465,7 @@ class WCPIMH_Import {
 			$plugin_grouped_prod_active = false;
 		}
 
-		$syncLoop     = isset( $syncLoop ) ? $syncLoop : 0;
+		$sync_loop = isset( $_POST['syncLoop'] ) ? sanitize_text_field( $_POST['syncLoop'] ) : 0;
 
 		// Translations.
 		$msg_product_created = __( 'Product created: ', 'connect-woocommerce-neo' );
@@ -486,23 +473,7 @@ class WCPIMH_Import {
 
 		// Start.
 		if ( ! isset( $this->products ) ) {
-			$next     = true;
-			$page     = 1;
-			$output   = array();
-			$products = array();
-
-			while ( $next ) {
-				$this->write_log( 'Page: ' . $page );
-				$output   = $connapi_erp->get_products( null, $page );
-				$products = array_merge( $products, $output );
-
-				if ( count( $output ) === MAX_LIMIT_HOLDED_API ) {
-					$page++;
-				} else {
-					$next = false;
-				}
-			}
-			$this->products = $products;
+			$this->products = $connapi_erp->get_products();
 		}
 
 		if ( false === $this->products ) {
@@ -514,7 +485,7 @@ class WCPIMH_Import {
 		} else {
 			$products_array           = $this->products;
 			$products_count           = count( $products_array );
-			$item                     = $products_array[ $syncLoop ];
+			$item                     = $products_array[ $sync_loop ];
 			$error_products_html      = '';
 			$this->msg_error_products = array();
 
@@ -524,9 +495,9 @@ class WCPIMH_Import {
 			if ( $products_count ) {
 				if ( ( $doing_ajax ) || $not_sapi_cli ) {
 					$limit = 10;
-					$count = $syncLoop + 1;
+					$count = $sync_loop + 1;
 				}
-				if ( $syncLoop > $products_count ) {
+				if ( $sync_loop > $products_count ) {
 					if ( $doing_ajax ) {
 						wp_send_json_error(
 							array(
@@ -539,7 +510,7 @@ class WCPIMH_Import {
 				} else {
 					$is_new_product      = false;
 					$post_id             = 0;
-					$is_filtered_product = $this->filter_product( $item['tags'] );
+					$is_filtered_product = empty( $item['tags'] ) ? false : $this->filter_product( $item['tags'] );
 
 					if ( ! $is_filtered_product && $item['sku'] && 'simple' === $item['kind'] ) {
 						$this->sync_product_simple( $item );
@@ -647,7 +618,7 @@ class WCPIMH_Import {
 				}
 
 				if ( $doing_ajax || $not_sapi_cli ) {
-					$products_synced = $syncLoop + 1;
+					$products_synced = $sync_loop + 1;
 
 					if ( $products_synced <= $products_count ) {
 						$this->ajax_msg = '[' . date_i18n( 'H:i:s' ) . '] ' . $products_synced . '/' . $products_count . ' ' . __( 'products. ', 'connect-woocommerce-neo' ) . $this->ajax_msg;
@@ -664,12 +635,12 @@ class WCPIMH_Import {
 						);
 						if ( $doing_ajax ) {
 							if ( $products_synced < $products_count ) {
-								$args['loop'] = $syncLoop + 1;
+								$args['loop'] = $sync_loop + 1;
 							}
 							wp_send_json_success( $args );
 						} elseif ( $not_sapi_cli && $products_synced < $products_count ) {
 							$url  = home_url() . '/?sync=true';
-							$url .= '&syncLoop=' . ( $syncLoop + 1 );
+							$url .= '&syncLoop=' . ( $sync_loop + 1 );
 							?>
 							<script>
 								window.location.href = '<?php echo esc_url( $url ); ?>';

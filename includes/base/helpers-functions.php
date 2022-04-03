@@ -43,7 +43,7 @@ if ( ! function_exists( 'connwoo_remote_name' ) ) {
 	/**
 	 * Returns Version.
 	 *
-	 * @return array
+	 * @return string
 	 */
 	function connwoo_remote_name() {
 		return apply_filters(

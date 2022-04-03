@@ -194,16 +194,17 @@ class Connect_WooCommerce_Orders {
 	 */
 	public function create_invoice( $order_id, $completed_date ) {
 		global $connapi_erp;
-		$ec_invoice_id = get_post_meta( $order_id, '_holded_invoice_id', true );
-		$doctype       = isset( $this->sync_settings['wcpimh_doctype'] ) ? $this->sync_settings['wcpimh_doctype'] : 'nosync';
-		$freeorder     = isset( $this->sync_settings['wcpimh_freeorder'] ) ? $this->sync_settings['wcpimh_freeorder'] : 'no';
-		$design_id     = isset( $this->sync_settings['wcpimh_design_id'] ) ? $this->sync_settings['wcpimh_design_id'] : '';
-		$order         = wc_get_order( $order_id );
-		$order_total   = (int) $order->get_total();
+		$doctype        = isset( $this->sync_settings['wcpimh_doctype'] ) ? $this->sync_settings['wcpimh_doctype'] : 'nosync';
+		$freeorder      = isset( $this->sync_settings['wcpimh_freeorder'] ) ? $this->sync_settings['wcpimh_freeorder'] : 'no';
+		$design_id      = isset( $this->sync_settings['wcpimh_design_id'] ) ? $this->sync_settings['wcpimh_design_id'] : '';
+		$order          = wc_get_order( $order_id );
+		$order_total    = (int) $order->get_total();
+		$meta_key_order = '_' . strtolower( connwoo_remote_name() ) . 'invoice_id';
+		$ec_invoice_id  = get_post_meta( $order_id, '_holded_invoice_id', true );
 
 		// Not create order if free.
 		if ( 'no' === $freeorder && 0 === $order_total ) {
-			update_post_meta( $order_id, '_holded_invoice_id', 'nocreate' );
+			update_post_meta( $order_id, $meta_key_order, 'nocreate' );
 
 			$order_msg = __( 'Free order not created in Holded. ', 'import-holded-products-woocommerce-premium' );
 
@@ -218,113 +219,7 @@ class Connect_WooCommerce_Orders {
 		if ( empty( $ec_invoice_id ) ) {
 
 			try {
-				$doclang  = $order->get_billing_country() !== 'ES' ? 'en' : 'es';
-				$url_test = wc_get_endpoint_url( 'shop' );
-
-				$fields = array(
-					'contactCode'            => get_post_meta( $order_id, '_billing_vat', true ),
-					'contactName'            => $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() . ' ' . $order->get_billing_company(),
-					'woocommerceCustomer'    => $order->get_user()->data->user_login,
-					'marketplace'            => 'woocommerce',
-					'woocommerceOrderStatus' => $order->get_status(),
-					'woocommerceOrderId'     => $order_id,
-					'woocommerceUrl'         => $url_test,
-					'woocommerceStore'       => get_bloginfo( 'name', 'display' ),
-					'contactEmail'           => $order->get_billing_email(),
-					'contact_phone'          => $order->get_billing_phone(),
-					'contactAddress'         => $order->get_billing_address_1() . ',' . $order->get_billing_address_2(),
-					'contactCity'            => $order->get_billing_city(),
-					'contactCp'              => $order->get_billing_postcode(),
-					'contactProvince'        => $order->get_billing_state(),
-					'contactCountry'         => '',
-					'contactCountryCode'     => $order->get_billing_country(),
-					'desc'                   => '',
-					'date'                   => $order->get_date_completed() ? strtotime( $order->get_date_completed() ) : strtotime( $order->get_date_created() ),
-					'datestart'              => strtotime( $order->get_date_created() ),
-					'notes'                  => $order->get_customer_note(),
-					'saleschannel'           => null,
-					'language'               => $doclang,
-					'pmtype'                 => null,
-					'items'                  => array(),
-					'shipping_ad'            => $order->get_shipping_address_1() ? $order->get_shipping_address_1() . ',' . $order->get_shipping_address_2() : '',
-					'shipping_cp'            => $order->get_shipping_postcode(),
-					'shipping_ci'            => $order->get_shipping_city(),
-					'shipping_pr'            => '',
-					'shipping_co'            => $order->get_shipping_country(),
-					'designId'               => $design_id,
-					'woocommerceTaxes'       => wp_json_encode( $order->get_tax_totals() ),
-				);
-
-				$ordered_items  = $order->get_items();
-				$shipping_items = $order->get_items( 'shipping' );
-
-				$wc_payment_method = get_post_meta( $order_id, '_payment_method', true );
-				$fields['notes']  .= ' ';
-				switch ( $wc_payment_method ) {
-					case 'cod':
-						$fields['notes'] .= __( 'Paid by cash', 'import-holded-products-woocommerce-premium' );
-						break;
-					case 'cheque':
-						$fields['notes'] .= __( 'Paid by check', 'import-holded-products-woocommerce-premium' );
-						break;
-					case 'paypal':
-						$fields['notes'] .= __( 'Paid by paypal', 'import-holded-products-woocommerce-premium' );
-						break;
-					case 'bacs':
-						$fields['notes'] .= __( 'Paid by bank transfer', 'import-holded-products-woocommerce-premium' );
-						break;
-					default:
-						$fields['notes'] .= __( 'Paid by', 'import-holded-products-woocommerce-premium' ) . ' ' . (string) $wc_payment_method;
-						break;
-				}
-				$fields['items'] = $this->review_items( $ordered_items );
-
-				foreach ( $shipping_items as $value ) {
-
-					$shipping_name  = $value['name'];
-					$shipping_total = floatval( $value['cost'] );
-
-					$shipping_tax     = 0;
-					$shipping_tax_per = 0;
-
-					if ( is_serialized( $value['taxes'] ) ) {
-						$shipping_tax = maybe_unserialize( $value['taxes'] );
-
-						if ( count( $shipping_tax ) ) {
-							if ( $shipping_tax && array_key_exists( 1, $shipping_tax ) ) {
-								$shipping_tax = $shipping_tax[1];
-							}
-						}
-
-						if ( is_numeric( $shipping_tax ) ) {
-							$shipping_tax_per = round( ( ( $shipping_tax * 100 ) / $shipping_total ), 4 );
-						}
-					}
-
-					$fields['items'][] = array(
-						'name'     => $shipping_name,
-						'desc'     => '',
-						'units'    => 1,
-						'subtotal' => floatval( $shipping_total ),
-						'tax'      => floatval( $shipping_tax_per ),
-						'k'        => 'shipping',
-					);
-				}
-				// Create salesorder.
-				$result = $connapi_erp->create_order( $fields );
-				if ( isset( $result['invoiceNum'] ) ) {
-					update_post_meta( $order_id, '_holded_invoice_id', $result['invoiceNum'] );
-					update_post_meta( $order_id, '_holded_doc_id', $result['id'] );
-					update_post_meta( $order_id, '_holded_doc_type', $doctype );
-
-					$order_msg = __( 'Order synced correctly with Holded, ID: ', 'import-holded-products-woocommerce-premium' ) . $result['invoiceNum'];
-
-					$order->add_order_note( $order_msg );
-					return array(
-						'status'  => 'ok',
-						'message' => $doctype . ' ' . __( 'num: ', 'import-holded-products-woocommerce-premium' ) . $result['invoiceNum'],
-					);
-				}
+				$connapi_erp->create_order( $order, $meta_key_order );
 			} catch ( Exception $e ) {
 				return array(
 					'status'  => 'error',
