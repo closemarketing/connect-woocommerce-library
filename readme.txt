@@ -39,6 +39,15 @@ WordPress installation and then activate the Plugin from Plugins page.
 == Developers ==
 
 == Changelog ==
+= 2.0 =
+*   Removed Freemius as engine sell.
+*   Removed Support to Easy Digital Downloads.
+*   Add Tags as list (separated with commas).
+*   Add VAT Info in checkout.
+*   Option to Company field in checkout.
+*   Premium: Better sync management WooCommerce Action Scheduler.
+*   Premium: Refactoring code.
+
 = 1.4 =
 *   Fix SSL errors from the source API.
 *   Better message errors.
