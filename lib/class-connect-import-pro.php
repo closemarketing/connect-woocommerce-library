@@ -395,9 +395,9 @@ class Connect_WooCommerce_Import_PRO {
 					'id_holded' => $item['id'],
 					'name'      => $item['name'],
 					'sku'       => $variant['sku'],
-					'error'     => __( 'Variation error: ', 'connect-woocommerce-neo' ),
+					'error'     => __( 'Variation error: ', 'connect-woocommerce' ),
 				);
-				$this->ajax_msg .= '<span class="error">' . __( 'Variation error: ', 'connect-woocommerce-neo' ) . $item['name'] . '. Variant SKU: ' . $variant['sku'] . '(' . $item['kind'] . ') </span><br/>';
+				$this->ajax_msg .= '<span class="error">' . __( 'Variation error: ', 'connect-woocommerce' ) . $item['name'] . '. Variant SKU: ' . $variant['sku'] . '(' . $item['kind'] . ') </span><br/>';
 				continue;
 			}
 			// Get all Attributes for the product.
@@ -612,17 +612,17 @@ class Connect_WooCommerce_Import_PRO {
 				}
 			}
 			if ( false === $any_variant_sku ) {
-				$product_info['error'] = __( 'Product not imported becouse any variant has got SKU: ', 'connect-woocommerce-neo' );
+				$product_info['error'] = __( 'Product not imported becouse any variant has got SKU: ', 'connect-woocommerce' );
 				$this->save_sync_errors( $product_info );
 			} else {
 				// Update meta for product.
 				$connwoo->sync_product( $item, $post_parent, 'variable' );
 			}
 		} elseif ( isset( $item['sku'] ) && '' === $item['sku'] && isset( $item['kind'] ) && 'simple' === $item['kind'] ) {
-			$product_info['error'] = __( 'SKU not finded in Simple product. Product not imported ', 'connect-woocommerce-neo' );
+			$product_info['error'] = __( 'SKU not finded in Simple product. Product not imported ', 'connect-woocommerce' );
 			$this->save_sync_errors( $product_info );
 		} elseif ( isset( $item['kind'] ) && 'simple' !== $item['kind'] ) {
-			$product_info['error'] = __( 'Product type not supported. Product not imported ', 'connect-woocommerce-neo' );
+			$product_info['error'] = __( 'Product type not supported. Product not imported ', 'connect-woocommerce' );
 			$this->save_sync_errors( $product_info );
 		}
 	}
@@ -758,38 +758,38 @@ class Connect_WooCommerce_Import_PRO {
 		$total_count = $wpdb->get_var( "SELECT COUNT(*) FROM $this->table_sync WHERE synced = 1" );
 
 		if ( $total_count > 0 && 'yes' === $send_email ) {
-			$subject = __( 'All products synced with ', 'connect-woocommerce-neo' ) . connwoo_remote_name();
+			$subject = __( 'All products synced with ', 'connect-woocommerce' ) . connwoo_remote_name();
 			$headers = array( 'Content-Type: text/html; charset=UTF-8' );
-			$body    = '<h2>' . __( 'All products synced with ', 'connect-woocommerce-neo' ) . connwoo_remote_name() . '</h2> ';
-			$body   .= '<br/><strong>' . __( 'Total products:', 'connect-woocommerce-neo' ) . '</strong> ';
+			$body    = '<h2>' . __( 'All products synced with ', 'connect-woocommerce' ) . connwoo_remote_name() . '</h2> ';
+			$body   .= '<br/><strong>' . __( 'Total products:', 'connect-woocommerce' ) . '</strong> ';
 			$body   .= $total_count;
 
 			$total_api_products = (int) get_option( 'wcpimh_total_api_products' );
 			if ( $total_api_products || $total_count !== $total_api_products ) {
-				$body .= ' ' . esc_html__( 'filtered', 'connect-woocommerce-neo' );
-				$body .= ' ( ' . $total_api_products . ' ' . esc_html__( 'total', 'connect-woocommerce-neo' ) . ' )';
+				$body .= ' ' . esc_html__( 'filtered', 'connect-woocommerce' );
+				$body .= ' ( ' . $total_api_products . ' ' . esc_html__( 'total', 'connect-woocommerce' ) . ' )';
 			}
 
-			$body .= '<br/><strong>' . __( 'Time:', 'connect-woocommerce-neo' ) . '</strong> ';
+			$body .= '<br/><strong>' . __( 'Time:', 'connect-woocommerce' ) . '</strong> ';
 			$body .= date_i18n( 'Y-m-d H:i', current_time( 'timestamp') );
 
 			$start_time = get_option( 'wcpimh_sync_start_time' );
 			if ( $start_time ) {
-				$body .= '<br/><strong>' . __( 'Total Time:', 'connect-woocommerce-neo' ) . '</strong> ';
+				$body .= '<br/><strong>' . __( 'Total Time:', 'connect-woocommerce' ) . '</strong> ';
 				$body .= round( ( strtotime( 'now' ) - $start_time ) / 60 / 60, 1 );
 				$body .= 'h';
 			}
 
 			$products_errors = get_option( 'wcpimh_sync_errors' );
 			if ( false !== $products_errors && ! empty( $products_errors ) ) {
-				$body .= '<h2>' . __( 'Errors founded', 'connect-woocommerce-neo' ) . '</h2>';
+				$body .= '<h2>' . __( 'Errors founded', 'connect-woocommerce' ) . '</h2>';
 
 				foreach ( $products_errors as $error ) {
 					$body .= '<br/><strong>' . $error['error'] . '</strong>';
-					$body .= '<br/><strong>' . __( 'Product id: ', 'connect-woocommerce-neo' ) . '</strong>' . $error['id'] . ' <a href="https://app.holded.com/products/' . $error['id'] . '">' . __( 'View in Holded', 'connect-woocommerce-neo' ) . '</a>';
-					$body .= '<br/><strong>' . __( 'Product name: ', 'connect-woocommerce-neo' ) . '</strong>' . $error['name'];
-					$body .= '<br/><strong>' . __( 'Product sku: ', 'connect-woocommerce-neo' ) . '</strong>' . $error['sku'];
-					$body .= '<br/><strong>' . __( 'Product type: ', 'connect-woocommerce-neo' ) . '</strong>' . $error['type'];
+					$body .= '<br/><strong>' . __( 'Product id: ', 'connect-woocommerce' ) . '</strong>' . $error['id'] . ' <a href="https://app.holded.com/products/' . $error['id'] . '">' . __( 'View in Holded', 'connect-woocommerce' ) . '</a>';
+					$body .= '<br/><strong>' . __( 'Product name: ', 'connect-woocommerce' ) . '</strong>' . $error['name'];
+					$body .= '<br/><strong>' . __( 'Product sku: ', 'connect-woocommerce' ) . '</strong>' . $error['sku'];
+					$body .= '<br/><strong>' . __( 'Product type: ', 'connect-woocommerce' ) . '</strong>' . $error['type'];
 					$body .= '<br/>';
 				}
 			}

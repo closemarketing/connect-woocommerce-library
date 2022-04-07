@@ -431,15 +431,15 @@ class WCPIMH_Import {
 		if ( $from_pack ) {
 			$this->ajax_msg .= '<br/>';
 			if ( ! $post_id ) {
-				$this->ajax_msg .= __( 'Subproduct created: ', 'connect-woocommerce-neo' );
+				$this->ajax_msg .= __( 'Subproduct created: ', 'connect-woocommerce' );
 			} else {
-				$this->ajax_msg .= __( 'Subproduct synced: ', 'connect-woocommerce-neo' );
+				$this->ajax_msg .= __( 'Subproduct synced: ', 'connect-woocommerce' );
 			}
 		} else {
 			if ( ! $post_id ) {
-				$this->ajax_msg .= __( 'Product created: ', 'connect-woocommerce-neo' );
+				$this->ajax_msg .= __( 'Product created: ', 'connect-woocommerce' );
 			} else {
-				$this->ajax_msg .= __( 'Product synced: ', 'connect-woocommerce-neo' );
+				$this->ajax_msg .= __( 'Product synced: ', 'connect-woocommerce' );
 			}
 		}
 		$this->ajax_msg .= $item['name'] . '. SKU: ' . $item['sku'] . ' (' . $item['kind'] . ')';
@@ -465,11 +465,11 @@ class WCPIMH_Import {
 			$plugin_grouped_prod_active = false;
 		}
 
-		$sync_loop = isset( $_POST['syncLoop'] ) ? sanitize_text_field( $_POST['syncLoop'] ) : 0;
+		$sync_loop = isset( $_POST['syncLoop'] ) ? (int) sanitize_text_field( $_POST['syncLoop'] ) : 0;
 
 		// Translations.
-		$msg_product_created = __( 'Product created: ', 'connect-woocommerce-neo' );
-		$msg_product_synced  = __( 'Product synced: ', 'connect-woocommerce-neo' );
+		$msg_product_created = __( 'Product created: ', 'connect-woocommerce' );
+		$msg_product_synced  = __( 'Product synced: ', 'connect-woocommerce' );
 
 		// Start.
 		if ( ! isset( $this->products ) ) {
@@ -501,11 +501,11 @@ class WCPIMH_Import {
 					if ( $doing_ajax ) {
 						wp_send_json_error(
 							array(
-								'msg' => __( 'No products to import', 'connect-woocommerce-neo' ),
+								'msg' => __( 'No products to import', 'connect-woocommerce' ),
 							)
 						);
 					} else {
-						die( esc_html( __( 'No products to import', 'connect-woocommerce-neo' ) ) );
+						die( esc_html( __( 'No products to import', 'connect-woocommerce' ) ) );
 					}
 				} else {
 					$is_new_product      = false;
@@ -534,7 +534,7 @@ class WCPIMH_Import {
 							}
 						}
 						if ( false === $any_variant_sku ) {
-							$this->ajax_msg .= __( 'Product not imported becouse any variant has got SKU: ', 'connect-woocommerce-neo' ) . $item['name'] . '(' . $item['kind'] . ') <br/>';
+							$this->ajax_msg .= __( 'Product not imported becouse any variant has got SKU: ', 'connect-woocommerce' ) . $item['name'] . '(' . $item['kind'] . ') <br/>';
 						} else {
 							// Update meta for product.
 							$this->sync_product( $item, $post_parent, 'variable' );
@@ -573,11 +573,11 @@ class WCPIMH_Import {
 							if ( $doing_ajax ) {
 								wp_send_json_error(
 									array(
-										'msg' => __( 'There was an error while inserting new product!', 'connect-woocommerce-neo' ) . ' ' . $item['name'],
+										'msg' => __( 'There was an error while inserting new product!', 'connect-woocommerce' ) . ' ' . $item['name'],
 									)
 								);
 							} else {
-								die( esc_html( __( 'There was an error while inserting new product!', 'connect-woocommerce-neo' ) ) );
+								die( esc_html( __( 'There was an error while inserting new product!', 'connect-woocommerce' ) ) );
 							}
 						}
 						if ( ! $post_id ) {
@@ -587,32 +587,32 @@ class WCPIMH_Import {
 						}
 						$this->ajax_msg .= $item['name'] . '. SKU: ' . $item['sku'] . ' (' . $item['kind'] . ')';
 					} elseif ( ! $is_filtered_product && 'pack' === $item['kind'] && connwoo_is_pro() && class_exists( 'Connect_WooCommerce_Import_PRO' ) && ! $plugin_grouped_prod_active ) {
-						$this->ajax_msg .= '<span class="warning">' . __( 'Product needs Plugin to import: ', 'connect-woocommerce-neo' );
+						$this->ajax_msg .= '<span class="warning">' . __( 'Product needs Plugin to import: ', 'connect-woocommerce' );
 						$this->ajax_msg .= '<a href="https://wordpress.org/plugins/woo-product-bundle/" target="_blank">WPC Product Bundles for WooCommerce</a> ';
 						$this->ajax_msg .= '(' . $item['kind'] . ') </span></br>';
 
 					} elseif ( $is_filtered_product ) {
 						// Product not synced without SKU.
-						$this->ajax_msg .= '<span class="warning">' . __( 'Product filtered to not import: ', 'connect-woocommerce-neo' ) . $item['name'] . '(' . $item['kind'] . ') </span></br>';
+						$this->ajax_msg .= '<span class="warning">' . __( 'Product filtered to not import: ', 'connect-woocommerce' ) . $item['name'] . '(' . $item['kind'] . ') </span></br>';
 					} elseif ( '' === $item['sku'] && 'simple' === $item['kind'] ) {
 						// Product not synced without SKU.
-						$this->ajax_msg .= __( 'SKU not finded in Simple product. Product not imported: ', 'connect-woocommerce-neo' ) . $item['name'] . '(' . $item['kind'] . ')</br>';
+						$this->ajax_msg .= __( 'SKU not finded in Simple product. Product not imported: ', 'connect-woocommerce' ) . $item['name'] . '(' . $item['kind'] . ')</br>';
 
 						$this->error_product_import[] = array(
 							'id_holded' => $item['id'],
 							'name'      => $item['name'],
 							'sku'       => $item['sku'],
-							'error'     => __( 'SKU not finded in Simple product. Product not imported. ', 'connect-woocommerce-neo' ),
+							'error'     => __( 'SKU not finded in Simple product. Product not imported. ', 'connect-woocommerce' ),
 						);
 					} elseif ( 'simple' !== $item['kind'] ) {
 						// Product not synced without SKU.
-						$this->ajax_msg .= __( 'Product type not supported. Product not imported: ', 'connect-woocommerce-neo' ) . $item['name'] . '(' . $item['kind'] . ')</br>';
+						$this->ajax_msg .= __( 'Product type not supported. Product not imported: ', 'connect-woocommerce' ) . $item['name'] . '(' . $item['kind'] . ')</br>';
 
 						$this->error_product_import[] = array(
 							'id_holded' => $item['id'],
 							'name'      => $item['name'],
 							'sku'       => $item['sku'],
-							'error'     => __( 'Product type not supported. Product not imported: ', 'connect-woocommerce-neo' ),
+							'error'     => __( 'Product type not supported. Product not imported: ', 'connect-woocommerce' ),
 						);
 					}
 				}
@@ -621,12 +621,12 @@ class WCPIMH_Import {
 					$products_synced = $sync_loop + 1;
 
 					if ( $products_synced <= $products_count ) {
-						$this->ajax_msg = '[' . date_i18n( 'H:i:s' ) . '] ' . $products_synced . '/' . $products_count . ' ' . __( 'products. ', 'connect-woocommerce-neo' ) . $this->ajax_msg;
+						$this->ajax_msg = '[' . date_i18n( 'H:i:s' ) . '] ' . $products_synced . '/' . $products_count . ' ' . __( 'products. ', 'connect-woocommerce' ) . $this->ajax_msg;
 						if ( $post_id ) {
-							$this->ajax_msg .= ' <a href="' . get_edit_post_link( $post_id ) . '" target="_blank">' . __( 'View', 'connect-woocommerce-neo' ) . '</a>';
+							$this->ajax_msg .= ' <a href="' . get_edit_post_link( $post_id ) . '" target="_blank">' . __( 'View', 'connect-woocommerce' ) . '</a>';
 						}
 						if ( $products_synced == $products_count ) {
-							$this->ajax_msg .= '<p class="finish">' . __( 'All caught up!', 'connect-woocommerce-neo' ) . '</p>';
+							$this->ajax_msg .= '<p class="finish">' . __( 'All caught up!', 'connect-woocommerce' ) . '</p>';
 						}
 
 						$args = array(
@@ -653,9 +653,9 @@ class WCPIMH_Import {
 				}
 			} else {
 				if ( $doing_ajax ) {
-					wp_send_json_error( array( 'msg' => __( 'No products to import', 'connect-woocommerce-neo' ) ) );
+					wp_send_json_error( array( 'msg' => __( 'No products to import', 'connect-woocommerce' ) ) );
 				} else {
-					die( esc_html( __( 'No products to import', 'connect-woocommerce-neo' ) ) );
+					die( esc_html( __( 'No products to import', 'connect-woocommerce' ) ) );
 				}
 			}
 		}
@@ -677,16 +677,16 @@ class WCPIMH_Import {
 			return;
 		}
 		foreach ( $this->error_product_import as $error ) {
-			$error_content .= ' ' . __( 'Error:', 'connect-woocommerce-neo' ) . $error['error'];
-			$error_content .= ' ' . __( 'SKU:', 'connect-woocommerce-neo' ) . $error['sku'];
-			$error_content .= ' ' . __( 'Name:', 'connect-woocommerce-neo' ) . $error['name'];
+			$error_content .= ' ' . __( 'Error:', 'connect-woocommerce' ) . $error['error'];
+			$error_content .= ' ' . __( 'SKU:', 'connect-woocommerce' ) . $error['sku'];
+			$error_content .= ' ' . __( 'Name:', 'connect-woocommerce' ) . $error['name'];
 			$error_content .= ' <a href="https://app.holded.com/products/' . $error['id_holded'] . '">';
-			$error_content .= __( 'Edit:', 'connect-woocommerce-neo' ) . '</a>';
+			$error_content .= __( 'Edit:', 'connect-woocommerce' ) . '</a>';
 			$error_content .= '<br/>';
 		}
 		// Sends an email to admin.
 		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
-		wp_mail( get_option( 'admin_email' ), __( 'Error in Products Synced in', 'connect-woocommerce-neo' ) . ' ' . get_option( 'blogname' ), $error_content, $headers );
+		wp_mail( get_option( 'admin_email' ), __( 'Error in Products Synced in', 'connect-woocommerce' ) . ' ' . get_option( 'blogname' ), $error_content, $headers );
 	}
 
 	/**
@@ -781,12 +781,12 @@ class WCPIMH_Import {
 		<script type="text/javascript">
 			var loop=0;
 			jQuery(function($){
-				$(document).find('#connect-woocommerce-engine').after('<div class="sync-wrapper"><h2><?php sprintf( esc_html__( 'Import Products from %s', 'connect-woocommerce-neo' ), esc_html( connwoo_remote_name() ) ); ?></h2><p><?php esc_html_e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', 'connect-woocommerce-neo' ); ?><br/></p><button id="start-sync" class="button button-primary"<?php if ( false === $connapi_erp->check_can_sync() ) { echo ' disabled'; } ?>><?php esc_html_e( 'Start Import', 'connect-woocommerce-neo' ); ?></button></div><fieldset id="logwrapper"><legend><?php esc_html_e( 'Log', 'connect-woocommerce-neo' ); ?></legend><div id="loglist"></div></fieldset>');
+				$(document).find('#connect-woocommerce-engine').after('<div class="sync-wrapper"><h2><?php sprintf( esc_html__( 'Import Products from %s', 'connect-woocommerce' ), esc_html( connwoo_remote_name() ) ); ?></h2><p><?php esc_html_e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', 'connect-woocommerce' ); ?><br/></p><button id="start-sync" class="button button-primary"<?php if ( false === $connapi_erp->check_can_sync() ) { echo ' disabled'; } ?>><?php esc_html_e( 'Start Import', 'connect-woocommerce' ); ?></button></div><fieldset id="logwrapper"><legend><?php esc_html_e( 'Log', 'connect-woocommerce' ); ?></legend><div id="loglist"></div></fieldset>');
 				$(document).find('#start-sync').on('click', function(){
 					$(this).attr('disabled','disabled');
 					$(this).after('<span class="spinner is-active"></span>');
 					var class_task = 'odd';
-					$(document).find('#logwrapper #loglist').append( '<p class="'+class_task+'"><?php echo '[' . date_i18n( 'H:i:s' ) . '] ' . __( 'Connecting with API and syncing Products ...', 'connect-woocommerce-neo' ); ?></p>');
+					$(document).find('#logwrapper #loglist').append( '<p class="'+class_task+'"><?php echo '[' . date_i18n( 'H:i:s' ) . '] ' . __( 'Connecting with API and syncing Products ...', 'connect-woocommerce' ); ?></p>');
 
 					var syncAjaxCall = function(x){
 						$.ajax({
