@@ -102,7 +102,7 @@ class Connect_WooCommerce_Orders {
 			// Show notice.
 			echo $this->get_message( //phpcs:ignore.
 				sprintf(
-					__( 'WooCommerce Holded: Plugin is enabled but no api key or secret provided. Please enter your api key and secret <a href="%s">here</a>.', 'import-holded-products-woocommerce-premium' ),
+					__( 'WooCommerce Holded: Plugin is enabled but no api key or secret provided. Please enter your api key and secret <a href="%s">here</a>.', 'connect-woocommerce' ),
 					'/wp-admin/admin.php?page=import_holded&tab=settings'
 				)
 			);
@@ -200,13 +200,13 @@ class Connect_WooCommerce_Orders {
 		$order          = wc_get_order( $order_id );
 		$order_total    = (int) $order->get_total();
 		$meta_key_order = '_' . strtolower( connwoo_remote_name() ) . 'invoice_id';
-		$ec_invoice_id  = get_post_meta( $order_id, '_holded_invoice_id', true );
+		$ec_invoice_id  = get_post_meta( $order_id, $meta_key_order, true );
 
 		// Not create order if free.
 		if ( 'no' === $freeorder && 0 === $order_total ) {
 			update_post_meta( $order_id, $meta_key_order, 'nocreate' );
 
-			$order_msg = __( 'Free order not created in Holded. ', 'import-holded-products-woocommerce-premium' );
+			$order_msg = __( 'Free order not created in Holded. ', 'connect-woocommerce' );
 
 			$order->add_order_note( $order_msg );
 			return array(
@@ -229,7 +229,7 @@ class Connect_WooCommerce_Orders {
 		} else {
 			return array(
 				'status'  => 'error',
-				'message' => $doctype . ' ' . __( 'num: ', 'import-holded-products-woocommerce-premium' ) . $ec_invoice_id,
+				'message' => $doctype . ' ' . __( 'num: ', 'connect-woocommerce' ) . $ec_invoice_id,
 			);
 		}
 	}
@@ -243,7 +243,7 @@ class Connect_WooCommerce_Orders {
 	 * @return void
 	 */
 	public function admin_styles() {
-		wp_enqueue_style( 'import-holded', plugins_url( 'admin.css', __FILE__ ), array(), WCPIMH_VERSION );
+		wp_enqueue_style( 'connect-woocommerce', plugins_url( 'admin.css', __FILE__ ), array(), WCPIMH_VERSION );
 	}
 
 	/**
@@ -252,11 +252,11 @@ class Connect_WooCommerce_Orders {
 	 * @return void
 	 */
 	public function import_method_orders() {
-		extract( $_REQUEST );
 		$not_sapi_cli        = substr( php_sapi_name(), 0, 3 ) !== 'cli' ? true : false;
 		$doing_ajax          = defined( 'DOING_AJAX' ) && DOING_AJAX;
 		$this->sync_settings = get_option( 'imhset' );
-		$syncLoop            = isset( $syncLoop ) ? $syncLoop : 0;
+		$sync_loop           = isset( $_POST['syncLoop'] ) ? (int) sanitize_text_field( $_POST['syncLoop'] ) : 0;
+		$meta_key_order      = '_' . strtolower( connwoo_remote_name() ) . 'invoice_id';
 
 		// Start.
 		if ( ! isset( $this->orders ) ) {
@@ -294,48 +294,48 @@ class Connect_WooCommerce_Orders {
 		} else {
 			$orders_array           = $this->orders;
 			$orders_count           = count( $orders_array );
-			$item                   = $orders_array[ $syncLoop ];
+			$item                   = $orders_array[ $sync_loop ];
 			$error_orders_html      = '';
 			$this->msg_error_orders = array();
 
 			if ( $orders_count ) {
 				if ( ( $doing_ajax ) || $not_sapi_cli ) {
 					$limit = 10;
-					$count = $syncLoop + 1;
+					$count = $sync_loop + 1;
 				}
-				if ( $syncLoop > $orders_count ) {
+				if ( $sync_loop > $orders_count ) {
 					if ( $doing_ajax ) {
 						wp_send_json_error(
 							array(
-								'msg' => __( 'No orders to import', 'import-holded-products-woocommerce-premium' ),
+								'msg' => __( 'No orders to import', 'connect-woocommerce' ),
 							)
 						);
 					} else {
-						die( esc_html( __( 'No orders to import', 'import-holded-products-woocommerce-premium' ) ) );
+						die( esc_html( __( 'No orders to import', 'connect-woocommerce' ) ) );
 					}
 				} else {
-					$ec_invoice_id = get_post_meta( $order_id, '_holded_invoice_id', true );
+					$ec_invoice_id = get_post_meta( $item['id'], $meta_key_order, true );
 
 					if ( ! empty( $ec_invoice_id ) ) {
-						$this->ajax_msg .= __( 'Order already exported to Holded ID:', 'import-holded-products-woocommerce-premium' ) . $ec_invoice_id . '<br/>';
+						$this->ajax_msg .= __( 'Order already exported to Holded ID:', 'connect-woocommerce' ) . $ec_invoice_id . '<br/>';
 					} else {
 						$result = $this->create_invoice( $item['id'], $item['date'] );
 
-						$this->ajax_msg .= 'ok' === $result['status'] ? __( 'Order Created.', 'import-holded-products-woocommerce-premium' ) : __( 'Order not created.', 'import-holded-products-woocommerce-premium' );
+						$this->ajax_msg .= 'ok' === $result['status'] ? __( 'Order Created.', 'connect-woocommerce' ) : __( 'Order not created.', 'connect-woocommerce' );
 						$this->ajax_msg .= ' ' . $result['message'] . ' <br/>';
 					}
 				}
 
 				if ( $doing_ajax || $not_sapi_cli ) {
-					$orders_synced = $syncLoop + 1;
+					$orders_synced = $sync_loop + 1;
 
 					if ( $orders_synced <= $orders_count ) {
-						$this->ajax_msg = '[' . date_i18n( 'H:i:s' ) . '] ' . $orders_synced . '/' . $orders_count . ' ' . __( 'orders. ', 'import-holded-products-woocommerce-premium' ) . $this->ajax_msg;
+						$this->ajax_msg = '[' . date_i18n( 'H:i:s' ) . '] ' . $orders_synced . '/' . $orders_count . ' ' . __( 'orders. ', 'connect-woocommerce' ) . $this->ajax_msg;
 						if ( $ec_invoice_id ) {
-							$this->ajax_msg .= ' <a href="' . get_edit_post_link( $post_id ) . '" target="_blank">' . __( 'View', 'import-holded-products-woocommerce-premium' ) . '</a>';
+							$this->ajax_msg .= ' <a href="' . get_edit_post_link( $post_id ) . '" target="_blank">' . __( 'View', 'connect-woocommerce' ) . '</a>';
 						}
 						if ( $orders_synced == $orders_count ) {
-							$this->ajax_msg .= '<p class="finish">' . __( 'All caught up!', 'import-holded-products-woocommerce-premium' ) . '</p>';
+							$this->ajax_msg .= '<p class="finish">' . __( 'All caught up!', 'connect-woocommerce' ) . '</p>';
 						}
 
 						$args = array(
@@ -344,12 +344,12 @@ class Connect_WooCommerce_Orders {
 						);
 						if ( $doing_ajax ) {
 							if ( $orders_synced < $orders_count ) {
-								$args['loop'] = $syncLoop + 1;
+								$args['loop'] = $sync_loop + 1;
 							}
 							wp_send_json_success( $args );
 						} elseif ( $not_sapi_cli && $orders_synced < $orders_count ) {
 							$url  = home_url() . '/?sync=true';
-							$url .= '&syncLoop=' . ( $syncLoop + 1 );
+							$url .= '&syncLoop=' . ( $sync_loop + 1 );
 							?>
 							<script>
 								window.location.href = '<?php echo esc_url( $url ); ?>';
@@ -362,9 +362,9 @@ class Connect_WooCommerce_Orders {
 				}
 			} else {
 				if ( $doing_ajax ) {
-					wp_send_json_error( array( 'msg' => __( 'No orders to import', 'import-holded-products-woocommerce-premium' ) ) );
+					wp_send_json_error( array( 'msg' => __( 'No orders to import', 'connect-woocommerce' ) ) );
 				} else {
-					die( esc_html( __( 'No orders to import', 'import-holded-products-woocommerce-premium' ) ) );
+					die( esc_html( __( 'No orders to import', 'connect-woocommerce' ) ) );
 				}
 			}
 		}
@@ -400,12 +400,12 @@ class Connect_WooCommerce_Orders {
 		<script type="text/javascript">
 			var loop=0;
 			jQuery(function($){
-				$(document).find('#sync-holded-engine-orders').after('<div class="sync-wrapper"><h2><?php esc_html_e( 'Sync Orders to Holded', 'import-holded-products-woocommerce-premium' ); ?></h2><p><?php esc_html_e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', 'import-holded-products-woocommerce-premium' ); ?><br/></p><button id="start-sync-orders" class="button button-primary"<?php if ( false === sync_ecommerce_check_can_sync() ) { echo ' disabled'; } ?>><?php esc_html_e( 'Start Import', 'import-holded-products-woocommerce-premium' ); ?></button></div><fieldset id="logwrapper"><legend><?php esc_html_e( 'Log', 'import-holded-products-woocommerce-premium' ); ?></legend><div id="loglist"></div></fieldset>');
+				$(document).find('#sync-holded-engine-orders').after('<div class="sync-wrapper"><h2><?php esc_html_e( 'Sync Orders to Holded', 'connect-woocommerce' ); ?></h2><p><?php esc_html_e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', 'connect-woocommerce' ); ?><br/></p><button id="start-sync-orders" class="button button-primary"<?php if ( false === sync_ecommerce_check_can_sync() ) { echo ' disabled'; } ?>><?php esc_html_e( 'Start Import', 'connect-woocommerce' ); ?></button></div><fieldset id="logwrapper"><legend><?php esc_html_e( 'Log', 'connect-woocommerce' ); ?></legend><div id="loglist"></div></fieldset>');
 				$(document).find('#start-sync-orders').on('click', function(){
 					$(this).attr('disabled','disabled');
 					$(this).after('<span class="spinner is-active"></span>');
 					var class_task = 'odd';
-					$(document).find('#logwrapper #loglist').append( '<p class="'+class_task+'"><?php echo '[' . date_i18n( 'H:i:s' ) . '] ' . __( 'Connecting with Holded and syncing Orders ...', 'import-holded-products-woocommerce-premium' ); ?></p>');
+					$(document).find('#logwrapper #loglist').append( '<p class="'+class_task+'"><?php echo '[' . date_i18n( 'H:i:s' ) . '] ' . __( 'Connecting with Holded and syncing Orders ...', 'connect-woocommerce' ); ?></p>');
 
 					var syncAjaxCall = function(x){
 						$.ajax({

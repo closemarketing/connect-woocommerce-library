@@ -33,8 +33,6 @@ function wcsen_load_textdomain() {
 	load_plugin_textdomain( 'connect-woocommerce-neo', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 }
 
-
-require_once dirname( __FILE__ ) . '/includes/base/helpers-functions.php';
 /**
  * Default values
  */
@@ -73,17 +71,4 @@ add_filter(
 	}
 );
 
-// Creates table sync.
-if ( connwoo_is_pro() ) {
-	register_activation_hook( __FILE__, 'connwoo_process_activation_premium' );
-}
-
-// Includes files.
-require_once dirname( __FILE__ ) . '/includes/class-api-erp-neo.php';
-require_once dirname( __FILE__ ) . '/includes/base/helpers-cron.php';
-require_once dirname( __FILE__ ) . '/includes/base/class-connect-admin.php';
-require_once dirname( __FILE__ ) . '/includes/base/class-connect-import.php';
-require_once dirname( __FILE__ ) . '/includes/base/class-connect-import-pro.php';
-
-// Orders sync.
-require_once dirname( __FILE__ ) . '/includes/base/class-connect-orders.php';
+require_once dirname( __FILE__ ) . '/includes/connect-woocommerce/loader.php';

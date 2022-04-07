@@ -272,9 +272,8 @@ class CONNAPI_NEO_ERP {
 		return $body_response['propiedades'];
 	}
 
-	public function create_order( $order_id, $meta_key ) {
-
-		$order = new WC_Order( $order_id );
+	public function create_order( $order, $meta_key ) {
+		$order_id = $order->get_id();
 		$order_neo = array(
 			'NombreCliente'    => get_post_meta( $order_id, '_billing_first_name', true) . ' ' . get_post_meta( $order_id, '_billing_last_name', true ) . ' ' . get_post_meta( $order_id, '_billing_company', true ),
 			'CifCliente'       => get_post_meta( $order_id, $billing_key, true ),
@@ -320,7 +319,7 @@ class CONNAPI_NEO_ERP {
 		}
 		// Create sales order.
 		$result = $this->post_order( $order_neo );
-		update_post_meta( $order_id, '_sync_ecommerce_neo_oid', $result );
+		update_post_meta( $order_id, $meta_key, $result );
 	}
 
 	/**
