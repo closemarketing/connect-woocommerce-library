@@ -172,7 +172,7 @@ class Connect_WooCommerce_Orders {
 	}
 
 	/**
-	 * Creates invoice data to Holded
+	 * Creates invoice data to API
 	 *
 	 * @param string $order_id Order id to api.
 	 * @param date   $completed_date Completed data.
@@ -192,7 +192,7 @@ class Connect_WooCommerce_Orders {
 		if ( 'no' === $freeorder && 0 === $order_total ) {
 			update_post_meta( $order_id, $meta_key_order, 'nocreate' );
 
-			$order_msg = __( 'Free order not created in Holded. ', 'connect-woocommerce' );
+			$order_msg = __( 'Free order not created in ', 'connect-woocommerce' ) . connwoo_remote_name();
 
 			$order->add_order_note( $order_msg );
 			return array(
@@ -303,12 +303,12 @@ class Connect_WooCommerce_Orders {
 					$ec_invoice_id = get_post_meta( $item['id'], $meta_key_order, true );
 
 					if ( ! empty( $ec_invoice_id ) ) {
-						$this->ajax_msg .= __( 'Order already exported to Holded ID:', 'connect-woocommerce' ) . $ec_invoice_id . '<br/>';
+						$this->ajax_msg .= __( 'Order already exported to API ID:', 'connect-woocommerce' ) . $ec_invoice_id;
 					} else {
 						$result = $this->create_invoice( $item['id'], $item['date'] );
 
 						$this->ajax_msg .= 'ok' === $result['status'] ? __( 'Order Created.', 'connect-woocommerce' ) : __( 'Order not created.', 'connect-woocommerce' );
-						$this->ajax_msg .= ' ' . $result['message'] . ' <br/>';
+						$this->ajax_msg .= ' ' . $result['message'];
 					}
 				}
 
@@ -360,7 +360,7 @@ class Connect_WooCommerce_Orders {
 	}
 
 	/**
-	 * Imports products from Holded
+	 * Imports products from API
 	 *
 	 * @return void
 	 */
@@ -387,12 +387,12 @@ class Connect_WooCommerce_Orders {
 		<script type="text/javascript">
 			var loop=0;
 			jQuery(function($){
-				$(document).find('#connect-woocommerce-engine-orders').after('<div class="sync-wrapper"><h2><?php esc_html_e( 'Sync Orders to Holded', 'connect-woocommerce' ); ?></h2><p><?php esc_html_e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', 'connect-woocommerce' ); ?><br/></p><button id="start-sync-orders" class="button button-primary"<?php if ( false === $connapi_erp->check_can_sync() ) { echo ' disabled'; } ?>><?php esc_html_e( 'Start Import', 'connect-woocommerce' ); ?></button></div><fieldset id="logwrapper"><legend><?php esc_html_e( 'Log', 'connect-woocommerce' ); ?></legend><div id="loglist"></div></fieldset>');
+				$(document).find('#connect-woocommerce-engine-orders').after('<div class="sync-wrapper"><h2><?php esc_html_e( 'Sync Orders to ', 'connect-woocommerce' ); echo esc_html( connwoo_remote_name() ); ?></h2><p><?php esc_html_e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', 'connect-woocommerce' ); ?><br/></p><button id="start-sync-orders" class="button button-primary"<?php if ( false === $connapi_erp->check_can_sync() ) { echo ' disabled'; } ?>><?php esc_html_e( 'Start Import', 'connect-woocommerce' ); ?></button></div><fieldset id="logwrapper"><legend><?php esc_html_e( 'Log', 'connect-woocommerce' ); ?></legend><div id="loglist"></div></fieldset>');
 				$(document).find('#start-sync-orders').on('click', function(){
 					$(this).attr('disabled','disabled');
 					$(this).after('<span class="spinner is-active"></span>');
 					var class_task = 'odd';
-					$(document).find('#logwrapper #loglist').append( '<p class="'+class_task+'"><?php echo '[' . date_i18n( 'H:i:s' ) . '] ' . __( 'Connecting and syncing Orders ...', 'connect-woocommerce' ); ?></p>');
+					$(document).find('#logwrapper #loglist').append( '<p class="'+class_task+'"><?php echo '[' . date_i18n( 'H:i:s' ) . '] ' . __( 'Connecting and syncing orders ...', 'connect-woocommerce' ); ?></p>');
 
 					var syncAjaxCall = function(x){
 						$.ajax({
