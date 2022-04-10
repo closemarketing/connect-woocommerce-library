@@ -79,8 +79,6 @@ class Connect_WooCommerce_Import_PRO {
 			add_action( 'init', array( $this, 'action_scheduler' ) );
 			add_action( $this->sync_period, array( $this, 'cron_sync_products' ) );
 		}
-
-		add_action( 'admin_head', array( $this, 'cron_sync_products' ) );
 	}
 
 	/**
@@ -654,6 +652,9 @@ class Connect_WooCommerce_Import_PRO {
 
 		// Get products from API.
 		$products = $connapi_erp->get_products();
+		if ( ! is_array( $products ) ) {
+			return;
+		}
 
 		update_option( 'wcpimh_total_api_products', count( $products ) );
 		update_option( 'wcpimh_sync_start_time', strtotime( 'now' ) );
@@ -667,7 +668,7 @@ class Connect_WooCommerce_Import_PRO {
 					'synced'  => false,
 				);
 				if ( ! $this->check_exist_valuedb( $product['id'] ) ) {
-					$insert = $wpdb->insert(
+					$wpdb->insert(
 						$this->table_sync,
 						$db_values
 					);
