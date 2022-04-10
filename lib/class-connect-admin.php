@@ -442,7 +442,7 @@ class WCIMPH_Admin {
 	 */
 	public function page_sync_orders() {
 		if ( connwoo_is_pro() ) {
-			echo '<div id="sync-holded-engine-orders"></div>';
+			echo '<div id="connect-woocommerce-engine-orders"></div>';
 		} else {
 			echo '<h2>' . esc_html__( 'Sync Orders', 'connect-woocommerce' ) . '</h2>';
 			esc_html_e( 'Section only for PRO version', 'connect-woocommerce' );

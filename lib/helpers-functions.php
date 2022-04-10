@@ -80,3 +80,17 @@ if ( ! function_exists( 'connwoo_remote_price_rate_option' ) ) {
 		);
 	}
 }
+
+if ( ! function_exists( 'connwoo_order_send_attachments' ) ) {
+	/**
+	 * Returns Version.
+	 *
+	 * @return array
+	 */
+	function connwoo_order_send_attachments() {
+		return apply_filters(
+			'connwoo_order_send_attachments',
+			true
+		);
+	}
+}

@@ -10,7 +10,7 @@
 
 defined( 'ABSPATH' ) || exit;
 /**
- * Class Holded integration
+ * Class Orders integration
  */
 class Connect_WooCommerce_Orders {
 
@@ -35,8 +35,6 @@ class Connect_WooCommerce_Orders {
 		global $woocommerce;
 		$this->sync_settings = get_option( 'imhset' );
 		$ecstatus            = isset( $this->sync_settings['wcpimh_ecstatus'] ) ? $this->sync_settings['wcpimh_ecstatus'] : 'all';
-		// Actions.
-		add_action( 'admin_notices', array( $this, 'checks' ) );
 
 		add_action( 'admin_print_footer_scripts', array( $this, 'admin_print_footer_scripts' ), 11, 1 );
 		add_action( 'wp_ajax_wcpimh_import_orders', array( $this, 'wcpimh_import_orders' ) );
@@ -52,7 +50,9 @@ class Connect_WooCommerce_Orders {
 		add_action( 'woocommerce_order_status_completed', array( $this, 'process_order' ) );
 
 		// Email attachments.
-		add_filter( 'woocommerce_email_attachments', array( $this, 'attach_file_woocommerce_email' ), 10, 3 );
+		if ( connwoo_order_send_attachments() ) {
+			add_filter( 'woocommerce_email_attachments', array( $this, 'attach_file_woocommerce_email' ), 10, 3 );
+		}
 	}
 
 	/**
@@ -95,21 +95,6 @@ class Connect_WooCommerce_Orders {
 	}
 
 	/**
-	 * Check if the user has enabled the plugin functionality, but hasn't provided an api key
-	 **/
-	public function checks() {
-		if ( ! isset( $this->sync_settings['wcpimh_api'] ) ) {
-			// Show notice.
-			echo $this->get_message( //phpcs:ignore.
-				sprintf(
-					__( 'WooCommerce Holded: Plugin is enabled but no api key or secret provided. Please enter your api key and secret <a href="%s">here</a>.', 'connect-woocommerce' ),
-					'/wp-admin/admin.php?page=import_holded&tab=settings'
-				)
-			);
-		}
-	}
-
-	/**
 	 * Review items
 	 *
 	 * @param object $ordered_items Items ordered.
@@ -143,10 +128,11 @@ class Connect_WooCommerce_Orders {
 					'stock'    => $product->get_stock_quantity(),
 				);
 
-				// Use Holded product ID instead of SKU.
-				$holded_productid = get_post_meta( $order_item['product_id'], '_holded_productid', true );
-				if ( $holded_productid ) {
-					$fields_items[ $index ]['productId'] = $holded_productid;
+				// Use Source product ID instead of SKU.
+				$prod_key         = '_' . strtolower( connwoo_remote_name() ) . '_productid';
+				$source_productid = get_post_meta( $order_item['product_id'], $prod_key, true );
+				if ( $source_productid ) {
+					$fields_items[ $index ]['productId'] = $source_productid;
 				} else {
 					$fields_items[ $index ]['sku'] = $product->get_sku();
 				}
@@ -188,7 +174,7 @@ class Connect_WooCommerce_Orders {
 	/**
 	 * Creates invoice data to Holded
 	 *
-	 * @param string $order_id Order id to holded.
+	 * @param string $order_id Order id to api.
 	 * @param date   $completed_date Completed data.
 	 * @return array
 	 */
@@ -389,10 +375,11 @@ class Connect_WooCommerce_Orders {
 	 * @return void
 	 */
 	public function admin_print_footer_scripts() {
+		global $connapi_erp;
 		$screen  = get_current_screen();
 		$get_tab = isset( $_GET['tab'] ) ? (string) $_GET['tab'] : 'orders'; //phpcs:ignore
 
-		if ( 'woocommerce_page_import_holded' === $screen->base && 'orders' === $get_tab ) {
+		if ( 'woocommerce_page_connect_woocommerce' === $screen->base && 'orders' === $get_tab ) {
 		?>
 		<style>
 			.spinner{ float: none; }
@@ -400,12 +387,12 @@ class Connect_WooCommerce_Orders {
 		<script type="text/javascript">
 			var loop=0;
 			jQuery(function($){
-				$(document).find('#sync-holded-engine-orders').after('<div class="sync-wrapper"><h2><?php esc_html_e( 'Sync Orders to Holded', 'connect-woocommerce' ); ?></h2><p><?php esc_html_e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', 'connect-woocommerce' ); ?><br/></p><button id="start-sync-orders" class="button button-primary"<?php if ( false === sync_ecommerce_check_can_sync() ) { echo ' disabled'; } ?>><?php esc_html_e( 'Start Import', 'connect-woocommerce' ); ?></button></div><fieldset id="logwrapper"><legend><?php esc_html_e( 'Log', 'connect-woocommerce' ); ?></legend><div id="loglist"></div></fieldset>');
+				$(document).find('#connect-woocommerce-engine-orders').after('<div class="sync-wrapper"><h2><?php esc_html_e( 'Sync Orders to Holded', 'connect-woocommerce' ); ?></h2><p><?php esc_html_e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', 'connect-woocommerce' ); ?><br/></p><button id="start-sync-orders" class="button button-primary"<?php if ( false === $connapi_erp->check_can_sync() ) { echo ' disabled'; } ?>><?php esc_html_e( 'Start Import', 'connect-woocommerce' ); ?></button></div><fieldset id="logwrapper"><legend><?php esc_html_e( 'Log', 'connect-woocommerce' ); ?></legend><div id="loglist"></div></fieldset>');
 				$(document).find('#start-sync-orders').on('click', function(){
 					$(this).attr('disabled','disabled');
 					$(this).after('<span class="spinner is-active"></span>');
 					var class_task = 'odd';
-					$(document).find('#logwrapper #loglist').append( '<p class="'+class_task+'"><?php echo '[' . date_i18n( 'H:i:s' ) . '] ' . __( 'Connecting with Holded and syncing Orders ...', 'connect-woocommerce' ); ?></p>');
+					$(document).find('#logwrapper #loglist').append( '<p class="'+class_task+'"><?php echo '[' . date_i18n( 'H:i:s' ) . '] ' . __( 'Connecting and syncing Orders ...', 'connect-woocommerce' ); ?></p>');
 
 					var syncAjaxCall = function(x){
 						$.ajax({
@@ -436,7 +423,7 @@ class Connect_WooCommerce_Orders {
 								} else {
 									class_task = 'odd';
 								}
-								$(".toplevel_page_import_holded #loglist").animate({ scrollTop: $(".toplevel_page_import_holded #loglist")[0].scrollHeight}, 1000);
+								$(".woocommerce_page_connect_woocommerce #loglist").animate({ scrollTop: $(".woocommerce_page_connect_woocommerce #loglist")[0].scrollHeight}, 1000);
 							},
 							error: function (xhr, text_status, error_thrown) {
 								$(document).find('#start-sync').removeAttr('disabled');
@@ -452,17 +439,24 @@ class Connect_WooCommerce_Orders {
 			<?php
 		}
 	}
+
 	/**
-	 * # Email Attachments
-	 * ---------------------------------------------------------------------------------------------------- */
+	 * Email attachmets
+	 *
+	 * @param file    $attachments Files to attach.
+	 * @param integer $id Order ID.
+	 * @param object  $email_order Order object.
+	 * @return file
+	 */
 	public function attach_file_woocommerce_email( $attachments, $id, $email_order ) {
 		global $connapi_erp;
-		$order_id        = $email_order->get_id();
-		$holded_doc_id   = get_post_meta( $order_id, '_holded_doc_id', true );
-		$holded_doc_type = get_post_meta( $order_id, '_holded_doc_type', true );
+		$order_id     = $email_order->get_id();
+		$remote_slug  = strtolower( connwoo_remote_name() );
+		$api_doc_id   = get_post_meta( $order_id, '_' . $remote_slug . '_doc_id', true );
+		$api_doc_type = get_post_meta( $order_id, '_' . $remote_slug . '_doc_type', true );
 
-		if ( $holded_doc_id ) {
-			$file_document_path = $connapi_erp->get_order_pdf( $holded_doc_type, $holded_doc_id );
+		if ( $api_doc_id ) {
+			$file_document_path = $connapi_erp->get_order_pdf( $api_doc_type, $api_doc_id );
 
 			if ( is_file( $file_document_path ) ) {
 				$attachments[] = $file_document_path;

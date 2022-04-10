@@ -457,7 +457,6 @@ class WCPIMH_Import {
 		$not_sapi_cli = substr( php_sapi_name(), 0, 3 ) != 'cli' ? true : false;
 		$doing_ajax   = defined( 'DOING_AJAX' ) && DOING_AJAX;
 		$imh_settings = get_option( 'imhset' );
-		$prod_status  = ( isset( $imh_settings['wcpimh_prodst'] ) && $imh_settings['wcpimh_prodst'] ) ? $imh_settings['wcpimh_prodst'] : 'draft';
 
 		if ( in_array( 'woo-product-bundle/wpc-product-bundles.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
 			$plugin_grouped_prod_active = true;
