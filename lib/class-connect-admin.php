@@ -533,7 +533,7 @@ class WCIMPH_Admin {
 				$count_return .= ' ' . esc_html__( 'filtered', 'connect-woocommerce' );
 				$count_return .= ' ( ' . $total_api_products . ' ' . esc_html__( 'total', 'connect-woocommerce' ) . ' )';
 			}
-			$percentage = 0 > $total_count ? intval( $count / $total_count * 100 ) : 0;
+			$percentage = 0 < $total_count ? intval( $count / $total_count * 100 ) : 0;
 			esc_html_e( 'Make your settings to automate the sync.', 'connect-woocommerce' );
 			echo '<div class="sync-status" style="text-align:right;">';
 			echo '<strong>';
