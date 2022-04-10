@@ -13,11 +13,11 @@ defined( 'ABSPATH' ) || exit;
 require_once dirname( __FILE__ ) . '/lib/helpers-functions.php';
 
 // Loads translation.
-add_action( 'init', 'wcsen_load_textdomain' );
+add_action( 'init', 'cwlib_load_textdomain' );
 /**
  * Load plugin textdomain.
  */
-function wcsen_load_textdomain() {
+function cwlib_load_textdomain() {
 	load_plugin_textdomain( 'connect-woocommerce', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 }
 
@@ -27,7 +27,6 @@ if ( connwoo_is_pro() ) {
 }
 
 // Includes files.
-require_once dirname( __FILE__ ) . '/lib/class-api-erp-neo.php';
 require_once dirname( __FILE__ ) . '/lib/helpers-cron.php';
 require_once dirname( __FILE__ ) . '/lib/class-connect-admin.php';
 require_once dirname( __FILE__ ) . '/lib/class-connect-import.php';
