@@ -21,19 +21,6 @@ defined( 'ABSPATH' ) || exit;
  * @version    0.1
  */
 class WCPIMH_Import {
-	/**
-	 * The plugin file
-	 *
-	 * @var string
-	 */
-	private $file;
-
-	/**
-	 * Array of products to import
-	 *
-	 * @var array
-	 */
-	private $products;
 
 	/**
 	 * Ajax Message that shows while imports
@@ -53,7 +40,6 @@ class WCPIMH_Import {
 	 * Constructs of class
 	 */
 	public function __construct() {
-
 		add_action( 'admin_print_footer_scripts', array( $this, 'admin_print_footer_scripts' ), 11, 1 );
 		add_action( 'wp_ajax_wcpimh_import_products', array( $this, 'wcpimh_import_products' ) );
 
@@ -254,7 +240,7 @@ class WCPIMH_Import {
 		$product_props     = array(
 			'stock_status'  => 'instock',
 			'backorders'    => $allow_backorders,
-			'regular_price' => $item['price'],
+			'regular_price' => isset( $item['price'] ) ? $item['price'] : null,
 		);
 		$product_props_new = array();
 		if ( $is_new_product ) {
@@ -468,8 +454,14 @@ class WCPIMH_Import {
 		$msg_product_synced  = __( 'Product synced: ', 'connect-woocommerce' );
 
 		// Start.
-		if ( ! isset( $this->products ) ) {
-			$this->products = $connapi_erp->get_products();
+		if ( ! session_id() ) {
+			session_start();
+		}
+		if ( 0 === $sync_loop ) {
+			$api_products             = $connapi_erp->get_products();
+			$_SESSION['api_products'] = $api_products;
+		} else {
+			$api_products = $_SESSION['api_products'];
 		}
 
 		if ( false === $this->products ) {
@@ -479,10 +471,8 @@ class WCPIMH_Import {
 				die();
 			}
 		} else {
-			$products_array           = $this->products;
-			$products_count           = count( $products_array );
-			$item                     = $products_array[ $sync_loop ];
-			$error_products_html      = '';
+			$products_count           = count( $api_products );
+			$item                     = $api_products[ $sync_loop ];
 			$this->msg_error_products = array();
 
 			// For testing:
@@ -818,7 +808,7 @@ class WCPIMH_Import {
 								} else {
 									class_task = 'odd';
 								}
-								$(".woocommerce_page_connect_woocommerce #loglist").animate({ scrollTop: $(".woocommerce_page_connect_woocommerce #loglist")[0].scrollHeight}, 1000);
+								$(".woocommerce_page_connect_woocommerce #loglist").animate({ scrollTop: $(".woocommerce_page_connect_woocommerce #loglist")[0].scrollHeight}, 450);
 							},
 							error: function (xhr, text_status, error_thrown) {
 								$(document).find('#start-sync').removeAttr('disabled');
