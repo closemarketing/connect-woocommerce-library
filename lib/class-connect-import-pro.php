@@ -400,8 +400,8 @@ class Connect_WooCommerce_Import_PRO {
 			}
 			// Get all Attributes for the product.
 			foreach ( $variant['categoryFields'] as $category_fields ) {
-				if ( isset( $category_fields['field'] ) && $category_fields ) {
-					if ( ! in_array( $category_fields['field'], $attributes[ $category_fields['name'] ], true ) ) {
+				if ( ! empty( $category_fields['field'] ) ) {
+					if ( ! isset( $attributes[ $category_fields['name'] ] ) || ! in_array( $category_fields['field'], $attributes[ $category_fields['name'] ], true ) ) {
 						$attributes[ $category_fields['name'] ][] = $category_fields['field'];
 					}
 					$attribute_name = wc_sanitize_taxonomy_name( $category_fields['name'] );
@@ -476,7 +476,7 @@ class Connect_WooCommerce_Import_PRO {
 		$att_props       = array();
 
 		foreach ( $item['attributes'] as $attribute ) {
-			if ( ! in_array( $attribute['value'], $attributes[ $attribute['name'] ], true ) ) {
+			if ( ! isset( $attributes[ $attribute['name'] ] ) || ! in_array( $attribute['value'], $attributes[ $attribute['name'] ], true ) ) {
 				$attributes[ $attribute['name'] ][] = $attribute['value'];
 			}
 
