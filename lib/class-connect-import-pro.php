@@ -99,21 +99,21 @@ class Connect_WooCommerce_Import_PRO {
 	}
 
 	/**
-	 * Gets image from Holded products
+	 * Gets image from API products
 	 *
 	 * @param string $imh_settings Settings of plugin.
-	 * @param string $holded_id Id of holded to get information.
+	 * @param string $prod_id Id of API to get information.
 	 * @param string $product_id Id of product to get information.
 	 * @return array Array of products imported via API.
 	 */
-	public function put_product_image( $imh_settings, $holded_id, $product_id ) {
+	public function put_product_image( $imh_settings, $prod_id, $product_id ) {
 		global $connapi_erp;
 		// Don't import if there is thumbnail.
 		if ( has_post_thumbnail( $product_id ) ) {
 			return false;
 		}
 
-		$result_api = $connapi_erp->get_image_product( $imh_settings, $holded_id, $product_id );
+		$result_api = $connapi_erp->get_image_product( $imh_settings, $prod_id, $product_id );
 
 		if ( isset( $result_api['upload']['url'] ) ) {
 			$attachment = array(
@@ -322,7 +322,7 @@ class Connect_WooCommerce_Import_PRO {
 	 */
 	public function get_categories_ids( $imh_settings, $item_type, $is_new_product ) {
 		$categories_ids = array();
-		// Category Holded.
+		// Category API.
 		$category_newp = isset( $imh_settings['wcpimh_catnp'] ) ? $imh_settings['wcpimh_catnp'] : 'yes';
 		$category_sep  = isset( $imh_settings['wcpimh_catsep'] ) ? $imh_settings['wcpimh_catsep'] : '';
 
@@ -390,10 +390,10 @@ class Connect_WooCommerce_Import_PRO {
 
 			if ( ! isset( $variant['categoryFields'] ) ) {
 				$this->error_product_import[] = array(
-					'id_holded' => $item['id'],
-					'name'      => $item['name'],
-					'sku'       => $variant['sku'],
-					'error'     => __( 'Variation error: ', 'connect-woocommerce' ),
+					'prod_id' => $item['id'],
+					'name'    => $item['name'],
+					'sku'     => $variant['sku'],
+					'error'   => __( 'Variation error: ', 'connect-woocommerce' ),
 				);
 				$this->ajax_msg .= '<span class="error">' . __( 'Variation error: ', 'connect-woocommerce' ) . $item['name'] . '. Variant SKU: ' . $variant['sku'] . '(' . $item['kind'] . ') </span><br/>';
 				continue;
@@ -453,13 +453,14 @@ class Connect_WooCommerce_Import_PRO {
 				$variation->set_sku( $variant['sku'] );
 			}
 			$variation->save();
-			update_post_meta( $variation_id, '_holded_productid', $variant['id'] );
+			$key = '_' . strtolower( connwoo_remote_name() ) . '_productid';
+			update_post_meta( $variation_id, $key, $variant['id'] );
 		}
 		$var_prop   = $this->make_attributes( $attributes, true );
 		$data_store = $product->get_data_store();
 		$data_store->sort_all_product_variations( $product_id );
 
-		// Check if WooCommerce Variations have more than Holded and unset.
+		// Check if WooCommerce Variations have more than API and unset.
 		if ( ! $is_new_product && ! empty( $variations_array ) ) {
 			foreach ( $variations_array as $variation_id => $variation_sku ) {
 				wp_update_post(
@@ -497,7 +498,7 @@ class Connect_WooCommerce_Import_PRO {
 	 * Syncs product pack with WooCommerce
 	 *
 	 * @param object $product Product WooCommerce.
-	 * @param array  $item Item holded.
+	 * @param array  $item Item API.
 	 * @param string $pack_items String with ids.
 	 * @return void
 	 */
@@ -522,7 +523,8 @@ class Connect_WooCommerce_Import_PRO {
 		foreach ( $wosb_metas as $key => $value ) {
 			update_post_meta( $product_id, $key, $value );
 		}
-		update_post_meta( $product_id, '_holded_productid', $item['id'] );
+		$prod_key = '_' . strtolower( connwoo_remote_name() ) . '_productid';
+		update_post_meta( $product_id, $prod_key, $item['id'] );
 	}
 
 	/**
@@ -565,7 +567,7 @@ class Connect_WooCommerce_Import_PRO {
 	/**
 	 * Create Syncs product for automatic
 	 *
-	 * @param array $item Item of Holded.
+	 * @param array $item Item of API.
 	 * @return void
 	 */
 	private function create_sync_product( $item ) {
@@ -685,7 +687,7 @@ class Connect_WooCommerce_Import_PRO {
 	private function get_products_sync() {
 		global $wpdb;
 		$imh_settings = get_option( 'imhset' );
-		$limit        = isset( $imh_settings['wcpimh_sync_num'] ) ? $imh_settings['wcpimh_sync_num'] : MAX_SYNC_LOOP;
+		$limit        = isset( $imh_settings['wcpimh_sync_num'] ) ? $imh_settings['wcpimh_sync_num'] : 5;
 
 		$results = $wpdb->get_results( "SELECT prod_id FROM $this->table_sync WHERE synced = 0 LIMIT $limit", ARRAY_A );
 
@@ -787,7 +789,11 @@ class Connect_WooCommerce_Import_PRO {
 
 				foreach ( $products_errors as $error ) {
 					$body .= '<br/><strong>' . $error['error'] . '</strong>';
-					$body .= '<br/><strong>' . __( 'Product id: ', 'connect-woocommerce' ) . '</strong>' . $error['id'] . ' <a href="https://app.holded.com/products/' . $error['id'] . '">' . __( 'View in Holded', 'connect-woocommerce' ) . '</a>';
+					$body .= '<br/><strong>' . __( 'Product id: ', 'connect-woocommerce' ) . '</strong>' . $error['id'];
+
+					if ( 'Holded' === connwoo_remote_name() ) {
+						$body .= ' <a href="https://app.holded.com/products/' . $error['id'] . '">' . __( 'View in Holded', 'connect-woocommerce' ) . '</a>';
+					}
 					$body .= '<br/><strong>' . __( 'Product name: ', 'connect-woocommerce' ) . '</strong>' . $error['name'];
 					$body .= '<br/><strong>' . __( 'Product sku: ', 'connect-woocommerce' ) . '</strong>' . $error['sku'];
 					$body .= '<br/><strong>' . __( 'Product type: ', 'connect-woocommerce' ) . '</strong>' . $error['type'];

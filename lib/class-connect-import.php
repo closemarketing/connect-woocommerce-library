@@ -10,9 +10,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'MAX_LOCAL_LOOP', 45 );
-define( 'MAX_SYNC_LOOP', 5 );
-define( 'MAX_LIMIT_HOLDED_API', 500 );
 /**
  * Library for WooCommerce Settings
  *
@@ -489,7 +486,7 @@ class WCPIMH_Import {
 			$this->msg_error_products = array();
 
 			// For testing:
-			// $products_count = MAX_LOCAL_LOOP; .
+			// $products_count = 45; .
 
 			if ( $products_count ) {
 				if ( ( $doing_ajax ) || $not_sapi_cli ) {
@@ -598,7 +595,7 @@ class WCPIMH_Import {
 						$this->ajax_msg .= __( 'SKU not finded in Simple product. Product not imported: ', 'connect-woocommerce' ) . $item['name'] . '(' . $item['kind'] . ')</br>';
 
 						$this->error_product_import[] = array(
-							'id_holded' => $item['id'],
+							'prod_id' => $item['id'],
 							'name'      => $item['name'],
 							'sku'       => $item['sku'],
 							'error'     => __( 'SKU not finded in Simple product. Product not imported. ', 'connect-woocommerce' ),
@@ -608,7 +605,7 @@ class WCPIMH_Import {
 						$this->ajax_msg .= __( 'Product type not supported. Product not imported: ', 'connect-woocommerce' ) . $item['name'] . '(' . $item['kind'] . ')</br>';
 
 						$this->error_product_import[] = array(
-							'id_holded' => $item['id'],
+							'prod_id' => $item['id'],
 							'name'      => $item['name'],
 							'sku'       => $item['sku'],
 							'error'     => __( 'Product type not supported. Product not imported: ', 'connect-woocommerce' ),
@@ -679,7 +676,7 @@ class WCPIMH_Import {
 			$error_content .= ' ' . __( 'Error:', 'connect-woocommerce' ) . $error['error'];
 			$error_content .= ' ' . __( 'SKU:', 'connect-woocommerce' ) . $error['sku'];
 			$error_content .= ' ' . __( 'Name:', 'connect-woocommerce' ) . $error['name'];
-			$error_content .= ' <a href="https://app.holded.com/products/' . $error['id_holded'] . '">';
+			$error_content .= ' <a href="https://app.holded.com/products/' . $error['prod_id'] . '">';
 			$error_content .= __( 'Edit:', 'connect-woocommerce' ) . '</a>';
 			$error_content .= '<br/>';
 		}
@@ -816,7 +813,7 @@ class WCPIMH_Import {
 								} else {
 									class_task = 'odd';
 								}
-								$(".toplevel_page_import_holded #loglist").animate({ scrollTop: $(".toplevel_page_import_holded #loglist")[0].scrollHeight}, 1000);
+								$(".woocommerce_page_connect_woocommerce #loglist").animate({ scrollTop: $(".woocommerce_page_connect_woocommerce #loglist")[0].scrollHeight}, 1000);
 							},
 							error: function (xhr, text_status, error_thrown) {
 								$(document).find('#start-sync').removeAttr('disabled');
@@ -844,7 +841,7 @@ class WCPIMH_Import {
 		$body    = implode( '<br/>', $errors );
 		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
 
-		wp_mail( get_option( 'admin_email' ), 'IMPORT HOLDED: ' . $subject, $body, $headers );
+		wp_mail( get_option( 'admin_email' ), 'IMPORT: ' . $subject, $body, $headers );
 	}
 }
 
