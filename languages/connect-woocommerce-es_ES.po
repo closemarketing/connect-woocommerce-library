@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Plugins - Connect WooCommerce Holded - Stable (latest release)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-04-10 08:37+0200\n"
+"PO-Revision-Date: 2022-04-14 08:04+0200\n"
 "Last-Translator: David <david@closemarketing.es>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -120,12 +120,12 @@ msgstr ""
 
 #: includes/class-public.php:139
 msgid "VAT info:"
-msgstr ""
+msgstr "Información sobre NIF/CIF:"
 
 #: includes/class-public.php:84 includes/class-public.php:85
 #: includes/class-public.php:110 includes/class-public.php:128
 msgid "VAT No"
-msgstr ""
+msgstr "NIF/CIF"
 
 #: import-holded-products-woocommerce.php:70
 msgid "Purchase PRO Version"
