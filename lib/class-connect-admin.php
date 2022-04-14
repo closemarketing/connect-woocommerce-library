@@ -603,7 +603,7 @@ class WCIMPH_Admin {
 	 */
 	public function idcentre_callback() {
 		printf(
-			'<input class="regular-text" type="password" name="imhset[wcpimh_idcentre]" id="wcpimh_idcentre" value="%s">',
+			'<input class="regular-text" type="text" name="imhset[wcpimh_idcentre]" id="wcpimh_idcentre" value="%s">',
 			isset( $this->imh_settings['wcpimh_idcentre'] ) ? esc_attr( $this->imh_settings['wcpimh_idcentre'] ) : ''
 		);
 	}
