@@ -539,7 +539,8 @@ class WCIMPH_Admin {
 			echo '<strong>';
 			esc_html_e( 'Actual Automate status:', 'connect-woocommerce' );
 			echo '</strong> ' . esc_html( $count_return ) . ' ';
-			esc_html_e( 'products synced with Holded.', 'connect-woocommerce' );
+			esc_html_e( 'products synced with ', 'connect-woocommerce' );
+			echo esc_html( connwoo_remote_name() );
 			echo '</div>';
 			echo '
 			<style>

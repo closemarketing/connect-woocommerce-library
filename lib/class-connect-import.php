@@ -676,8 +676,13 @@ class WCPIMH_Import {
 			$error_content .= ' ' . __( 'Error:', 'connect-woocommerce' ) . $error['error'];
 			$error_content .= ' ' . __( 'SKU:', 'connect-woocommerce' ) . $error['sku'];
 			$error_content .= ' ' . __( 'Name:', 'connect-woocommerce' ) . $error['name'];
-			$error_content .= ' <a href="https://app.holded.com/products/' . $error['prod_id'] . '">';
-			$error_content .= __( 'Edit:', 'connect-woocommerce' ) . '</a>';
+
+			if ( 'Holded' === connwoo_remote_name() ) {
+				$error_content .= ' <a href="https://app.holded.com/products/' . $error['prod_id'] . '">';
+				$error_content .= __( 'Edit:', 'connect-woocommerce' ) . '</a>';
+			} else {
+				$error_content .= ' ' . __( 'Prod ID:', 'connect-woocommerce' ) . $error['prod_id'];
+			}
 			$error_content .= '<br/>';
 		}
 		// Sends an email to admin.
