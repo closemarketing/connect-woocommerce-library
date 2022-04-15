@@ -463,9 +463,6 @@ class WCPIMH_Import {
 		} else {
 			$api_products = $_SESSION['api_products'];
 		}
-		error_log('prod'.$sync_loop.':');
-
-		error_log('sku:'.$api_products[ $sync_loop ]['sku']);
 
 		if ( false === $api_products ) {
 			if ( $doing_ajax ) {
