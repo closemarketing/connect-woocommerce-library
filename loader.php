@@ -21,13 +21,14 @@ function cwlib_load_textdomain() {
 	load_plugin_textdomain( 'connect-woocommerce', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 }
 
+require_once dirname( __FILE__ ) . '/lib/helpers-cron.php';
+
 // Creates table sync.
 if ( connwoo_is_pro() ) {
-	register_activation_hook( __FILE__, 'connwoo_process_activation_premium' );
+	register_activation_hook( WCPIMH_FILE, 'connwoo_process_activation_premium' );
 }
 
 // Includes files.
-require_once dirname( __FILE__ ) . '/lib/helpers-cron.php';
 require_once dirname( __FILE__ ) . '/lib/class-connect-admin.php';
 require_once dirname( __FILE__ ) . '/lib/class-connect-import.php';
 require_once dirname( __FILE__ ) . '/lib/class-connect-import-pro.php';
