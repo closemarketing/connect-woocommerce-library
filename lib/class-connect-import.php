@@ -264,7 +264,7 @@ class WCPIMH_Import {
 				'length'             => '',
 				'width'              => '',
 				'height'             => '',
-				'barcode'            => $item['barcode'],
+				'barcode'            => isset( $item['barcode'] ) ? $item['barcode'] : '',
 				'upsell_ids'         => '',
 				'cross_sell_ids'     => '',
 				'parent_id'          => 0,
@@ -272,8 +272,8 @@ class WCPIMH_Import {
 				'purchase_note'      => '',
 				'virtual'            => $is_virtual,
 				'downloadable'       => false,
-				'category_ids'       => '',
-				'tag_ids'            => '',
+				//'category_ids'       => '',
+				//'tag_ids'            => '',
 				'shipping_class_id'  => 0,
 				'image_id'           => '',
 				'gallery_image_ids'  => '',
@@ -463,8 +463,11 @@ class WCPIMH_Import {
 		} else {
 			$api_products = $_SESSION['api_products'];
 		}
+		error_log('prod'.$sync_loop.':');
 
-		if ( false === $this->products ) {
+		error_log('sku:'.$api_products[ $sync_loop ]['sku']);
+
+		if ( false === $api_products ) {
 			if ( $doing_ajax ) {
 				wp_send_json_error( array( 'msg' => 'Error' ) );
 			} else {

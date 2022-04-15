@@ -238,6 +238,7 @@ class Connect_WooCommerce_Import_PRO {
 	 */
 	private function make_attributes( $attributes, $for_variation = true ) {
 		$position = 0;
+		$attributes_return = array();
 		foreach ( $attributes as $attr_name => $attr_values ) {
 			$attribute = new \WC_Product_Attribute();
 			$attribute->set_id( 0 );
@@ -475,15 +476,17 @@ class Connect_WooCommerce_Import_PRO {
 		$attributes_prod = array();
 		$att_props       = array();
 
-		foreach ( $item['attributes'] as $attribute ) {
-			if ( ! isset( $attributes[ $attribute['name'] ] ) || ! in_array( $attribute['value'], $attributes[ $attribute['name'] ], true ) ) {
-				$attributes[ $attribute['name'] ][] = $attribute['value'];
+		if ( ! empty( $item['attributes'] ) ) {
+			foreach ( $item['attributes'] as $attribute ) {
+				if ( ! isset( $attributes[ $attribute['name'] ] ) || ! in_array( $attribute['value'], $attributes[ $attribute['name'] ], true ) ) {
+					$attributes[ $attribute['name'] ][] = $attribute['value'];
+				}
+	
+				$attribute_name = wc_sanitize_taxonomy_name( $attribute['name'] );
+				$attributes_prod[ 'attribute_pa_' . $attribute_name ] = wc_sanitize_taxonomy_name( $attribute['value'] );
+	
+				$att_props = $this->make_attributes( $attributes, false );
 			}
-
-			$attribute_name = wc_sanitize_taxonomy_name( $attribute['name'] );
-			$attributes_prod[ 'attribute_pa_' . $attribute_name ] = wc_sanitize_taxonomy_name( $attribute['value'] );
-
-			$att_props = $this->make_attributes( $attributes, false );
 		}
 		if ( ! empty( $att_props ) ) {
 			$product_props['attributes'] = array_merge( $var_prop, $att_props );

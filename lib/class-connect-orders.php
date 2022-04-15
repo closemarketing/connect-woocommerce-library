@@ -423,7 +423,7 @@ class Connect_WooCommerce_Orders {
 								} else {
 									class_task = 'odd';
 								}
-								$(".woocommerce_page_connect_woocommerce #loglist").animate({ scrollTop: $(".woocommerce_page_connect_woocommerce #loglist")[0].scrollHeight}, 1000);
+								$(".woocommerce_page_connect_woocommerce #loglist").animate({ scrollTop: $(".woocommerce_page_connect_woocommerce #loglist")[0].scrollHeight}, 450);
 							},
 							error: function (xhr, text_status, error_thrown) {
 								$(document).find('#start-sync').removeAttr('disabled');
