@@ -30,11 +30,11 @@ if ( ! function_exists( 'error_admin_message' ) ) {
  *
  * @return array
  */
-if ( ! function_exists( 'connwoo_is_pro' ) ) {
-	function connwoo_is_pro() {
+if ( ! function_exists( 'connwoo_option_stock' ) ) {
+	function connwoo_option_stock() {
 		return apply_filters(
-			'connwoo_is_pro',
-			false
+			'connwoo_option_stock',
+			true
 		);
 	}
 }
@@ -48,6 +48,20 @@ if ( ! function_exists( 'connwoo_remote_name' ) ) {
 	function connwoo_remote_name() {
 		return apply_filters(
 			'connwoo_remote_name',
+			false
+		);
+	}
+}
+
+/**
+ * Returns Version.
+ *
+ * @return array
+ */
+if ( ! function_exists( 'connwoo_is_pro' ) ) {
+	function connwoo_is_pro() {
+		return apply_filters(
+			'connwoo_is_pro',
 			false
 		);
 	}

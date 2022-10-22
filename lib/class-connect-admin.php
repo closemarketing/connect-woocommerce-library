@@ -197,13 +197,15 @@ class WCIMPH_Admin {
 			'connect_woocommerce_setting_section'
 		);
 
-		add_settings_field(
-			'wcpimh_stock',
-			__( 'Import stock?', 'connect-woocommerce' ),
-			array( $this, 'wcpimh_stock_callback' ),
-			'connect-woocommerce-admin',
-			'connect_woocommerce_setting_section'
-		);
+		if ( connwoo_option_stock() ) {
+			add_settings_field(
+				'wcpimh_stock',
+				__( 'Import stock?', 'connect-woocommerce' ),
+				array( $this, 'wcpimh_stock_callback' ),
+				'connect-woocommerce-admin',
+				'connect_woocommerce_setting_section'
+			);
+		}
 
 		add_settings_field(
 			'wcpimh_prodst',

@@ -34,7 +34,7 @@ class Connect_WooCommerce_Orders {
 	public function __construct() {
 		global $woocommerce;
 		$this->sync_settings = get_option( 'imhset' );
-		$ecstatus            = isset( $this->sync_settings['wcpimh_ecstatus'] ) ? $this->sync_settings['wcpimh_ecstatus'] : 'all';
+		$ecstatus            = apply_filters( 'connwoo_only_order_completed', isset( $this->sync_settings['wcpimh_ecstatus'] ) ? $this->sync_settings['wcpimh_ecstatus'] : 'all' );
 
 		add_action( 'admin_print_footer_scripts', array( $this, 'admin_print_footer_scripts' ), 11, 1 );
 		add_action( 'wp_ajax_wcpimh_import_orders', array( $this, 'wcpimh_import_orders' ) );
@@ -181,12 +181,12 @@ class Connect_WooCommerce_Orders {
 	public function create_invoice( $order_id, $completed_date ) {
 		global $connapi_erp;
 		$doctype        = isset( $this->sync_settings['wcpimh_doctype'] ) ? $this->sync_settings['wcpimh_doctype'] : 'nosync';
-		$freeorder      = isset( $this->sync_settings['wcpimh_freeorder'] ) ? $this->sync_settings['wcpimh_freeorder'] : 'no';
 		$design_id      = isset( $this->sync_settings['wcpimh_design_id'] ) ? $this->sync_settings['wcpimh_design_id'] : '';
 		$order          = wc_get_order( $order_id );
 		$order_total    = (int) $order->get_total();
 		$meta_key_order = '_' . strtolower( connwoo_remote_name() ) . 'invoice_id';
 		$ec_invoice_id  = get_post_meta( $order_id, $meta_key_order, true );
+		$freeorder      = apply_filters( 'connwoo_import_free_order', isset( $this->sync_settings['wcpimh_freeorder'] ) ? $this->sync_settings['wcpimh_freeorder'] : 'no' );
 
 		// Not create order if free.
 		if ( 'no' === $freeorder && 0 === $order_total ) {
@@ -203,9 +203,8 @@ class Connect_WooCommerce_Orders {
 
 		// Create the inovice.
 		if ( empty( $ec_invoice_id ) ) {
-
 			try {
-				$connapi_erp->create_order( $order, $meta_key_order );
+				return $connapi_erp->create_order( $order, $meta_key_order );
 			} catch ( Exception $e ) {
 				return array(
 					'status'  => 'error',
@@ -242,7 +241,7 @@ class Connect_WooCommerce_Orders {
 		$doing_ajax          = defined( 'DOING_AJAX' ) && DOING_AJAX;
 		$this->sync_settings = get_option( 'imhset' );
 		$sync_loop           = isset( $_POST['syncLoop'] ) ? (int) sanitize_text_field( $_POST['syncLoop'] ) : 0;
-		$meta_key_order      = '_' . strtolower( connwoo_remote_name() ) . 'invoice_id';
+		$meta_key_order      = '_' . strtolower( connwoo_remote_name() ) . '_invoice_id';
 
 		// Start.
 		if ( ! isset( $this->orders ) ) {
@@ -308,6 +307,7 @@ class Connect_WooCommerce_Orders {
 						$result = $this->create_invoice( $item['id'], $item['date'] );
 
 						$this->ajax_msg .= 'ok' === $result['status'] ? __( 'Order Created.', 'connect-woocommerce' ) : __( 'Order not created.', 'connect-woocommerce' );
+
 						$this->ajax_msg .= ' ' . $result['message'];
 					}
 				}
@@ -387,7 +387,7 @@ class Connect_WooCommerce_Orders {
 		<script type="text/javascript">
 			var loop=0;
 			jQuery(function($){
-				$(document).find('#connect-woocommerce-engine-orders').after('<div class="sync-wrapper"><h2><?php esc_html_e( 'Sync Orders to ', 'connect-woocommerce' ); echo esc_html( connwoo_remote_name() ); ?></h2><p><?php esc_html_e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', 'connect-woocommerce' ); ?><br/></p><button id="start-sync-orders" class="button button-primary"<?php if ( false === $connapi_erp->check_can_sync() ) { echo ' disabled'; } ?>><?php esc_html_e( 'Start Import', 'connect-woocommerce' ); ?></button></div><fieldset id="logwrapper"><legend><?php esc_html_e( 'Log', 'connect-woocommerce' ); ?></legend><div id="loglist"></div></fieldset>');
+				$(document).find('#connect-woocommerce-engine-orders').after('<div class="sync-wrapper"><h2><?php esc_html_e( 'Sync Completed Orders to ', 'connect-woocommerce' ); echo esc_html( connwoo_remote_name() ); ?></h2><p><?php esc_html_e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it. Only COMPLETED Orders will be synced.', 'connect-woocommerce' ); ?><br/></p><button id="start-sync-orders" class="button button-primary"<?php if ( false === $connapi_erp->check_can_sync() ) { echo ' disabled'; } ?>><?php esc_html_e( 'Start Import', 'connect-woocommerce' ); ?></button></div><fieldset id="logwrapper"><legend><?php esc_html_e( 'Log', 'connect-woocommerce' ); ?></legend><div id="loglist"></div></fieldset>');
 				$(document).find('#start-sync-orders').on('click', function(){
 					$(this).attr('disabled','disabled');
 					$(this).after('<span class="spinner is-active"></span>');
