@@ -321,12 +321,12 @@ class WCPIMH_Import {
 				break;
 			case 'variable':
 				if ( connwoo_is_pro() && class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
-					$connwoo_pro->sync_product_variable( $product, $item, $is_new_product, $rate_id );
+					$product_props = $connwoo_pro->sync_product_variable( $product, $item, $is_new_product, $rate_id );
 				}
 				break;
 			case 'pack':
 				if ( connwoo_is_pro() && class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
-					$connwoo_pro->sync_product_pack( $product, $item, $pack_items );
+					$product_props = $connwoo_pro->sync_product_pack( $product, $item, $pack_items );
 				}
 				break;
 		}
@@ -658,26 +658,40 @@ class WCPIMH_Import {
 	 * @return void
 	 */
 	public function send_product_errors() {
+		// Send to WooCommerce Logger
+		$logger = wc_get_logger();
+
 		$error_content = '';
 		if ( empty( $this->error_product_import ) ) {
 			return;
 		}
 		foreach ( $this->error_product_import as $error ) {
-			$error_content .= ' ' . __( 'Error:', 'connect-woocommerce' ) . $error['error'];
-			$error_content .= ' ' . __( 'SKU:', 'connect-woocommerce' ) . $error['sku'];
-			$error_content .= ' ' . __( 'Name:', 'connect-woocommerce' ) . $error['name'];
+			$error_prod  = ' ' . __( 'Error:', 'connect-woocommerce' ) . $error['error'];
+			$error_prod .= ' ' . __( 'SKU:', 'connect-woocommerce' ) . $error['sku'];
+			$error_prod .= ' ' . __( 'Name:', 'connect-woocommerce' ) . $error['name'];
 
 			if ( 'Holded' === connwoo_remote_name() ) {
-				$error_content .= ' <a href="https://app.holded.com/products/' . $error['prod_id'] . '">';
-				$error_content .= __( 'Edit:', 'connect-woocommerce' ) . '</a>';
+				$error_prod .= ' <a href="https://app.holded.com/products/' . $error['prod_id'] . '">';
+				$error_prod .= __( 'Edit:', 'connect-woocommerce' ) . '</a>';
 			} else {
-				$error_content .= ' ' . __( 'Prod ID:', 'connect-woocommerce' ) . $error['prod_id'];
+				$error_prod .= ' ' . __( 'Prod ID:', 'connect-woocommerce' ) . $error['prod_id'];
 			}
-			$error_content .= '<br/>';
+			// Sends to WooCommerce Log
+			$logger->warning(
+				$error_prod,
+				array(
+					'source' => 'connect-woocommerce'
+					)
+			);
+			$error_content .= $error_prod . '<br/>';
 		}
 		// Sends an email to admin.
 		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
 		wp_mail( get_option( 'admin_email' ), __( 'Error in Products Synced in', 'connect-woocommerce' ) . ' ' . get_option( 'blogname' ), $error_content, $headers );
+
+
+
+		
 	}
 
 	/**
