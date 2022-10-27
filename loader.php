@@ -28,6 +28,8 @@ if ( connwoo_is_pro() ) {
 	register_activation_hook( WCPIMH_FILE, 'connwoo_process_activation_premium' );
 }
 
+$connwoo_options = apply_filters( 'connwoo_options_name', 'imhset' );
+
 // Includes files.
 require_once dirname( __FILE__ ) . '/lib/class-connect-admin.php';
 require_once dirname( __FILE__ ) . '/lib/class-connect-import.php';
