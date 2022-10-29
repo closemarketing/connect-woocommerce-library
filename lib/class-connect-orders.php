@@ -34,7 +34,7 @@ class Connect_WooCommerce_Orders {
 	public function __construct() {
 		global $connwoo_options_name;
 		$this->sync_settings = get_option( $connwoo_options_name );
-		$ecstatus            = apply_filters( 'connwoo_only_order_completed', isset( $this->sync_settings['wcpimh_ecstatus'] ) ? $this->sync_settings['wcpimh_ecstatus'] : 'all' );
+		$ecstatus            = apply_filters( 'connwoo_only_order_completed', isset( $this->sync_settings['ecstatus'] ) ? $this->sync_settings['ecstatus'] : 'all' );
 
 		add_action( 'admin_print_footer_scripts', array( $this, 'admin_print_footer_scripts' ), 11, 1 );
 		add_action( 'wp_ajax_wcpimh_import_orders', array( $this, 'wcpimh_import_orders' ) );
@@ -180,13 +180,13 @@ class Connect_WooCommerce_Orders {
 	 */
 	public function create_invoice( $order_id, $completed_date ) {
 		global $connapi_erp;
-		$doctype        = isset( $this->sync_settings['wcpimh_doctype'] ) ? $this->sync_settings['wcpimh_doctype'] : 'nosync';
-		$design_id      = isset( $this->sync_settings['wcpimh_design_id'] ) ? $this->sync_settings['wcpimh_design_id'] : '';
+		$doctype        = isset( $this->sync_settings['doctype'] ) ? $this->sync_settings['doctype'] : 'nosync';
+		$design_id      = isset( $this->sync_settings['design_id'] ) ? $this->sync_settings['design_id'] : '';
 		$order          = wc_get_order( $order_id );
 		$order_total    = (int) $order->get_total();
 		$meta_key_order = '_' . strtolower( connwoo_remote_name() ) . 'invoice_id';
 		$ec_invoice_id  = get_post_meta( $order_id, $meta_key_order, true );
-		$freeorder      = apply_filters( 'connwoo_import_free_order', isset( $this->sync_settings['wcpimh_freeorder'] ) ? $this->sync_settings['wcpimh_freeorder'] : 'no' );
+		$freeorder      = apply_filters( 'connwoo_import_free_order', isset( $this->sync_settings['freeorder'] ) ? $this->sync_settings['freeorder'] : 'no' );
 
 		// Not create order if free.
 		if ( 'no' === $freeorder && 0 === $order_total ) {
@@ -228,7 +228,12 @@ class Connect_WooCommerce_Orders {
 	 * @return void
 	 */
 	public function admin_styles() {
-		wp_enqueue_style( 'connect-woocommerce', plugins_url( 'admin.css', __FILE__ ), array(), WCPIMH_VERSION );
+		wp_enqueue_style(
+			'connect-woocommerce',
+			CONWOOLIB_PLUGIN_URL . 'lib/assets/admin.css',
+			array(),
+			CONWOOLIB_VERSION
+		);
 	}
 
 	/**

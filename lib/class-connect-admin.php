@@ -40,7 +40,7 @@ class WCIMPH_Admin {
 	 */
 	public function __construct() {
 		global $wpdb, $connwoo_options_name;
-		$this->table_sync   = $wpdb->prefix . 'connwoo_product_sync';
+		$this->table_sync   = $wpdb->prefix . 'sync_' . $connwoo_options_name;
 		$this->label_pro    = __( '(ONLY PRO VERSION)', 'connect-woocommerce' );
 		$this->options_name = $connwoo_options_name;
 		add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
@@ -71,18 +71,26 @@ class WCIMPH_Admin {
 	 * @return void
 	 */
 	public function create_admin_page() {
+		global $connwoo_admin_logo;
 		$this->settings  = get_option( $this->options_name );
 		$this->settings_public = get_option( $this->options_name . '_public' );
 		?>
-
+		<div class="header-wrap">
+			<div class="wrapper">
+				<h2 style="display: none;"></h2>
+				<div id="nag-container"></div>
+				<div class="header connwoo-header">
+					<div class="logo">
+						<img src="<?php echo $connwoo_admin_logo; ?>" height="35" width="154"/>
+						<h2><?php
+							esc_html_e( 'WooCommerce Connection Settings with ', 'connect-woocommerce' );
+							echo esc_html( connwoo_remote_name() );
+							?></h2>
+					</div>
+				</div>
+			</div>
+		</div>
 		<div class="wrap">
-			<h2>
-				<?php
-				esc_html_e( 'WooCommerce Connection Settings with ', 'connect-woocommerce' );
-				echo esc_html( connwoo_remote_name() );
-				?>
-			</h2>
-			<p></p>
 			<?php settings_errors(); ?>
 
 			<?php $active_tab = isset( $_GET['tab'] ) ? strval( $_GET['tab'] ) : 'sync'; ?>
@@ -525,13 +533,13 @@ class WCIMPH_Admin {
 	 * @return void
 	 */
 	public function connect_woocommerce_section_automate() {
-		global $wpdb;
+		global $wpdb, $connwoo_options_name;
 		if ( connwoo_is_pro() ) {
 			$count        = $wpdb->get_var( "SELECT COUNT(*) FROM $this->table_sync WHERE synced = 1" );
 			$total_count  = $wpdb->get_var( "SELECT COUNT(*) FROM $this->table_sync" );
 			$count_return = $count . ' / ' . $total_count;
 
-			$total_api_products = (int) get_option( 'wcpimh_total_api_products' );
+			$total_api_products = (int) get_option( $connwoo_options_name . '_total_api_products' );
 			if ( $total_api_products || $total_count !== $total_api_products ) {
 				$count_return .= ' ' . esc_html__( 'filtered', 'connect-woocommerce' );
 				$count_return .= ' ( ' . $total_api_products . ' ' . esc_html__( 'total', 'connect-woocommerce' ) . ' )';

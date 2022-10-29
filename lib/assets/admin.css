@@ -28,3 +28,25 @@
 .wcpimh-plugin .warning {
 	color: orange;
 }
+
+.connwoo-header {
+	background: #D33564 url( 'background.svg' );
+	margin-left: -20px;
+	padding: 20px 15%;
+	display: flex;
+	justify-content: space-between;
+	color: white;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+.connwoo-header .logo {
+	min-width: 20%;
+}
+
+.connwoo-header h2 {
+	float: right;
+	color: white;
+	padding: 10px 0 0 30px;
+	margin: 0;
+}

@@ -70,7 +70,12 @@ class WCPIMH_Import {
 	 * @return void
 	 */
 	public function admin_styles() {
-		wp_enqueue_style( 'connect-woocommerce', plugins_url( '/admin.css', __FILE__ ), array(), WCPIMH_VERSION );
+		wp_enqueue_style(
+			'connect-woocommerce',
+			CONWOOLIB_PLUGIN_URL . 'lib/assets/admin.css',
+			array(),
+			CONWOOLIB_VERSION
+		);
 	}
 	/**
 	 * Imports products from Holded

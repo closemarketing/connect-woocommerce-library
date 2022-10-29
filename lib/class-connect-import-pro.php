@@ -68,9 +68,9 @@ class Connect_WooCommerce_Import_PRO {
 	 */
 	public function __construct() {
 		global $wpdb, $connwoo_options_name;
-		$this->table_sync = $wpdb->prefix . 'connwoo_product_sync';
+		$this->table_sync = $wpdb->prefix . 'sync_' . $connwoo_options_name;
 
-		$this->sync_period = isset( $this->settings['wcpimh_sync'] ) ? strval( $this->settings['wcpimh_sync'] ) : 'no';
+		$this->sync_period = isset( $this->settings['sync'] ) ? strval( $this->settings['sync'] ) : 'no';
 
 		// Schedule.
 		if ( $this->sync_period && 'no' !== $this->sync_period ) {
@@ -321,8 +321,8 @@ class Connect_WooCommerce_Import_PRO {
 	public function get_categories_ids( $item_type, $is_new_product ) {
 		$categories_ids = array();
 		// Category API.
-		$category_newp = isset( $this->settings['wcpimh_catnp'] ) ? $this->settings['wcpimh_catnp'] : 'yes';
-		$category_sep  = isset( $this->settings['wcpimh_catsep'] ) ? $this->settings['wcpimh_catsep'] : '';
+		$category_newp = isset( $this->settings['catnp'] ) ? $this->settings['catnp'] : 'yes';
+		$category_sep  = isset( $this->settings['catsep'] ) ? $this->settings['catsep'] : '';
 
 		if ( ( ! empty( $item_type ) && 'yes' === $category_newp && $is_new_product ) ||
 			( ! empty( $item_type ) && 'no' === $category_newp && false === $is_new_product )
@@ -354,7 +354,7 @@ class Connect_WooCommerce_Import_PRO {
 		$attributes_prod = array();
 		$parent_sku      = $product->get_sku();
 		$product_id      = $product->get_id();
-		$is_virtual      = ( isset( $this->settings['wcpimh_virtual'] ) && 'yes' === $this->settings['wcpimh_virtual'] ) ? true : false;
+		$is_virtual      = ( isset( $this->settings['virtual'] ) && 'yes' === $this->settings['virtual'] ) ? true : false;
 
 		if ( ! $is_new_product ) {
 			foreach ( $product->get_children( false ) as $child_id ) {
@@ -533,7 +533,7 @@ class Connect_WooCommerce_Import_PRO {
 	 * @return boolean True to not get the product, false to get it.
 	 */
 	private function filter_product( $tag_product ) {
-		$tag_product_option = isset( $this->settings['wcpimh_filter'] ) ? $this->settings['wcpimh_filter'] : '';
+		$tag_product_option = isset( $this->settings['filter'] ) ? $this->settings['filter'] : '';
 		if ( $tag_product_option && ! in_array( $tag_product_option, $tag_product, true ) ) {
 			return true;
 		} else {
@@ -632,12 +632,13 @@ class Connect_WooCommerce_Import_PRO {
 	 * @return void
 	 */
 	private function save_sync_errors( $errors ) {
-		$option_errors = get_option( 'wcpimh_sync_errors' );
+		global $connwoo_options_name;
+		$option_errors = get_option( $connwoo_options_name . '_sync_errors' );
 		$save_errors[] = $errors;
 		if ( false !== $option_errors && ! empty( $option_errors ) ) {
 			$save_errors = array_merge( $save_errors, $option_errors );
 		}
-		update_option( 'wcpimh_sync_errors', $save_errors );
+		update_option( $connwoo_options_name . '_sync_errors', $save_errors );
 	}
 
 	/**
@@ -646,7 +647,7 @@ class Connect_WooCommerce_Import_PRO {
 	 * @return boolean
 	 */
 	private function fill_table_sync() {
-		global $wpdb;
+		global $wpdb, $connwoo_options_name;
 		global $connapi_erp;
 		$wpdb->query( "TRUNCATE TABLE $this->table_sync;" );
 
@@ -656,9 +657,9 @@ class Connect_WooCommerce_Import_PRO {
 			return;
 		}
 
-		update_option( 'wcpimh_total_api_products', count( $products ) );
-		update_option( 'wcpimh_sync_start_time', strtotime( 'now' ) );
-		update_option( 'wcpimh_sync_errors', array() );
+		update_option( $connwoo_options_name . '_total_api_products', count( $products ) );
+		update_option( $connwoo_options_name . '_sync_start_time', strtotime( 'now' ) );
+		update_option( $connwoo_options_name . '_sync_errors', array() );
 		foreach ( $products as $product ) {
 			$is_filtered_product = ! empty( $product['tags'] ) ? $this->filter_product( $product['tags'] ) : false;
 
@@ -684,7 +685,7 @@ class Connect_WooCommerce_Import_PRO {
 	 */
 	private function get_products_sync() {
 		global $wpdb;
-		$limit = isset( $this->settings['wcpimh_sync_num'] ) ? $this->settings['wcpimh_sync_num'] : 5;
+		$limit = isset( $this->settings['sync_num'] ) ? $this->settings['sync_num'] : 5;
 
 		$results = $wpdb->get_results( "SELECT prod_id FROM $this->table_sync WHERE synced = 0 LIMIT $limit", ARRAY_A );
 
@@ -722,7 +723,7 @@ class Connect_WooCommerce_Import_PRO {
 	 * @return void
 	 */
 	private function save_product_sync( $product_id ) {
-		global $wpdb;
+		global $wpdb, $connwoo_options_name;
 		$db_values = array(
 			'prod_id' => $product_id,
 			'synced'  => true,
@@ -742,6 +743,15 @@ class Connect_WooCommerce_Import_PRO {
 					'DB error:' . $wpdb->last_error,
 				)
 			);
+
+			// Logs in WooCommerce.
+			$logger = new WC_Logger();
+			$logger->debug(
+				'Import Product Sync Error Product ID:' . $product_id . 'DB error:' . $wpdb->last_error,
+				array(
+					'source' => $connwoo_options_name,
+				)
+			);
 		}
 	}
 
@@ -751,8 +761,8 @@ class Connect_WooCommerce_Import_PRO {
 	 * @return void
 	 */
 	public function send_sync_ended_products() {
-		global $wpdb;
-		$send_email   = isset( $this->settings['wcpimh_sync_email'] ) ? strval( $this->settings['wcpimh_sync_email'] ) : 'yes';
+		global $wpdb, $connwoo_options_name;
+		$send_email   = isset( $this->settings['sync_email'] ) ? strval( $this->settings['sync_email'] ) : 'yes';
 
 		$total_count = $wpdb->get_var( "SELECT COUNT(*) FROM $this->table_sync WHERE synced = 1" );
 
@@ -763,7 +773,7 @@ class Connect_WooCommerce_Import_PRO {
 			$body   .= '<br/><strong>' . __( 'Total products:', 'connect-woocommerce' ) . '</strong> ';
 			$body   .= $total_count;
 
-			$total_api_products = (int) get_option( 'wcpimh_total_api_products' );
+			$total_api_products = (int) get_option( $connwoo_options_name . '_total_api_products' );
 			if ( $total_api_products || $total_count !== $total_api_products ) {
 				$body .= ' ' . esc_html__( 'filtered', 'connect-woocommerce' );
 				$body .= ' ( ' . $total_api_products . ' ' . esc_html__( 'total', 'connect-woocommerce' ) . ' )';
@@ -772,14 +782,14 @@ class Connect_WooCommerce_Import_PRO {
 			$body .= '<br/><strong>' . __( 'Time:', 'connect-woocommerce' ) . '</strong> ';
 			$body .= date_i18n( 'Y-m-d H:i', current_time( 'timestamp') );
 
-			$start_time = get_option( 'wcpimh_sync_start_time' );
+			$start_time = get_option( $connwoo_options_name . '_sync_start_time' );
 			if ( $start_time ) {
 				$body .= '<br/><strong>' . __( 'Total Time:', 'connect-woocommerce' ) . '</strong> ';
 				$body .= round( ( strtotime( 'now' ) - $start_time ) / 60 / 60, 1 );
 				$body .= 'h';
 			}
 
-			$products_errors = get_option( 'wcpimh_sync_errors' );
+			$products_errors = get_option( $connwoo_options_name . '_sync_errors' );
 			if ( false !== $products_errors && ! empty( $products_errors ) ) {
 				$body .= '<h2>' . __( 'Errors founded', 'connect-woocommerce' ) . '</h2>';
 

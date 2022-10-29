@@ -7,6 +7,7 @@
 * Dynamic name options.
 * Refactored settings.
 * Added public.
+* Logs in WooCommerce.
 
 ### 1.0
 

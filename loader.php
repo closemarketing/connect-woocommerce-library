@@ -12,6 +12,8 @@ defined( 'ABSPATH' ) || exit;
 
 define( 'CONWOOLIB_VERSION', '1.1.0' );
 define( 'CONWOOLIB_DIR', dirname( __FILE__ ) );
+define( 'CONWOOLIB_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'CONWOOLIB_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 
 require_once CONWOOLIB_DIR . '/lib/helpers-functions.php';
 
