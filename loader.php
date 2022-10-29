@@ -9,7 +9,8 @@
  */
 
 defined( 'ABSPATH' ) || exit;
-define( 'CONWOOLIB_VERSION', 'version' );
+
+define( 'CONWOOLIB_VERSION', '1.1.0' );
 define( 'CONWOOLIB_DIR', dirname( __FILE__ ) );
 
 require_once CONWOOLIB_DIR . '/lib/helpers-functions.php';

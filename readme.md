@@ -2,7 +2,13 @@
 
 ## Changelog
 
-### 2.0
+### 1.1
+
+* Dynamic name options.
+* Refactored settings.
+* Added public.
+
+### 1.0
 
 * Removed Freemius as engine sell.
 * Removed Support to Easy Digital Downloads.
