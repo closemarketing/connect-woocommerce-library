@@ -67,11 +67,10 @@ class Connect_WooCommerce_Import_PRO {
 	 * Constructs of class
 	 */
 	public function __construct() {
-		global $wpdb;
+		global $wpdb, $connwoo_options_name;
 		$this->table_sync = $wpdb->prefix . 'connwoo_product_sync';
 
-		$imh_settings      = get_option( 'imhset' );
-		$this->sync_period = isset( $imh_settings['wcpimh_sync'] ) ? strval( $imh_settings['wcpimh_sync'] ) : 'no';
+		$this->sync_period = isset( $this->settings['wcpimh_sync'] ) ? strval( $this->settings['wcpimh_sync'] ) : 'no';
 
 		// Schedule.
 		if ( $this->sync_period && 'no' !== $this->sync_period ) {
@@ -101,19 +100,18 @@ class Connect_WooCommerce_Import_PRO {
 	/**
 	 * Gets image from API products
 	 *
-	 * @param string $imh_settings Settings of plugin.
 	 * @param string $prod_id Id of API to get information.
 	 * @param string $product_id Id of product to get information.
 	 * @return array Array of products imported via API.
 	 */
-	public function put_product_image( $imh_settings, $prod_id, $product_id ) {
+	public function put_product_image( $prod_id, $product_id ) {
 		global $connapi_erp;
 		// Don't import if there is thumbnail.
 		if ( has_post_thumbnail( $product_id ) ) {
 			return false;
 		}
 
-		$result_api = $connapi_erp->get_image_product( $imh_settings, $prod_id, $product_id );
+		$result_api = $connapi_erp->get_image_product( $this->settings, $prod_id, $product_id );
 
 		if ( isset( $result_api['upload']['url'] ) ) {
 			$attachment = array(
@@ -316,16 +314,15 @@ class Connect_WooCommerce_Import_PRO {
 	/**
 	 * Get categories ids
 	 *
-	 * @param array   $imh_settings Settings of plugin.
 	 * @param array   $item_type Type of the product.
 	 * @param boolean $is_new_product Is new.
 	 * @return array
 	 */
-	public function get_categories_ids( $imh_settings, $item_type, $is_new_product ) {
+	public function get_categories_ids( $item_type, $is_new_product ) {
 		$categories_ids = array();
 		// Category API.
-		$category_newp = isset( $imh_settings['wcpimh_catnp'] ) ? $imh_settings['wcpimh_catnp'] : 'yes';
-		$category_sep  = isset( $imh_settings['wcpimh_catsep'] ) ? $imh_settings['wcpimh_catsep'] : '';
+		$category_newp = isset( $this->settings['wcpimh_catnp'] ) ? $this->settings['wcpimh_catnp'] : 'yes';
+		$category_sep  = isset( $this->settings['wcpimh_catsep'] ) ? $this->settings['wcpimh_catsep'] : '';
 
 		if ( ( ! empty( $item_type ) && 'yes' === $category_newp && $is_new_product ) ||
 			( ! empty( $item_type ) && 'no' === $category_newp && false === $is_new_product )
@@ -353,12 +350,11 @@ class Connect_WooCommerce_Import_PRO {
 	 * @return array
 	 */
 	public function sync_product_variable( $product, $item, $is_new_product, $rate_id ) {
-		$imh_settings    = get_option( 'imhset' );
 		$attributes      = array();
 		$attributes_prod = array();
 		$parent_sku      = $product->get_sku();
 		$product_id      = $product->get_id();
-		$is_virtual      = ( isset( $imh_settings['wcpimh_virtual'] ) && 'yes' === $imh_settings['wcpimh_virtual'] ) ? true : false;
+		$is_virtual      = ( isset( $this->settings['wcpimh_virtual'] ) && 'yes' === $this->settings['wcpimh_virtual'] ) ? true : false;
 
 		if ( ! $is_new_product ) {
 			foreach ( $product->get_children( false ) as $child_id ) {
@@ -537,8 +533,7 @@ class Connect_WooCommerce_Import_PRO {
 	 * @return boolean True to not get the product, false to get it.
 	 */
 	private function filter_product( $tag_product ) {
-		$imh_settings       = get_option( 'imhset' );
-		$tag_product_option = isset( $imh_settings['wcpimh_filter'] ) ? $imh_settings['wcpimh_filter'] : '';
+		$tag_product_option = isset( $this->settings['wcpimh_filter'] ) ? $this->settings['wcpimh_filter'] : '';
 		if ( $tag_product_option && ! in_array( $tag_product_option, $tag_product, true ) ) {
 			return true;
 		} else {
@@ -689,8 +684,7 @@ class Connect_WooCommerce_Import_PRO {
 	 */
 	private function get_products_sync() {
 		global $wpdb;
-		$imh_settings = get_option( 'imhset' );
-		$limit        = isset( $imh_settings['wcpimh_sync_num'] ) ? $imh_settings['wcpimh_sync_num'] : 5;
+		$limit = isset( $this->settings['wcpimh_sync_num'] ) ? $this->settings['wcpimh_sync_num'] : 5;
 
 		$results = $wpdb->get_results( "SELECT prod_id FROM $this->table_sync WHERE synced = 0 LIMIT $limit", ARRAY_A );
 
@@ -758,8 +752,7 @@ class Connect_WooCommerce_Import_PRO {
 	 */
 	public function send_sync_ended_products() {
 		global $wpdb;
-		$imh_settings = get_option( 'imhset' );
-		$send_email   = isset( $imh_settings['wcpimh_sync_email'] ) ? strval( $imh_settings['wcpimh_sync_email'] ) : 'yes';
+		$send_email   = isset( $this->settings['wcpimh_sync_email'] ) ? strval( $this->settings['wcpimh_sync_email'] ) : 'yes';
 
 		$total_count = $wpdb->get_var( "SELECT COUNT(*) FROM $this->table_sync WHERE synced = 1" );
 

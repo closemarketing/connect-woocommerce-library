@@ -32,8 +32,8 @@ class Connect_WooCommerce_Orders {
 	 * Init and hook in the integration.
 	 */
 	public function __construct() {
-		global $woocommerce;
-		$this->sync_settings = get_option( 'imhset' );
+		global $connwoo_options_name;
+		$this->sync_settings = get_option( $connwoo_options_name );
 		$ecstatus            = apply_filters( 'connwoo_only_order_completed', isset( $this->sync_settings['wcpimh_ecstatus'] ) ? $this->sync_settings['wcpimh_ecstatus'] : 'all' );
 
 		add_action( 'admin_print_footer_scripts', array( $this, 'admin_print_footer_scripts' ), 11, 1 );
@@ -239,7 +239,6 @@ class Connect_WooCommerce_Orders {
 	public function import_method_orders() {
 		$not_sapi_cli        = substr( php_sapi_name(), 0, 3 ) !== 'cli' ? true : false;
 		$doing_ajax          = defined( 'DOING_AJAX' ) && DOING_AJAX;
-		$this->sync_settings = get_option( 'imhset' );
 		$sync_loop           = isset( $_POST['syncLoop'] ) ? (int) sanitize_text_field( $_POST['syncLoop'] ) : 0;
 		$meta_key_order      = '_' . strtolower( connwoo_remote_name() ) . '_invoice_id';
 

@@ -40,12 +40,17 @@ class WCPIMH_Import {
 	 * Constructs of class
 	 */
 	public function __construct() {
+		global $connwoo_options_name;
+
 		add_action( 'admin_print_footer_scripts', array( $this, 'admin_print_footer_scripts' ), 11, 1 );
 		add_action( 'wp_ajax_wcpimh_import_products', array( $this, 'wcpimh_import_products' ) );
 
 		// Admin Styles.
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_styles' ) );
 		add_filter( 'admin_body_class', array( $this, 'admin_body_class' ) );
+
+		// Settings
+		$this->settings = get_option( $connwoo_options_name );
 	}
 
 	/**
@@ -215,13 +220,11 @@ class WCPIMH_Import {
 	 */
 	public function sync_product( $item, $product_id = 0, $type, $pack_items = null ) {
 		global $connwoo_pro;
-
-		$imh_settings     = get_option( 'imhset' );
-		$import_stock     = isset( $imh_settings['wcpimh_stock'] ) ? $imh_settings['wcpimh_stock'] : 'no';
-		$is_virtual       = ( isset( $imh_settings['wcpimh_virtual'] ) && 'yes' === $imh_settings['wcpimh_virtual'] ) ? true : false;
-		$allow_backorders = isset( $imh_settings['wcpimh_backorders'] ) ? $imh_settings['wcpimh_backorders'] : 'yes';
-		$rate_id          = isset( $imh_settings['wcpimh_rates'] ) ? $imh_settings['wcpimh_rates'] : 'default';
-		$post_status      = ( isset( $imh_settings['wcpimh_prodst'] ) && $imh_settings['wcpimh_prodst'] ) ? $imh_settings['wcpimh_prodst'] : 'draft';
+		$import_stock     = isset( $this->settings['stock'] ) ? $this->settings['stock'] : 'no';
+		$is_virtual       = ( isset( $this->settings['virtual'] ) && 'yes' === $this->settings['virtual'] ) ? true : false;
+		$allow_backorders = isset( $this->settings['backorders'] ) ? $this->settings['backorders'] : 'yes';
+		$rate_id          = isset( $this->settings['rates'] ) ? $this->settings['rates'] : 'default';
+		$post_status      = ( isset( $this->settings['prodst'] ) && $this->settings['prodst'] ) ? $this->settings['prodst'] : 'draft';
 		$is_new_product   = ( 0 === $product_id || false === $product_id ) ? true : false;
 
 		/**
@@ -332,7 +335,7 @@ class WCPIMH_Import {
 		}
 
 		if ( connwoo_is_pro() && class_exists( 'Connect_WooCommerce_Import_PRO' ) && isset( $item['type'] ) && ! empty( $item['type'] ) ) {
-			$categories_ids = $connwoo_pro->get_categories_ids( $imh_settings, $item['type'], $is_new_product );
+			$categories_ids = $connwoo_pro->get_categories_ids( $item['type'], $is_new_product );
 			if ( ! empty( $categories_ids ) ) {
 				$product_props['category_ids'] = $categories_ids;
 			}
@@ -340,7 +343,7 @@ class WCPIMH_Import {
 
 		if ( connwoo_is_pro() && class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
 			// Imports image.
-			$connwoo_pro->put_product_image( $imh_settings, $item['id'], $product_id );
+			$connwoo_pro->put_product_image( $item['id'], $product_id );
 		}
 		// Set properties and save.
 		$product->set_props( $product_props );
@@ -356,8 +359,7 @@ class WCPIMH_Import {
 	 * @return boolean True to not get the product, false to get it.
 	 */
 	private function filter_product( $tag_product ) {
-		$imh_settings = get_option( 'imhset' );
-		$tags_option  = explode( ',', $imh_settings['wcpimh_filter'] );
+		$tags_option  = explode( ',', $this->settings['filter'] );
 
 		if ( empty( array_intersect( $tags_option, $tag_product ) ) ) {
 			return true;
@@ -373,8 +375,7 @@ class WCPIMH_Import {
 	 * @return int
 	 */
 	public function create_product_post( $item ) {
-		$imh_settings = get_option( 'imhset' );
-		$prod_status  = ( isset( $imh_settings['wcpimh_prodst'] ) && $imh_settings['wcpimh_prodst'] ) ? $imh_settings['wcpimh_prodst'] : 'draft';
+		$prod_status  = ( isset( $this->settings['prodst'] ) && $this->settings['prodst'] ) ? $this->settings['prodst'] : 'draft';
 
 		$post_type = 'product';
 		$sku_key   = '_sku';
@@ -439,7 +440,6 @@ class WCPIMH_Import {
 		global $connapi_erp;
 		$not_sapi_cli = substr( php_sapi_name(), 0, 3 ) != 'cli' ? true : false;
 		$doing_ajax   = defined( 'DOING_AJAX' ) && DOING_AJAX;
-		$imh_settings = get_option( 'imhset' );
 
 		if ( in_array( 'woo-product-bundle/wpc-product-bundles.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
 			$plugin_grouped_prod_active = true;

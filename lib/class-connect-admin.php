@@ -26,7 +26,7 @@ class WCIMPH_Admin {
 	 *
 	 * @var array
 	 */
-	private $imh_settings;
+	private $settings;
 
 	/**
 	 * Label for pro features
@@ -39,9 +39,10 @@ class WCIMPH_Admin {
 	 * Construct of class
 	 */
 	public function __construct() {
-		global $wpdb;
-		$this->table_sync = $wpdb->prefix . 'connwoo_product_sync';
-		$this->label_pro  = __( '(ONLY PRO VERSION)', 'connect-woocommerce' );
+		global $wpdb, $connwoo_options_name;
+		$this->table_sync   = $wpdb->prefix . 'connwoo_product_sync';
+		$this->label_pro    = __( '(ONLY PRO VERSION)', 'connect-woocommerce' );
+		$this->options_name = $connwoo_options_name;
 		add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
 		add_action( 'admin_init', array( $this, 'page_init' ) );
 		add_action( 'admin_head', array( $this, 'custom_css' ) );
@@ -70,8 +71,8 @@ class WCIMPH_Admin {
 	 * @return void
 	 */
 	public function create_admin_page() {
-		$this->imh_settings  = get_option( 'imhset' );
-		$this->imhset_public = get_option( 'imhset_public' );
+		$this->settings  = get_option( $this->options_name );
+		$this->settings_public = get_option( $this->options_name . '_public' );
 		?>
 
 		<div class="wrap">
@@ -168,7 +169,7 @@ class WCIMPH_Admin {
 
 		register_setting(
 			'wcpimh_settings',
-			'imhset',
+			$this->options_name,
 			array( $this, 'sanitize_fields_settings' )
 		);
 
@@ -383,7 +384,7 @@ class WCIMPH_Admin {
 
 		register_setting(
 			'wcpimhset_public',
-			'imhset_public',
+			$this->options_name . '_public',
 			array(
 				$this,
 				'sanitize_fields_public',
@@ -461,26 +462,26 @@ class WCIMPH_Admin {
 	 */
 	public function sanitize_fields_settings( $input ) {
 		$sanitary_values = array();
-		$imh_settings    = get_option( 'imhset' );
+		$imh_settings    = get_option( $this->options_name );
 
 		$admin_settings = array(
-			'wcpimh_api'        => '',
-			'wcpimh_idcentre'   => '',
-			'wcpimh_stock'      => 'no',
-			'wcpimh_prodst'     => 'draft',
-			'wcpimh_virtual'    => 'no',
-			'wcpimh_backorders' => 'no',
-			'wcpimh_catsep'     => '',
-			'wcpimh_filter'     => '',
-			'wcpimh_rates'      => 'default',
-			'wcpimh_catnp'      => 'yes',
-			'wcpimh_doctype'    => 'invoice',
-			'wcpimh_freeorder'  => 'no',
-			'wcpimh_ecstatus'   => 'all',
-			'wcpimh_design_id'  => '',
-			'wcpimh_sync'       => 'no',
-			'wcpimh_sync_num'   => 5,
-			'wcpimh_sync_email' => 'yes',
+			'api'        => '',
+			'idcentre'   => '',
+			'stock'      => 'no',
+			'prodst'     => 'draft',
+			'virtual'    => 'no',
+			'backorders' => 'no',
+			'catsep'     => '',
+			'filter'     => '',
+			'rates'      => 'default',
+			'catnp'      => 'yes',
+			'doctype'    => 'invoice',
+			'freeorder'  => 'no',
+			'ecstatus'   => 'all',
+			'design_id'  => '',
+			'sync'       => 'no',
+			'sync_num'   => 5,
+			'sync_email' => 'yes',
 		);
 
 		foreach ( $admin_settings as $setting => $default_value ) {
@@ -605,24 +606,24 @@ class WCIMPH_Admin {
 	 */
 	public function idcentre_callback() {
 		printf(
-			'<input class="regular-text" type="text" name="imhset[wcpimh_idcentre]" id="wcpimh_idcentre" value="%s">',
-			isset( $this->imh_settings['wcpimh_idcentre'] ) ? esc_attr( $this->imh_settings['wcpimh_idcentre'] ) : ''
+			'<input class="regular-text" type="text" name="' . $this->options_name . '[idcentre]" id="wcpimh_idcentre" value="%s">',
+			isset( $this->settings['idcentre'] ) ? esc_attr( $this->settings['idcentre'] ) : ''
 		);
 	}
 
 	public function api_callback() {
 		printf(
-			'<input class="regular-text" type="password" name="imhset[wcpimh_api]" id="wcpimh_api" value="%s">',
-			isset( $this->imh_settings['wcpimh_api'] ) ? esc_attr( $this->imh_settings['wcpimh_api'] ) : ''
+			'<input class="regular-text" type="password" name="' . $this->options_name . '[api]" id="wcpimh_api" value="%s">',
+			isset( $this->settings['api'] ) ? esc_attr( $this->settings['api'] ) : ''
 		);
 	}
 
 	public function wcpimh_stock_callback() {
 		?>
-		<select name="imhset[wcpimh_stock]" id="wcpimh_stock">
-			<?php $selected = ( isset( $this->imh_settings['wcpimh_stock'] ) && $this->imh_settings['wcpimh_stock'] === 'yes' ) ? 'selected' : ''; ?>
+		<select name="<?php echo $this->options_name; ?>[stock]" id="wcpimh_stock">
+			<?php $selected = ( isset( $this->settings['stock'] ) && $this->settings['stock'] === 'yes' ) ? 'selected' : ''; ?>
 			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
-			<?php $selected = ( isset( $this->imh_settings['wcpimh_stock'] ) && $this->imh_settings['wcpimh_stock'] === 'no' ) ? 'selected' : ''; ?>
+			<?php $selected = ( isset( $this->settings['stock'] ) && $this->settings['stock'] === 'no' ) ? 'selected' : ''; ?>
 			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 		</select>
 		<?php
@@ -630,14 +631,14 @@ class WCIMPH_Admin {
 
 	public function wcpimh_prodst_callback() {
 		?>
-		<select name="imhset[wcpimh_prodst]" id="wcpimh_prodst">
-			<?php $selected = ( isset( $this->imh_settings['wcpimh_prodst'] ) && 'draft' === $this->imh_settings['wcpimh_prodst'] ) ? 'selected' : ''; ?>
+		<select name="<?php echo $this->options_name; ?>[prodst]" id="wcpimh_prodst">
+			<?php $selected = ( isset( $this->settings['prodst'] ) && 'draft' === $this->settings['prodst'] ) ? 'selected' : ''; ?>
 			<option value="draft" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Draft', 'connect-woocommerce' ); ?></option>
-			<?php $selected = ( isset( $this->imh_settings['wcpimh_prodst'] ) && 'publish' === $this->imh_settings['wcpimh_prodst'] ) ? 'selected' : ''; ?>
+			<?php $selected = ( isset( $this->settings['prodst'] ) && 'publish' === $this->settings['prodst'] ) ? 'selected' : ''; ?>
 			<option value="publish" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Publish', 'connect-woocommerce' ); ?></option>
-			<?php $selected = ( isset( $this->imh_settings['wcpimh_prodst'] ) && 'pending' === $this->imh_settings['wcpimh_prodst'] ) ? 'selected' : ''; ?>
+			<?php $selected = ( isset( $this->settings['prodst'] ) && 'pending' === $this->settings['prodst'] ) ? 'selected' : ''; ?>
 			<option value="pending" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Pending', 'connect-woocommerce' ); ?></option>
-			<?php $selected = ( isset( $this->imh_settings['wcpimh_prodst'] ) && 'private' === $this->imh_settings['wcpimh_prodst'] ) ? 'selected' : ''; ?>
+			<?php $selected = ( isset( $this->settings['prodst'] ) && 'private' === $this->settings['prodst'] ) ? 'selected' : ''; ?>
 			<option value="private" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Private', 'connect-woocommerce' ); ?></option>
 		</select>
 		<?php
@@ -645,10 +646,10 @@ class WCIMPH_Admin {
 
 	public function wcpimh_virtual_callback() {
 		?>
-		<select name="imhset[wcpimh_virtual]" id="wcpimh_virtual">
-			<?php $selected = ( isset( $this->imh_settings['wcpimh_virtual'] ) && $this->imh_settings['wcpimh_virtual'] === 'no' ) ? 'selected' : ''; ?>
+		<select name="<?php echo $this->options_name; ?>[virtual]" id="wcpimh_virtual">
+			<?php $selected = ( isset( $this->settings['virtual'] ) && $this->settings['virtual'] === 'no' ) ? 'selected' : ''; ?>
 			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
-			<?php $selected = ( isset( $this->imh_settings['wcpimh_virtual'] ) && $this->imh_settings['wcpimh_virtual'] === 'yes' ) ? 'selected' : ''; ?>
+			<?php $selected = ( isset( $this->settings['virtual'] ) && $this->settings['virtual'] === 'yes' ) ? 'selected' : ''; ?>
 			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
 		</select>
 		<?php
@@ -656,12 +657,12 @@ class WCIMPH_Admin {
 
 	public function wcpimh_backorders_callback() {
 		?>
-		<select name="imhset[wcpimh_backorders]" id="wcpimh_backorders">
-			<?php $selected = ( isset( $this->imh_settings['wcpimh_backorders'] ) && $this->imh_settings['wcpimh_backorders'] === 'no' ) ? 'selected' : ''; ?>
+		<select name="<?php echo $this->options_name; ?>[backorders]" id="wcpimh_backorders">
+			<?php $selected = ( isset( $this->settings['backorders'] ) && $this->settings['backorders'] === 'no' ) ? 'selected' : ''; ?>
 			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
-			<?php $selected = ( isset( $this->imh_settings['wcpimh_backorders'] ) && $this->imh_settings['wcpimh_backorders'] === 'yes' ) ? 'selected' : ''; ?>
+			<?php $selected = ( isset( $this->settings['backorders'] ) && $this->settings['backorders'] === 'yes' ) ? 'selected' : ''; ?>
 			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
-			<?php $selected = ( isset( $this->imh_settings['wcpimh_backorders'] ) && $this->imh_settings['wcpimh_backorders'] === 'notify' ) ? 'selected' : ''; ?>
+			<?php $selected = ( isset( $this->settings['backorders'] ) && $this->settings['backorders'] === 'notify' ) ? 'selected' : ''; ?>
 			<option value="notify" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Notify', 'connect-woocommerce' ); ?></option>
 		</select>
 		<?php
@@ -674,25 +675,25 @@ class WCIMPH_Admin {
 	 */
 	public function wcpimh_catsep_callback() {
 		printf(
-			'<input class="regular-text" type="text" name="imhset[wcpimh_catsep]" id="wcpimh_catsep" value="%s">',
-			isset( $this->imh_settings['wcpimh_catsep'] ) ? esc_attr( $this->imh_settings['wcpimh_catsep'] ) : ''
+			'<input class="regular-text" type="text" name="' . $this->options_name . '[catsep]" id="wcpimh_catsep" value="%s">',
+			isset( $this->settings['catsep'] ) ? esc_attr( $this->settings['catsep'] ) : ''
 		);
 	}
 
 	public function wcpimh_filter_callback() {
 		printf(
-			'<input class="regular-text" type="text" name="imhset[wcpimh_filter]" id="wcpimh_filter" value="%s">',
-			isset( $this->imh_settings['wcpimh_filter'] ) ? esc_attr( $this->imh_settings['wcpimh_filter'] ) : ''
+			'<input class="regular-text" type="text" name="' . $this->options_name . '[filter]" id="wcpimh_filter" value="%s">',
+			isset( $this->settings['filter'] ) ? esc_attr( $this->settings['filter'] ) : ''
 		);
 	}
 
 	public function tax_option_callback() {
 		?>
-		<select name="imhset[wcpimh_tax_price_option]" id="wcsen_tax">
-			<?php $selected = ( isset( $this->sync_settings['wcpimh_tax_price_option'] ) && $this->sync_settings['wcpimh_tax_price_option'] === 'yes' ) ? 'selected' : ''; ?>
+		<select name="<?php echo $this->options_name; ?>[tax_price_option]" id="wcsen_tax">
+			<?php $selected = ( isset( $this->sync_settings['tax_price_option'] ) && $this->sync_settings['tax_price_option'] === 'yes' ) ? 'selected' : ''; ?>
 			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes, tax included', 'connect-woocommerce' ); ?></option>
-			<?php $selected = ( isset( $this->sync_settings['wcpimh_tax_price_option'] ) && $this->sync_settings['wcpimh_tax_price_option'] === 'notify' ) ? 'selected' : ''; ?>
-			<?php $selected = ( isset( $this->sync_settings['wcpimh_tax_price_option'] ) && $this->sync_settings['wcpimh_tax_price_option'] === 'no' ) ? 'selected' : ''; ?>
+			<?php $selected = ( isset( $this->sync_settings['tax_price_option'] ) && $this->sync_settings['tax_price_option'] === 'notify' ) ? 'selected' : ''; ?>
+			<?php $selected = ( isset( $this->sync_settings['tax_price_option'] ) && $this->sync_settings['tax_price_option'] === 'no' ) ? 'selected' : ''; ?>
 			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No, tax not included', 'connect-woocommerce' ); ?></option>
 		</select>
 		<?php
@@ -705,10 +706,10 @@ class WCIMPH_Admin {
 			return false;
 		}
 		?>
-		<select name="imhset[wcpimh_rates]" id="wcpimh_rates">
+		<select name="<?php echo $this->options_name; ?>[rates]" id="wcpimh_rates">
 			<?php
 			foreach ( $rates_options as $value => $label ) {
-				$selected = ( isset( $this->imh_settings['wcpimh_rates'] ) && $this->imh_settings['wcpimh_rates'] === $value ) ? 'selected' : '';
+				$selected = ( isset( $this->settings['rates'] ) && $this->settings['rates'] === $value ) ? 'selected' : '';
 				echo '<option value="' . esc_html( $value ) . '" ' . esc_html( $selected ) . '>' . esc_html( $label ) . '</option>';
 			}
 			?>
@@ -718,19 +719,19 @@ class WCIMPH_Admin {
 
 	public function wcpimh_catnp_callback() {
 		?>
-		<select name="imhset[wcpimh_catnp]" id="wcpimh_catnp">
-			<?php $selected = ( isset( $this->imh_settings['wcpimh_catnp'] ) && $this->imh_settings['wcpimh_catnp'] === 'yes' ) ? 'selected' : ''; ?>
+		<select name="<?php echo $this->options_name; ?>[catnp]" id="wcpimh_catnp">
+			<?php $selected = ( isset( $this->settings['catnp'] ) && $this->settings['catnp'] === 'yes' ) ? 'selected' : ''; ?>
 			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
-			<?php $selected = ( isset( $this->imh_settings['wcpimh_catnp'] ) && $this->imh_settings['wcpimh_catnp'] === 'no' ) ? 'selected' : ''; ?>
+			<?php $selected = ( isset( $this->settings['catnp'] ) && $this->settings['catnp'] === 'no' ) ? 'selected' : ''; ?>
 			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 		</select>
 		<?php
 	}
 
 	public function wcpimh_doctype_callback() {
-		$set_doctype = isset( $this->imh_settings['wcpimh_doctype'] ) ? $this->imh_settings['wcpimh_doctype'] : '';
+		$set_doctype = isset( $this->settings['doctype'] ) ? $this->settings['doctype'] : '';
 		?>
-		<select name="imhset[wcpimh_doctype]" id="wcpimh_doctype">
+		<select name="<?php echo $this->options_name; ?>[doctype]" id="wcpimh_doctype">
 			<?php $selected = ( $set_doctype === 'nosync' || $set_doctype === '' ) ? 'selected' : ''; ?>
 			<option value="nosync" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Not sync', 'connect-woocommerce' ); ?></option>
 
@@ -750,9 +751,9 @@ class WCIMPH_Admin {
 	}
 
 	public function wcpimh_freeorder_callback() {
-		$set_freeorder = isset( $this->imh_settings['wcpimh_freeorder'] ) ? $this->imh_settings['wcpimh_freeorder'] : '';
+		$set_freeorder = isset( $this->settings['freeorder'] ) ? $this->settings['freeorder'] : '';
 		?>
-		<select name="imhset[wcpimh_freeorder]" id="wcpimh_freeorder">
+		<select name="<?php echo $this->options_name; ?>[freeorder]" id="wcpimh_freeorder">
 			<?php $selected = ( $set_freeorder === 'no' || $set_freeorder === '' ) ? 'selected' : ''; ?>
 			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 
@@ -764,9 +765,9 @@ class WCIMPH_Admin {
 	}
 
 	public function wcpimh_ecstatus_callback() {
-		$set_ecstatus = isset( $this->imh_settings['wcpimh_ecstatus'] ) ? $this->imh_settings['wcpimh_ecstatus'] : '';
+		$set_ecstatus = isset( $this->settings['ecstatus'] ) ? $this->settings['ecstatus'] : '';
 		?>
-		<select name="imhset[wcpimh_ecstatus]" id="wcpimh_ecstatus">
+		<select name="<?php echo $this->options_name; ?>[ecstatus]" id="wcpimh_ecstatus">
 			<?php $selected = ( $set_ecstatus === 'nosync' || $set_ecstatus === '' ) ? 'selected' : ''; ?>
 			<option value="all" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'All status orders', 'connect-woocommerce' ); ?></option>
 
@@ -783,8 +784,8 @@ class WCIMPH_Admin {
 	 */
 	public function wcpimh_design_id_callback() {
 		printf(
-			'<input class="regular-text" type="text" name="imhset[wcpimh_design_id]" id="wcpimh_design_id" value="%s">',
-			isset( $this->imh_settings['wcpimh_design_id'] ) ? esc_attr( $this->imh_settings['wcpimh_design_id'] ) : ''
+			'<input class="regular-text" type="text" name="' . $this->options_name . '[design_id]" id="wcpimh_design_id" value="%s">',
+			isset( $this->settings['design_id'] ) ? esc_attr( $this->settings['design_id'] ) : ''
 		);
 	}
 
@@ -796,14 +797,14 @@ class WCIMPH_Admin {
 	public function wcpimh_sync_callback() {
 		global $cron_options;
 		?>
-		<select name="imhset[wcpimh_sync]" id="wcpimh_sync">
-			<?php $selected = ( isset( $this->imh_settings['wcpimh_sync'] ) && 'no' === $this->imh_settings['wcpimh_sync'] ) ? 'selected' : ''; ?>
+		<select name="<?php echo $this->options_name; ?>[sync]" id="wcpimh_sync">
+			<?php $selected = ( isset( $this->settings['sync'] ) && 'no' === $this->settings['sync'] ) ? 'selected' : ''; ?>
 			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 
 			<?php
 			if ( ! empty( $cron_options ) ) {
 				foreach ( $cron_options as $cron_option ) {
-					$selected = ( isset( $this->imh_settings['wcpimh_sync'] ) && $cron_option['cron'] === $this->imh_settings['wcpimh_sync'] ) ? 'selected' : '';
+					$selected = ( isset( $this->settings['sync'] ) && $cron_option['cron'] === $this->settings['sync'] ) ? 'selected' : '';
 					echo '<option value="' . esc_html( $cron_option['cron'] ) . '" ' . esc_html( $selected ) . '>';
 					echo esc_html( $cron_option['display'] ) . '</option>';
 				}
@@ -820,17 +821,17 @@ class WCIMPH_Admin {
 	 */
 	public function wcpimh_sync_num_callback() {
 		printf(
-			'<input class="regular-text" type="text" name="imhset[wcpimh_sync_num]" id="wcpimh_sync_num" value="%s">',
-			isset( $this->imh_settings['wcpimh_sync_num'] ) ? esc_attr( $this->imh_settings['wcpimh_sync_num'] ) : 5
+			'<input class="regular-text" type="text" name="' . $this->options_name . '[sync_num]" id="wcpimh_sync_num" value="%s">',
+			isset( $this->settings['sync_num'] ) ? esc_attr( $this->settings['sync_num'] ) : 5
 		);
 	}
 
 	public function wcpimh_sync_email_callback() {
 		?>
-		<select name="imhset[wcpimh_sync_email]" id="wcpimh_sync_email">
-			<?php $selected = ( isset( $this->imh_settings['wcpimh_sync_email'] ) && $this->imh_settings['wcpimh_sync_email'] === 'yes' ) ? 'selected' : ''; ?>
+		<select name="<?php echo $this->options_name; ?>[sync_email]" id="wcpimh_sync_email">
+			<?php $selected = ( isset( $this->settings['sync_email'] ) && $this->settings['sync_email'] === 'yes' ) ? 'selected' : ''; ?>
 			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
-			<?php $selected = ( isset( $this->imh_settings['wcpimh_sync_email'] ) && $this->imh_settings['wcpimh_sync_email'] === 'no' ) ? 'selected' : ''; ?>
+			<?php $selected = ( isset( $this->settings['sync_email'] ) && $this->settings['sync_email'] === 'no' ) ? 'selected' : ''; ?>
 			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 		</select>
 		<?php
@@ -890,13 +891,13 @@ class WCIMPH_Admin {
 	 */
 	public function vat_show_callback() {
 		?>
-		<select name="imhset_public[vat_show]" id="vat_show">
+		<select name="<?php echo $this->options_name; ?>_public[vat_show]" id="vat_show">
 			<?php 
-			$selected = ( isset( $this->imhset_public['vat_show'] ) && $this->imhset_public['vat_show'] === 'no' ? 'selected' : '' );
+			$selected = ( isset( $this->settings_public['vat_show'] ) && $this->settings_public['vat_show'] === 'no' ? 'selected' : '' );
 			?>
 			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 			<?php 
-			$selected = ( isset( $this->imhset_public['vat_show'] ) && $this->imhset_public['vat_show'] === 'yes' ? 'selected' : '' );
+			$selected = ( isset( $this->settings_public['vat_show'] ) && $this->settings_public['vat_show'] === 'yes' ? 'selected' : '' );
 			?>
 			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
 		</select>
@@ -909,15 +910,14 @@ class WCIMPH_Admin {
 	 * @return void
 	 */
 	public function vat_mandatory_callback() {
-		$wcpimh_vat_mandatory = get_option( 'wcpimh_vat_mandatory' );
 		?>
-		<select name="imhset_public[vat_mandatory]" id="vat_mandatory">
+		<select name="<?php echo $this->options_name; ?>_public[vat_mandatory]" id="vat_mandatory">
 			<?php 
-			$selected = ( isset( $this->imhset_public['vat_mandatory'] ) && $this->imhset_public['vat_mandatory'] === 'no' ? 'selected' : '' );
+			$selected = ( isset( $this->settings_public['vat_mandatory'] ) && $this->settings_public['vat_mandatory'] === 'no' ? 'selected' : '' );
 			?>
 			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 			<?php 
-			$selected = ( isset( $this->imhset_public['vat_mandatory'] ) && $this->imhset_public['vat_mandatory'] === 'yes' ? 'selected' : '' );
+			$selected = ( isset( $this->settings_public['vat_mandatory'] ) && $this->settings_public['vat_mandatory'] === 'yes' ? 'selected' : '' );
 			?>
 			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
 		</select>
@@ -931,13 +931,13 @@ class WCIMPH_Admin {
 	 */
 	public function company_field_callback() {
 		?>
-		<select name="imhset_public[company_field]" id="company_field">
+		<select name="<?php echo $this->options_name; ?>_public[company_field]" id="company_field">
 			<?php 
-			$selected = ( isset( $this->imhset_public['company_field'] ) && $this->imhset_public['company_field'] === 'no' ? 'selected' : '' );
+			$selected = ( isset( $this->settings_public['company_field'] ) && $this->settings_public['company_field'] === 'no' ? 'selected' : '' );
 			?>
 			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 			<?php 
-			$selected = ( isset( $this->imhset_public['company_field'] ) && $this->imhset_public['company_field'] === 'yes' ? 'selected' : '' );
+			$selected = ( isset( $this->settings_public['company_field'] ) && $this->settings_public['company_field'] === 'yes' ? 'selected' : '' );
 			?>
 			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
 		</select>
@@ -951,13 +951,13 @@ class WCIMPH_Admin {
 	 */
 	public function wcpimh_terms_registration_callback() {
 		?>
-		<select name="imhset_public[terms_registration]" id="terms_registration">
+		<select name="<?php echo $this->options_name; ?>_public[terms_registration]" id="terms_registration">
 			<?php 
-			$selected = ( isset( $this->imhset_public['terms_registration'] ) && $this->imhset_public['terms_registration'] === 'no' ? 'selected' : '' );
+			$selected = ( isset( $this->settings_public['terms_registration'] ) && $this->settings_public['terms_registration'] === 'no' ? 'selected' : '' );
 			?>
 			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 			<?php 
-			$selected = ( isset( $this->imhset_public['terms_registration'] ) && $this->imhset_public['terms_registration'] === 'yes' ? 'selected' : '' );
+			$selected = ( isset( $this->settings_public['terms_registration'] ) && $this->settings_public['terms_registration'] === 'yes' ? 'selected' : '' );
 			?>
 			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
 		</select>
@@ -971,13 +971,13 @@ class WCIMPH_Admin {
 	 */
 	public function wcpimh_remove_free_others_callback() {
 		?>
-		<select name="imhset_public[remove_free]" id="remove_free">
+		<select name="<?php echo $this->options_name; ?>_public[remove_free]" id="remove_free">
 			<?php 
-			$selected = ( isset( $this->imhset_public['remove_free'] ) && $this->imhset_public['remove_free'] === 'no' ? 'selected' : '' );
+			$selected = ( isset( $this->settings_public['remove_free'] ) && $this->settings_public['remove_free'] === 'no' ? 'selected' : '' );
 			?>
 			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 			<?php 
-			$selected = ( isset( $this->imhset_public['remove_free'] ) && $this->imhset_public['remove_free'] === 'yes' ? 'selected' : '' );
+			$selected = ( isset( $this->settings_public['remove_free'] ) && $this->settings_public['remove_free'] === 'yes' ? 'selected' : '' );
 			?>
 			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
 		</select>

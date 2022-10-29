@@ -9,8 +9,10 @@
  */
 
 defined( 'ABSPATH' ) || exit;
+define( 'CONWOOLIB_VERSION', 'version' );
+define( 'CONWOOLIB_DIR', dirname( __FILE__ ) );
 
-require_once dirname( __FILE__ ) . '/lib/helpers-functions.php';
+require_once CONWOOLIB_DIR . '/lib/helpers-functions.php';
 
 // Loads translation.
 add_action( 'init', 'cwlib_load_textdomain' );
@@ -21,19 +23,20 @@ function cwlib_load_textdomain() {
 	load_plugin_textdomain( 'connect-woocommerce', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 }
 
-require_once dirname( __FILE__ ) . '/lib/helpers-cron.php';
+require_once CONWOOLIB_DIR . '/lib/helpers-cron.php';
 
 // Creates table sync.
 if ( connwoo_is_pro() ) {
 	register_activation_hook( WCPIMH_FILE, 'connwoo_process_activation_premium' );
 }
 
-$connwoo_options = apply_filters( 'connwoo_options_name', 'imhset' );
+$connwoo_options_name = apply_filters( 'connwoo_options_name', 'imhset' );
 
 // Includes files.
-require_once dirname( __FILE__ ) . '/lib/class-connect-admin.php';
-require_once dirname( __FILE__ ) . '/lib/class-connect-import.php';
-require_once dirname( __FILE__ ) . '/lib/class-connect-import-pro.php';
+require_once CONWOOLIB_DIR . '/lib/class-connect-admin.php';
+require_once CONWOOLIB_DIR . '/lib/class-connect-import.php';
+require_once CONWOOLIB_DIR . '/lib/class-connect-import-pro.php';
+require_once CONWOOLIB_DIR . '/lib/class-connect-public.php';
 
 // Orders sync.
-require_once dirname( __FILE__ ) . '/lib/class-connect-orders.php';
+require_once CONWOOLIB_DIR . '/lib/class-connect-orders.php';
