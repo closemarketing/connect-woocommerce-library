@@ -40,7 +40,7 @@ class WCPIMH_Import {
 	 * Constructs of class
 	 */
 	public function __construct() {
-		global $connwoo_options_name;
+		global $connwoo_plugin_options;
 
 		add_action( 'admin_print_footer_scripts', array( $this, 'admin_print_footer_scripts' ), 11, 1 );
 		add_action( 'wp_ajax_wcpimh_import_products', array( $this, 'wcpimh_import_products' ) );
@@ -50,7 +50,7 @@ class WCPIMH_Import {
 		add_filter( 'admin_body_class', array( $this, 'admin_body_class' ) );
 
 		// Settings
-		$this->settings = get_option( $connwoo_options_name );
+		$this->settings = get_option( $connwoo_plugin_options['slug'] );
 	}
 
 	/**
@@ -239,9 +239,9 @@ class WCPIMH_Import {
 		// Start.
 		if ( 'simple' === $type ) {
 			$product = new \WC_Product( $product_id );
-		} elseif ( 'variable' === $type && connwoo_is_pro() && class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
+		} elseif ( 'variable' === $type && class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
 			$product = new \WC_Product_Variable( $product_id );
-		} elseif ( 'pack' === $type && connwoo_is_pro() && class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
+		} elseif ( 'pack' === $type && class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
 			$product = new \WC_Product( $product_id );
 		}
 		// Common and default properties.
@@ -328,32 +328,32 @@ class WCPIMH_Import {
 				}
 				break;
 			case 'variable':
-				if ( connwoo_is_pro() && class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
+				if ( class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
 					$product_props = $connwoo_pro->sync_product_variable( $product, $item, $is_new_product, $rate_id );
 				}
 				break;
 			case 'pack':
-				if ( connwoo_is_pro() && class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
+				if ( class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
 					$product_props = $connwoo_pro->sync_product_pack( $product, $item, $pack_items );
 				}
 				break;
 		}
 
-		if ( connwoo_is_pro() && class_exists( 'Connect_WooCommerce_Import_PRO' ) && isset( $item['type'] ) && ! empty( $item['type'] ) ) {
+		if ( class_exists( 'Connect_WooCommerce_Import_PRO' ) && isset( $item['type'] ) && ! empty( $item['type'] ) ) {
 			$categories_ids = $connwoo_pro->get_categories_ids( $item['type'], $is_new_product );
 			if ( ! empty( $categories_ids ) ) {
 				$product_props['category_ids'] = $categories_ids;
 			}
 		}
 
-		if ( connwoo_is_pro() && class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
+		if ( class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
 			// Imports image.
 			$connwoo_pro->put_product_image( $item['id'], $product_id );
 		}
 		// Set properties and save.
 		$product->set_props( $product_props );
 		$product->save();
-		if ( 'pack' === $type && connwoo_is_pro() && class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
+		if ( 'pack' === $type && class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
 			wp_set_object_terms( $product_id, 'woosb', 'product_type' );
 		}
 	}
@@ -505,7 +505,7 @@ class WCPIMH_Import {
 
 					if ( ! $is_filtered_product && $item['sku'] && 'simple' === $item['kind'] ) {
 						$this->sync_product_simple( $item );
-					} elseif ( ! $is_filtered_product && 'variants' === $item['kind'] && connwoo_is_pro() && class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
+					} elseif ( ! $is_filtered_product && 'variants' === $item['kind'] && class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
 						// Variable product.
 						// Check if any variants exists.
 						$post_parent = 0;
@@ -536,7 +536,7 @@ class WCPIMH_Import {
 							}
 							$this->ajax_msg .= $item['name'] . '. SKU: ' . $item['sku'] . '(' . $item['kind'] . ') <br/>';
 						}
-					} elseif ( ! $is_filtered_product && 'pack' === $item['kind'] && connwoo_is_pro() && class_exists( 'Connect_WooCommerce_Import_PRO' ) && $plugin_grouped_prod_active ) {
+					} elseif ( ! $is_filtered_product && 'pack' === $item['kind'] && class_exists( 'Connect_WooCommerce_Import_PRO' ) && $plugin_grouped_prod_active ) {
 						$post_id = $this->find_product( $item['sku'] );
 
 						if ( ! $post_id ) {
@@ -577,7 +577,7 @@ class WCPIMH_Import {
 							$this->ajax_msg .= $msg_product_synced;
 						}
 						$this->ajax_msg .= $item['name'] . '. SKU: ' . $item['sku'] . ' (' . $item['kind'] . ')';
-					} elseif ( ! $is_filtered_product && 'pack' === $item['kind'] && connwoo_is_pro() && class_exists( 'Connect_WooCommerce_Import_PRO' ) && ! $plugin_grouped_prod_active ) {
+					} elseif ( ! $is_filtered_product && 'pack' === $item['kind'] && class_exists( 'Connect_WooCommerce_Import_PRO' ) && ! $plugin_grouped_prod_active ) {
 						$this->ajax_msg .= '<span class="warning">' . __( 'Product needs Plugin to import: ', 'connect-woocommerce' );
 						$this->ajax_msg .= '<a href="https://wordpress.org/plugins/woo-product-bundle/" target="_blank">WPC Product Bundles for WooCommerce</a> ';
 						$this->ajax_msg .= '(' . $item['kind'] . ') </span></br>';
@@ -663,6 +663,7 @@ class WCPIMH_Import {
 	 * @return void
 	 */
 	public function send_product_errors() {
+		global $connwoo_plugin_options;
 		// Send to WooCommerce Logger
 		$logger = wc_get_logger();
 
@@ -675,7 +676,7 @@ class WCPIMH_Import {
 			$error_prod .= ' ' . __( 'SKU:', 'connect-woocommerce' ) . $error['sku'];
 			$error_prod .= ' ' . __( 'Name:', 'connect-woocommerce' ) . $error['name'];
 
-			if ( 'Holded' === connwoo_remote_name() ) {
+			if ( 'Holded' === $connwoo_plugin_options['name'] ) {
 				$error_prod .= ' <a href="https://app.holded.com/products/' . $error['prod_id'] . '">';
 				$error_prod .= __( 'Edit:', 'connect-woocommerce' ) . '</a>';
 			} else {
@@ -779,7 +780,7 @@ class WCPIMH_Import {
 	 * @return void
 	 */
 	public function admin_print_footer_scripts() {
-		global $connapi_erp;
+		global $connapi_erp, $connwoo_plugin_options;
 		$screen  = get_current_screen();
 		$get_tab = isset( $_GET['tab'] ) ? $_GET['tab'] : 'sync';
 
@@ -791,7 +792,7 @@ class WCPIMH_Import {
 		<script type="text/javascript">
 			var loop=0;
 			jQuery(function($){
-				$(document).find('#connect-woocommerce-engine').after('<div class="sync-wrapper"><h2><?php sprintf( esc_html__( 'Import Products from %s', 'connect-woocommerce' ), esc_html( connwoo_remote_name() ) ); ?></h2><p><?php esc_html_e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', 'connect-woocommerce' ); ?><br/></p><button id="start-sync" class="button button-primary"<?php if ( false === $connapi_erp->check_can_sync() ) { echo ' disabled'; } ?>><?php esc_html_e( 'Start Import', 'connect-woocommerce' ); ?></button></div><fieldset id="logwrapper"><legend><?php esc_html_e( 'Log', 'connect-woocommerce' ); ?></legend><div id="loglist"></div></fieldset>');
+				$(document).find('#connect-woocommerce-engine').after('<div class="sync-wrapper"><h2><?php sprintf( esc_html__( 'Import Products from %s', 'connect-woocommerce' ), esc_html( $connwoo_plugin_options['name'] ) ); ?></h2><p><?php esc_html_e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', 'connect-woocommerce' ); ?><br/></p><button id="start-sync" class="button button-primary"<?php if ( false === $connapi_erp->check_can_sync() ) { echo ' disabled'; } ?>><?php esc_html_e( 'Start Import', 'connect-woocommerce' ); ?></button></div><fieldset id="logwrapper"><legend><?php esc_html_e( 'Log', 'connect-woocommerce' ); ?></legend><div id="loglist"></div></fieldset>');
 				$(document).find('#start-sync').on('click', function(){
 					$(this).attr('disabled','disabled');
 					$(this).after('<span class="spinner is-active"></span>');

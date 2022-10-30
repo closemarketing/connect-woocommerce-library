@@ -22,20 +22,6 @@ defined( 'ABSPATH' ) || exit;
  */
 class Connect_WooCommerce_Import_PRO {
 	/**
-	 * The plugin file
-	 *
-	 * @var string
-	 */
-	private $file;
-
-	/**
-	 * Array of products to import
-	 *
-	 * @var array
-	 */
-	private $products;
-
-	/**
 	 * Ajax Message that shows while imports
 	 *
 	 * @var string
@@ -67,8 +53,8 @@ class Connect_WooCommerce_Import_PRO {
 	 * Constructs of class
 	 */
 	public function __construct() {
-		global $wpdb, $connwoo_options_name;
-		$this->table_sync = $wpdb->prefix . 'sync_' . $connwoo_options_name;
+		global $wpdb, $connwoo_plugin_options;
+		$this->table_sync = $wpdb->prefix . 'sync_' . $connwoo_plugin_options['slug'];
 
 		$this->sync_period = isset( $this->settings['sync'] ) ? strval( $this->settings['sync'] ) : 'no';
 
@@ -86,10 +72,10 @@ class Connect_WooCommerce_Import_PRO {
 	 * @return void
 	 */
 	public function action_scheduler() {
-		global $cron_options;
-		$pos = array_search( $this->sync_period, array_column( $cron_options, 'cron' ), true );
+		global $connwoo_cron_options;
+		$pos = array_search( $this->sync_period, array_column( $connwoo_cron_options, 'cron' ), true );
 		if ( false !== $pos ) {
-			$cron_option = $cron_options[ $pos ];
+			$cron_option = $connwoo_cron_options[ $pos ];
 		}
 
 		if ( isset( $cron_option['cron'] ) && false === as_has_scheduled_action( $cron_option['cron'] ) ) {
@@ -350,6 +336,7 @@ class Connect_WooCommerce_Import_PRO {
 	 * @return array
 	 */
 	public function sync_product_variable( $product, $item, $is_new_product, $rate_id ) {
+		global $connwoo_plugin_options;
 		$attributes      = array();
 		$attributes_prod = array();
 		$parent_sku      = $product->get_sku();
@@ -450,7 +437,7 @@ class Connect_WooCommerce_Import_PRO {
 				$variation->set_sku( $variant['sku'] );
 			}
 			$variation->save();
-			$key = '_' . strtolower( connwoo_remote_name() ) . '_productid';
+			$key = '_' . $connwoo_plugin_options['slug'] . '_productid';
 			update_post_meta( $variation_id, $key, $variant['id'] );
 		}
 		$var_prop   = $this->make_attributes( $attributes, true );
@@ -502,6 +489,7 @@ class Connect_WooCommerce_Import_PRO {
 	 * @return void
 	 */
 	public function sync_product_pack( $product, $item, $pack_items ) {
+		global $connwoo_plugin_options;
 		$product_id = $product->get_id();
 
 		$wosb_metas = array(
@@ -522,7 +510,7 @@ class Connect_WooCommerce_Import_PRO {
 		foreach ( $wosb_metas as $key => $value ) {
 			update_post_meta( $product_id, $key, $value );
 		}
-		$prod_key = '_' . strtolower( connwoo_remote_name() ) . '_productid';
+		$prod_key = '_' . $connwoo_plugin_options['slug'] . '_productid';
 		update_post_meta( $product_id, $prod_key, $item['id'] );
 	}
 
@@ -632,13 +620,13 @@ class Connect_WooCommerce_Import_PRO {
 	 * @return void
 	 */
 	private function save_sync_errors( $errors ) {
-		global $connwoo_options_name;
-		$option_errors = get_option( $connwoo_options_name . '_sync_errors' );
+		global $connwoo_plugin_options;
+		$option_errors = get_option( $connwoo_plugin_options['slug'] . '_sync_errors' );
 		$save_errors[] = $errors;
 		if ( false !== $option_errors && ! empty( $option_errors ) ) {
 			$save_errors = array_merge( $save_errors, $option_errors );
 		}
-		update_option( $connwoo_options_name . '_sync_errors', $save_errors );
+		update_option( $connwoo_plugin_options['slug'] . '_sync_errors', $save_errors );
 	}
 
 	/**
@@ -647,7 +635,7 @@ class Connect_WooCommerce_Import_PRO {
 	 * @return boolean
 	 */
 	private function fill_table_sync() {
-		global $wpdb, $connwoo_options_name;
+		global $wpdb, $connwoo_plugin_options;
 		global $connapi_erp;
 		$wpdb->query( "TRUNCATE TABLE $this->table_sync;" );
 
@@ -657,9 +645,9 @@ class Connect_WooCommerce_Import_PRO {
 			return;
 		}
 
-		update_option( $connwoo_options_name . '_total_api_products', count( $products ) );
-		update_option( $connwoo_options_name . '_sync_start_time', strtotime( 'now' ) );
-		update_option( $connwoo_options_name . '_sync_errors', array() );
+		update_option( $connwoo_plugin_options['slug'] . '_total_api_products', count( $products ) );
+		update_option( $connwoo_plugin_options['slug'] . '_sync_start_time', strtotime( 'now' ) );
+		update_option( $connwoo_plugin_options['slug'] . '_sync_errors', array() );
 		foreach ( $products as $product ) {
 			$is_filtered_product = ! empty( $product['tags'] ) ? $this->filter_product( $product['tags'] ) : false;
 
@@ -723,7 +711,7 @@ class Connect_WooCommerce_Import_PRO {
 	 * @return void
 	 */
 	private function save_product_sync( $product_id ) {
-		global $wpdb, $connwoo_options_name;
+		global $wpdb, $connwoo_plugin_options;
 		$db_values = array(
 			'prod_id' => $product_id,
 			'synced'  => true,
@@ -749,7 +737,7 @@ class Connect_WooCommerce_Import_PRO {
 			$logger->debug(
 				'Import Product Sync Error Product ID:' . $product_id . 'DB error:' . $wpdb->last_error,
 				array(
-					'source' => $connwoo_options_name,
+					'source' => $connwoo_plugin_options['slug'],
 				)
 			);
 		}
@@ -761,19 +749,19 @@ class Connect_WooCommerce_Import_PRO {
 	 * @return void
 	 */
 	public function send_sync_ended_products() {
-		global $wpdb, $connwoo_options_name;
+		global $wpdb, $connwoo_plugin_options;
 		$send_email   = isset( $this->settings['sync_email'] ) ? strval( $this->settings['sync_email'] ) : 'yes';
 
 		$total_count = $wpdb->get_var( "SELECT COUNT(*) FROM $this->table_sync WHERE synced = 1" );
 
 		if ( $total_count > 0 && 'yes' === $send_email ) {
-			$subject = __( 'All products synced with ', 'connect-woocommerce' ) . connwoo_remote_name();
+			$subject = __( 'All products synced with ', 'connect-woocommerce' ) . $connwoo_plugin_options['name'];
 			$headers = array( 'Content-Type: text/html; charset=UTF-8' );
-			$body    = '<h2>' . __( 'All products synced with ', 'connect-woocommerce' ) . connwoo_remote_name() . '</h2> ';
+			$body    = '<h2>' . __( 'All products synced with ', 'connect-woocommerce' ) . $connwoo_plugin_options['name'] . '</h2> ';
 			$body   .= '<br/><strong>' . __( 'Total products:', 'connect-woocommerce' ) . '</strong> ';
 			$body   .= $total_count;
 
-			$total_api_products = (int) get_option( $connwoo_options_name . '_total_api_products' );
+			$total_api_products = (int) get_option( $connwoo_plugin_options['slug'] . '_total_api_products' );
 			if ( $total_api_products || $total_count !== $total_api_products ) {
 				$body .= ' ' . esc_html__( 'filtered', 'connect-woocommerce' );
 				$body .= ' ( ' . $total_api_products . ' ' . esc_html__( 'total', 'connect-woocommerce' ) . ' )';
@@ -782,14 +770,14 @@ class Connect_WooCommerce_Import_PRO {
 			$body .= '<br/><strong>' . __( 'Time:', 'connect-woocommerce' ) . '</strong> ';
 			$body .= date_i18n( 'Y-m-d H:i', current_time( 'timestamp') );
 
-			$start_time = get_option( $connwoo_options_name . '_sync_start_time' );
+			$start_time = get_option( $connwoo_plugin_options['slug'] . '_sync_start_time' );
 			if ( $start_time ) {
 				$body .= '<br/><strong>' . __( 'Total Time:', 'connect-woocommerce' ) . '</strong> ';
 				$body .= round( ( strtotime( 'now' ) - $start_time ) / 60 / 60, 1 );
 				$body .= 'h';
 			}
 
-			$products_errors = get_option( $connwoo_options_name . '_sync_errors' );
+			$products_errors = get_option( $connwoo_plugin_options['slug'] . '_sync_errors' );
 			if ( false !== $products_errors && ! empty( $products_errors ) ) {
 				$body .= '<h2>' . __( 'Errors founded', 'connect-woocommerce' ) . '</h2>';
 
@@ -797,7 +785,7 @@ class Connect_WooCommerce_Import_PRO {
 					$body .= '<br/><strong>' . $error['error'] . '</strong>';
 					$body .= '<br/><strong>' . __( 'Product id: ', 'connect-woocommerce' ) . '</strong>' . $error['id'];
 
-					if ( 'Holded' === connwoo_remote_name() ) {
+					if ( 'Holded' === $connwoo_plugin_options['name'] ) {
 						$body .= ' <a href="https://app.holded.com/products/' . $error['id'] . '">' . __( 'View in Holded', 'connect-woocommerce' ) . '</a>';
 					}
 					$body .= '<br/><strong>' . __( 'Product name: ', 'connect-woocommerce' ) . '</strong>' . $error['name'];

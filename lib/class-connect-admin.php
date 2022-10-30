@@ -39,10 +39,10 @@ class WCIMPH_Admin {
 	 * Construct of class
 	 */
 	public function __construct() {
-		global $wpdb, $connwoo_options_name;
-		$this->table_sync   = $wpdb->prefix . 'sync_' . $connwoo_options_name;
+		global $wpdb, $connwoo_plugin_options;
+		$this->table_sync   = $wpdb->prefix . 'sync_' . $connwoo_plugin_options['slug'];
 		$this->label_pro    = __( '(ONLY PRO VERSION)', 'connect-woocommerce' );
-		$this->options_name = $connwoo_options_name;
+		$this->options_name = $connwoo_plugin_options['slug'];
 		add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
 		add_action( 'admin_init', array( $this, 'page_init' ) );
 		add_action( 'admin_head', array( $this, 'custom_css' ) );
@@ -54,11 +54,12 @@ class WCIMPH_Admin {
 	 * @return void
 	 */
 	public function add_plugin_page() {
+		global $connwoo_plugin_options;
 
 		add_submenu_page(
 			'woocommerce',
-			__( 'Connect WooCommerce', 'connect-woocommerce' ) . connwoo_remote_name(),
-			__( 'Connect ', 'connect-woocommerce' ) . connwoo_remote_name(),
+			__( 'Connect WooCommerce', 'connect-woocommerce' ) . $connwoo_plugin_options['name'],
+			__( 'Connect ', 'connect-woocommerce' ) . $connwoo_plugin_options['name'],
 			'manage_options',
 			'connect_woocommerce',
 			array( $this, 'create_admin_page' ),
@@ -71,7 +72,7 @@ class WCIMPH_Admin {
 	 * @return void
 	 */
 	public function create_admin_page() {
-		global $connwoo_admin_logo;
+		global $connwoo_plugin_options;
 		$this->settings  = get_option( $this->options_name );
 		$this->settings_public = get_option( $this->options_name . '_public' );
 		?>
@@ -81,10 +82,10 @@ class WCIMPH_Admin {
 				<div id="nag-container"></div>
 				<div class="header connwoo-header">
 					<div class="logo">
-						<img src="<?php echo $connwoo_admin_logo; ?>" height="35" width="154"/>
+						<img src="<?php echo $connwoo_plugin_options['settings_logo']; ?>" height="35" width="154"/>
 						<h2><?php
 							esc_html_e( 'WooCommerce Connection Settings with ', 'connect-woocommerce' );
-							echo esc_html( connwoo_remote_name() );
+							echo esc_html( $connwoo_plugin_options['name'] );
 							?></h2>
 					</div>
 				</div>
@@ -101,13 +102,7 @@ class WCIMPH_Admin {
 				<a href="?page=connect_woocommerce&tab=automate" class="nav-tab <?php echo 'automate' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Automate', 'connect-woocommerce' ); ?></a>
 				<a href="?page=connect_woocommerce&tab=settings" class="nav-tab <?php echo 'settings' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Settings', 'connect-woocommerce' ); ?></a>
 				<a href="?page=connect_woocommerce&tab=public" class="nav-tab <?php echo 'public' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Frontend Settings', 'connect-woocommerce' ); ?></a>
-				<?php
-				if ( connwoo_is_pro() ) {
-					?>
-					<a href="?page=connect_woocommerce&tab=license" class="nav-tab <?php echo 'license' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'License', 'connect-woocommerce' ); ?></a>
-					<?php
-				}
-				?>
+				<a href="?page=connect_woocommerce&tab=license" class="nav-tab <?php echo 'license' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'License', 'connect-woocommerce' ); ?></a>
 			</h2>
 
 			<?php	if ( 'sync' === $active_tab ) { ?>
@@ -131,14 +126,11 @@ class WCIMPH_Admin {
 					<?php
 					settings_fields( 'wcpimh_settings' );
 					do_settings_sections( 'connect-woocommerce-automate' );
-
-					if ( connwoo_is_pro() ) {
-						submit_button(
-							__( 'Save automate', 'connect-woocommerce' ),
-							'primary',
-							'submit_automate'
-						);
-					}
+					submit_button(
+						__( 'Save automate', 'connect-woocommerce' ),
+						'primary',
+						'submit_automate'
+					);
 					?>
 				</form>
 			<?php } ?>
@@ -174,6 +166,7 @@ class WCIMPH_Admin {
 	 * @return void
 	 */
 	public function page_init() {
+		global $connwoo_plugin_options;
 
 		register_setting(
 			'wcpimh_settings',
@@ -188,7 +181,7 @@ class WCIMPH_Admin {
 			'connect-woocommerce-admin'
 		);
 
-		if ( 'NEO' === connwoo_remote_name() ) {
+		if ( 'NEO' === $connwoo_plugin_options['name'] ) {
 			add_settings_field(
 				'wcpimh_idcentre',
 				__( 'NEO ID Centre', 'connect-woocommerce' ),
@@ -206,7 +199,7 @@ class WCIMPH_Admin {
 			'connect_woocommerce_setting_section'
 		);
 
-		if ( connwoo_option_stock() ) {
+		if ( $connwoo_plugin_options['product_option_stock'] ) {
 			add_settings_field(
 				'wcpimh_stock',
 				__( 'Import stock?', 'connect-woocommerce' ),
@@ -241,9 +234,6 @@ class WCIMPH_Admin {
 		);
 
 		$label_cat = __( 'Category separator', 'connect-woocommerce' );
-		if ( ! connwoo_is_pro() ) {
-			$label_cat .= ' ' . $this->label_pro;
-		}
 		add_settings_field(
 			'wcpimh_catsep',
 			$label_cat,
@@ -260,8 +250,7 @@ class WCIMPH_Admin {
 			'connect_woocommerce_setting_section'
 		);
 
-		if ( connwoo_remote_price_tax_option() ) {
-
+		if ( $connwoo_plugin_options['product_price_tax_option'] ) {
 			add_settings_field(
 				'wcpimh_tax_option',
 				__( 'Get prices with Tax?', 'connect-woocommerce' ),
@@ -271,12 +260,9 @@ class WCIMPH_Admin {
 			);
 		}
 
-		if ( connwoo_remote_price_rate_option() ) {
+		if ( $connwoo_plugin_options['product_price_rate_option'] ) {
 			$label_filter = __( 'Product price rate for this eCommerce', 'connect-woocommerce' );
 			$desc_tip = __( 'Copy and paste the ID of the rates for publishing in the web', 'connect-woocommerce' );
-			if ( ! connwoo_is_pro() ) {
-				$label_filter .= ' ' . $this->label_pro;
-			}
 			add_settings_field(
 				'wcpimh_rates',
 				$label_filter,
@@ -287,19 +273,16 @@ class WCIMPH_Admin {
 		}
 
 		$name_catnp = __( 'Import category only in new products?', 'connect-woocommerce' );
-		if ( connwoo_is_pro() ) {
-			add_settings_field(
-				'wcpimh_catnp',
-				$name_catnp,
-				array( $this, 'wcpimh_catnp_callback' ),
-				'connect-woocommerce-admin',
-				'connect_woocommerce_setting_section'
-			);
-		}
+		add_settings_field(
+			'wcpimh_catnp',
+			$name_catnp,
+			array( $this, 'wcpimh_catnp_callback' ),
+			'connect-woocommerce-admin',
+			'connect_woocommerce_setting_section'
+		);
 
-		if ( 'Holded' === connwoo_remote_name() ) {
+		if ( 'Holded' === $connwoo_plugin_options['name'] ) {
 			$name_docorder = __( 'Document to create after order completed?', 'connect-woocommerce' );
-			if ( connwoo_is_pro() ) {
 				add_settings_field(
 					'wcpimh_doctype',
 					$name_docorder,
@@ -307,40 +290,33 @@ class WCIMPH_Admin {
 					'connect-woocommerce-admin',
 					'connect_woocommerce_setting_section'
 				);
-			}
 
 			$name_docorder = __( 'Create document for free Orders?', 'connect-woocommerce' );
-			if ( connwoo_is_pro() ) {
-				add_settings_field(
-					'wcpimh_freeorder',
-					$name_docorder,
-					array( $this, 'wcpimh_freeorder_callback' ),
-					'connect-woocommerce-admin',
-					'connect_woocommerce_setting_section'
-				);
-			}
+			add_settings_field(
+				'wcpimh_freeorder',
+				$name_docorder,
+				array( $this, 'wcpimh_freeorder_callback' ),
+				'connect-woocommerce-admin',
+				'connect_woocommerce_setting_section'
+			);
 
 			$name_docorder = __( 'Status to sync Orders?', 'connect-woocommerce' );
-			if ( connwoo_is_pro() ) {
-				add_settings_field(
-					'wcpimh_ecstatus',
-					$name_docorder,
-					array( $this, 'wcpimh_ecstatus_callback' ),
-					'connect-woocommerce-admin',
-					'connect_woocommerce_setting_section'
-				);
-			}
+			add_settings_field(
+				'wcpimh_ecstatus',
+				$name_docorder,
+				array( $this, 'wcpimh_ecstatus_callback' ),
+				'connect-woocommerce-admin',
+				'connect_woocommerce_setting_section'
+			);
 
 			$name_nif = __( 'ID Holded design for document', 'connect-woocommerce' );
-			if ( connwoo_is_pro() ) {
-				add_settings_field(
-					'wcpimh_design_id',
-					$name_nif,
-					array( $this, 'wcpimh_design_id_callback' ),
-					'connect-woocommerce-admin',
-					'connect_woocommerce_setting_section'
-				);
-			}
+			add_settings_field(
+				'wcpimh_design_id',
+				$name_nif,
+				array( $this, 'wcpimh_design_id_callback' ),
+				'connect-woocommerce-admin',
+				'connect_woocommerce_setting_section'
+			);
 		}
 
 		/**
@@ -353,38 +329,30 @@ class WCIMPH_Admin {
 			array( $this, 'connect_woocommerce_section_automate' ),
 			'connect-woocommerce-automate'
 		);
-		if ( connwoo_is_pro() ) {
-			$name_sync = __( 'When do you want to sync?', 'connect-woocommerce' );
-			if ( connwoo_is_pro() ) {
-				add_settings_field(
-					'wcpimh_sync',
-					$name_sync,
-					array( $this, 'wcpimh_sync_callback' ),
-					'connect-woocommerce-automate',
-					'connect_woocommerce_setting_automate'
-				);
-			}
+		$name_sync = __( 'When do you want to sync?', 'connect-woocommerce' );
+		add_settings_field(
+			'wcpimh_sync',
+			$name_sync,
+			array( $this, 'wcpimh_sync_callback' ),
+			'connect-woocommerce-automate',
+			'connect_woocommerce_setting_automate'
+		);
 
-			$name_sync = __( 'How many products do you want to sync each time?', 'connect-woocommerce' );
-			if ( connwoo_is_pro() ) {
-				add_settings_field(
-					'wcpimh_sync_num',
-					$name_sync,
-					array( $this, 'wcpimh_sync_num_callback' ),
-					'connect-woocommerce-automate',
-					'connect_woocommerce_setting_automate'
-				);
-			}
-			if ( connwoo_is_pro() ) {
-				add_settings_field(
-					'wcpimh_sync_email',
-					__( 'Do you want to receive an email when all products are synced?', 'connect-woocommerce' ),
-					array( $this, 'wcpimh_sync_email_callback' ),
-					'connect-woocommerce-automate',
-					'connect_woocommerce_setting_automate'
-				);
-			}
-		}
+		$name_sync = __( 'How many products do you want to sync each time?', 'connect-woocommerce' );
+		add_settings_field(
+			'wcpimh_sync_num',
+			$name_sync,
+			array( $this, 'wcpimh_sync_num_callback' ),
+			'connect-woocommerce-automate',
+			'connect_woocommerce_setting_automate'
+		);
+		add_settings_field(
+			'wcpimh_sync_email',
+			__( 'Do you want to receive an email when all products are synced?', 'connect-woocommerce' ),
+			array( $this, 'wcpimh_sync_email_callback' ),
+			'connect-woocommerce-automate',
+			'connect_woocommerce_setting_automate'
+		);
 
 		/**
 		 * ## Public
@@ -452,14 +420,7 @@ class WCIMPH_Admin {
 	 * @return void
 	 */
 	public function page_sync_orders() {
-		if ( connwoo_is_pro() ) {
-			echo '<div id="connect-woocommerce-engine-orders"></div>';
-		} else {
-			echo '<h2>' . esc_html__( 'Sync Orders', 'connect-woocommerce' ) . '</h2>';
-			esc_html_e( 'Section only for PRO version', 'connect-woocommerce' );
-
-			echo ' ' . $this->show_get_pro();
-		}
+		echo '<div id="connect-woocommerce-engine-orders"></div>';
 	}
 
 	/**
@@ -506,91 +467,63 @@ class WCIMPH_Admin {
 	}
 
 	/**
-	 * Shows message for pro
-	 *
-	 * @return html
-	 */
-	private function show_get_pro() {
-		// Purchase notification.
-		$get_pro = sprintf(
-			wp_kses(
-				__( '<a href="%s" target="_blank">Get Pro version</a> to enable functionalities.', 'connect-woocommerce' ),
-				array(
-					'a'      => array(
-					'href'   => array(),
-					'target' => array(),
-					),
-				)
-			),
-			esc_url( WCPIMH_PURCHASE_URL )
-		);
-		return $get_pro;
-
-	}
-	/**
 	 * Info for holded section.
 	 *
 	 * @return void
 	 */
 	public function connect_woocommerce_section_automate() {
-		global $wpdb, $connwoo_options_name;
-		if ( connwoo_is_pro() ) {
-			$count        = $wpdb->get_var( "SELECT COUNT(*) FROM $this->table_sync WHERE synced = 1" );
-			$total_count  = $wpdb->get_var( "SELECT COUNT(*) FROM $this->table_sync" );
-			$count_return = $count . ' / ' . $total_count;
+		global $wpdb, $connwoo_plugin_options;
+		$count        = $wpdb->get_var( "SELECT COUNT(*) FROM $this->table_sync WHERE synced = 1" );
+		$total_count  = $wpdb->get_var( "SELECT COUNT(*) FROM $this->table_sync" );
+		$count_return = $count . ' / ' . $total_count;
 
-			$total_api_products = (int) get_option( $connwoo_options_name . '_total_api_products' );
-			if ( $total_api_products || $total_count !== $total_api_products ) {
-				$count_return .= ' ' . esc_html__( 'filtered', 'connect-woocommerce' );
-				$count_return .= ' ( ' . $total_api_products . ' ' . esc_html__( 'total', 'connect-woocommerce' ) . ' )';
-			}
-			$percentage = 0 < $total_count ? intval( $count / $total_count * 100 ) : 0;
-			esc_html_e( 'Make your settings to automate the sync.', 'connect-woocommerce' );
-			echo '<div class="sync-status" style="text-align:right;">';
-			echo '<strong>';
-			esc_html_e( 'Actual Automate status:', 'connect-woocommerce' );
-			echo '</strong> ' . esc_html( $count_return ) . ' ';
-			esc_html_e( 'products synced with ', 'connect-woocommerce' );
-			echo esc_html( connwoo_remote_name() );
-			echo '</div>';
-			echo '
-			<style>
-			.progress-bar {
-				background-color: #1a1a1a;
-				height: 16px;
-				padding: 5px;
-				width: 100%;
-				margin: 5px 0;
-				border-radius: 5px;
-				box-shadow: 0 1px 5px #000 inset, 0 1px 0 #444;
-				}
-				.progress-bar span {
-				display: inline-block;
-				float: left;
-				height: 100%;
-				border-radius: 3px;
-				box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset;
-				transition: width .4s ease-in-out;
-				}
-				.blue span {
-				background-color: #2271b1;
-				}
-				.progress-text {
-				text-align: right;
-				color: white;
-				margin: 0;
-				font-size: 18px;
-				}
-			</style>
-			<div class="progress-bar blue">
-			<span style="width:' . esc_html( $percentage ) . '%"></span>
-			<div class="progress-text">' . esc_html( $percentage ) . '%</div>
-			</div>';
-		} else {
-			esc_html_e( 'Section only for PRO version', 'connect-woocommerce' );
-
-			echo ' ' . $this->show_get_pro();
+		$total_api_products = (int) get_option( $connwoo_plugin_options['slug'] . '_total_api_products' );
+		if ( $total_api_products || $total_count !== $total_api_products ) {
+			$count_return .= ' ' . esc_html__( 'filtered', 'connect-woocommerce' );
+			$count_return .= ' ( ' . $total_api_products . ' ' . esc_html__( 'total', 'connect-woocommerce' ) . ' )';
 		}
+		$percentage = 0 < $total_count ? intval( $count / $total_count * 100 ) : 0;
+		esc_html_e( 'Make your settings to automate the sync.', 'connect-woocommerce' );
+		echo '<div class="sync-status" style="text-align:right;">';
+		echo '<strong>';
+		esc_html_e( 'Actual Automate status:', 'connect-woocommerce' );
+		echo '</strong> ' . esc_html( $count_return ) . ' ';
+		esc_html_e( 'products synced with ', 'connect-woocommerce' );
+		echo esc_html( $connwoo_plugin_options['name'] );
+		echo '</div>';
+		echo '
+		<style>
+		.progress-bar {
+			background-color: #1a1a1a;
+			height: 16px;
+			padding: 5px;
+			width: 100%;
+			margin: 5px 0;
+			border-radius: 5px;
+			box-shadow: 0 1px 5px #000 inset, 0 1px 0 #444;
+			}
+			.progress-bar span {
+			display: inline-block;
+			float: left;
+			height: 100%;
+			border-radius: 3px;
+			box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset;
+			transition: width .4s ease-in-out;
+			}
+			.blue span {
+			background-color: #2271b1;
+			}
+			.progress-text {
+			text-align: right;
+			color: white;
+			margin: 0;
+			font-size: 18px;
+			}
+		</style>
+		<div class="progress-bar blue">
+		<span style="width:' . esc_html( $percentage ) . '%"></span>
+		<div class="progress-text">' . esc_html( $percentage ) . '%</div>
+		</div>';
 	}
 
 	/**
@@ -599,12 +532,8 @@ class WCIMPH_Admin {
 	 * @return void
 	 */
 	public function connect_woocommerce_section_info() {
-		global $conn_woo_admin_message;
-		echo $conn_woo_admin_message;
-
-		if ( ! connwoo_is_pro() ) {
-			echo $this->show_get_pro();
-		}
+		global $connwoo_plugin_options;
+		echo $connwoo_plugin_options['settings_admin_message'];
 	}
 
 	/**
@@ -803,15 +732,15 @@ class WCIMPH_Admin {
 	 * @return void
 	 */
 	public function wcpimh_sync_callback() {
-		global $cron_options;
+		global $connwoo_cron_options;
 		?>
 		<select name="<?php echo $this->options_name; ?>[sync]" id="wcpimh_sync">
 			<?php $selected = ( isset( $this->settings['sync'] ) && 'no' === $this->settings['sync'] ) ? 'selected' : ''; ?>
 			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 
 			<?php
-			if ( ! empty( $cron_options ) ) {
-				foreach ( $cron_options as $cron_option ) {
+			if ( ! empty( $connwoo_cron_options ) ) {
+				foreach ( $connwoo_cron_options as $cron_option ) {
 					$selected = ( isset( $this->settings['sync'] ) && $cron_option['cron'] === $this->settings['sync'] ) ? 'selected' : '';
 					echo '<option value="' . esc_html( $cron_option['cron'] ) . '" ' . esc_html( $selected ) . '>';
 					echo esc_html( $cron_option['display'] ) . '</option>';
@@ -1021,12 +950,6 @@ class WCIMPH_Admin {
 			.wp-admin.wcpimh-plugin #wcpimh_taxinc {
 				width: 270px;
 			}';
-		// Not pro version.
-		if ( ! connwoo_is_pro() ) {
-			echo '.wp-admin.wcpimh-plugin #wcpimh_catsep, .wp-admin.wcpimh-plugin #wcpimh_filter, .wp-admin.wcpimh-plugin #wcpimh_sync  {
-				pointer-events:none;
-			}';
-		}
 		echo '</style>';
 	}
 
