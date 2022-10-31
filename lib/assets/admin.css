@@ -1,3 +1,22 @@
+.wp-admin .wcpimh-plugin span.wcpimh-pro{ 
+	color: #b4b9be;
+}
+.wp-admin.wcpimh-plugin #wcpimh_catnp,
+.wp-admin.wcpimh-plugin #wcpimh_stock,
+.wp-admin.wcpimh-plugin #wcpimh_catsep {
+	width: 70px;
+}
+.wp-admin.wcpimh-plugin #wcpimh_idcentre,
+.wp-admin.wcpimh-plugin #wcpimh_sync_num {
+	width: 50px;
+}
+.wp-admin.wcpimh-plugin #wcpimh_prodst {
+	width: 150px;
+}
+.wp-admin.wcpimh-plugin #wcpimh_api,
+.wp-admin.wcpimh-plugin #wcpimh_taxinc {
+	width: 270px;
+}
 .wcpimh-plugin #logwrapper {
 	border: 1px solid #aaa;
 	margin: 10px auto;
