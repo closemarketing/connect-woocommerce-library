@@ -57,6 +57,9 @@ $connwoo_cron_options = array(
 	),
 );
 
+
+// Creates table sync.
+register_activation_hook( WCPIMH_FILE, 'connwoo_process_activation_premium' );
 /**
  * Creates the database
  *
@@ -65,10 +68,10 @@ $connwoo_cron_options = array(
  * @return void
  */
 function connwoo_process_activation_premium() {
-	global $wpdb, $connwoo_plugin_options;
+	global $wpdb;
 	$charset_collate = $wpdb->get_charset_collate();
 
-	$table_name = $wpdb->prefix . 'sync_' . $connwoo_plugin_options['slug'];
+	$table_name = $wpdb->prefix . 'sync_' . CONWOOLIB_SLUG;
 
 	// DB Tasks.
 	$sql = "CREATE TABLE $table_name (

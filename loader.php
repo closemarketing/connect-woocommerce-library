@@ -28,8 +28,6 @@ function cwlib_load_textdomain() {
 
 require_once CONWOOLIB_DIR . '/lib/helpers-cron.php';
 
-// Creates table sync.
-register_activation_hook( WCPIMH_FILE, 'connwoo_process_activation_premium' );
 
 
 // Includes files.
