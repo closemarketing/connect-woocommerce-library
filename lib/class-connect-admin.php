@@ -76,11 +76,13 @@ class WCIMPH_Admin {
 				<div id="nag-container"></div>
 				<div class="header connwoo-header">
 					<div class="logo">
-						<img src="<?php echo $connwoo_plugin_options['settings_logo']; ?>" height="35" width="154"/>
-						<h2><?php
-						esc_html_e( 'WooCommerce Connection Settings with ', 'connect-woocommerce' );
-						echo esc_html( $connwoo_plugin_options['name'] );
-						?></h2>
+						<img src="<?php echo esc_url( $connwoo_plugin_options['settings_logo'] ); ?>" height="35" width="154"/>
+						<h2>
+							<?php
+							esc_html_e( 'WooCommerce Connection Settings with ', 'connect-woocommerce' );
+							echo esc_html( $connwoo_plugin_options['name'] );
+							?>
+						</h2>
 					</div>
 				</div>
 			</div>
@@ -150,10 +152,10 @@ class WCIMPH_Admin {
 				echo '<div class="connect-woocommerce-settings license">';
 				echo '<div class="license">';
 
-				echo '<form method="post">';
-				settings_fields( 'wpat_settings_admin' );
+				echo '<form method="post" action="options.php">';
+				settings_fields( 'connect_woocommerce_license' );
 				do_settings_sections( 'connwoo_settings_admin_license' );
-				wp_nonce_field( 'Update_WPAT_Options', 'wpauto_nonce' );
+				wp_nonce_field( 'Update_CONN_License_Options', 'wpauto_nonce' );
 				submit_button(
 					__( 'Save', 'connect-woocommerce' ),
 					'primary',
@@ -167,21 +169,23 @@ class WCIMPH_Admin {
 				echo '<p>';
 				$plugin_url = 'https://www.close.technology/wordpress-plugins/connect-woocommerce-' . strtolower( $connwoo_plugin_options['name'] ) . '/';
 				echo sprintf(
-					__( 'With the <a href="%1s" target="_blank">Connect WooCommerce for %2s</a> license, you\'ll have updates and automatic fixes to what\'s new or change in your system, so you\'ll always have the latest functionalities for the plugin.', 'connect-woocommerce' ),
-					$plugin_url,
-					$connwoo_plugin_options['name']
+					// translators: %1$s Plugin URL %2$s Name of plugin.
+					esc_html__( 'With the <a href="%1$s" target="_blank">Connect WooCommerce for %2$s</a> license, you\'ll have updates and automatic fixes to what\'s new or change in your system, so you\'ll always have the latest functionalities for the plugin.', 'connect-woocommerce' ),
+					esc_url( $plugin_url ),
+					esc_html( $connwoo_plugin_options['name'] )
 				);
 				echo '</p>';
 				echo '</div><div class="help">';
 				echo '<h2>' . esc_html__( 'How do I get a license?', 'connect-woocommerce' ) . '</h2>';
 				echo '<p>';
 				echo sprintf(
-					__( 'Visit the <a href="%1s" target="_blank">Connect WooCommerce for %2s</a> page and purchase the licenses you need, depending on the number of WordPress MultiSites you\'re using.', 'connect-woocommerce' ),
-					$plugin_url,
-					$connwoo_plugin_options['name']
+					// translators: %1$s Plugin URL %2$s Name of plugin.
+					esc_html__( 'Visit the <a href="%1$s" target="_blank">Connect WooCommerce for %2$s</a> page and purchase the licenses you need, depending on the number of WordPress MultiSites you\'re using.', 'connect-woocommerce' ),
+					esc_url( $plugin_url ),
+					esc_html( $connwoo_plugin_options['name'] )
 				);
 				echo '</p>';
-				echo '<p style="color:#50575e;">' . esc_html__( 'Instance:', 'pbc' ) . ' ' . get_option( 'pbc_license_instance' ) . '</p>';
+				echo '<p style="color:#50575e;">' . esc_html__( 'Instance:', 'pbc' ) . ' ' . esc_html( get_option( $this->options_name . '_license_instance' ) ) . '</p>';
 				echo '</div></div>';
 			}
 			?>
@@ -449,10 +453,7 @@ class WCIMPH_Admin {
 		register_setting(
 			'connect_woocommerce_license',
 			$this->options_name . '_license',
-			array(
-				$this,
-				'sanitize_fields_license',
-			)
+			array( $this, 'sanitize_fields_license' )
 		);
 		add_settings_section(
 			'connect_woocommerce_license',
@@ -477,7 +478,7 @@ class WCIMPH_Admin {
 		);
 
 		add_settings_field(
-			'wpat_license_status',
+			$this->options_name . '_license_status',
 			__( 'License Status', 'connect-woocommerce' ),
 			array( $this, 'license_status_callback' ),
 			'connwoo_settings_admin_license',
@@ -485,7 +486,7 @@ class WCIMPH_Admin {
 		);
 
 		add_settings_field(
-			'wpat_license_deactivate',
+			$this->options_name . '_license_deactivate',
 			__( 'Deactivate License', 'connect-woocommerce' ),
 			array( $this, 'license_deactivate_callback' ),
 			'connwoo_settings_admin_license',
@@ -612,7 +613,7 @@ class WCIMPH_Admin {
 	 */
 	public function connect_woocommerce_section_info() {
 		global $connwoo_plugin_options;
-		echo $connwoo_plugin_options['settings_admin_message'];
+		echo esc_html( $connwoo_plugin_options['settings_admin_message'] );
 	}
 
 	/**
@@ -636,7 +637,7 @@ class WCIMPH_Admin {
 
 	public function wcpimh_stock_callback() {
 		?>
-		<select name="<?php echo $this->options_name; ?>[stock]" id="wcpimh_stock">
+		<select name="<?php echo esc_html( $this->options_name ); ?>[stock]" id="wcpimh_stock">
 			<?php $selected = ( isset( $this->settings['stock'] ) && $this->settings['stock'] === 'yes' ) ? 'selected' : ''; ?>
 			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
 			<?php $selected = ( isset( $this->settings['stock'] ) && $this->settings['stock'] === 'no' ) ? 'selected' : ''; ?>
@@ -647,7 +648,7 @@ class WCIMPH_Admin {
 
 	public function wcpimh_prodst_callback() {
 		?>
-		<select name="<?php echo $this->options_name; ?>[prodst]" id="wcpimh_prodst">
+		<select name="<?php echo esc_html( $this->options_name ); ?>[prodst]" id="wcpimh_prodst">
 			<?php $selected = ( isset( $this->settings['prodst'] ) && 'draft' === $this->settings['prodst'] ) ? 'selected' : ''; ?>
 			<option value="draft" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Draft', 'connect-woocommerce' ); ?></option>
 			<?php $selected = ( isset( $this->settings['prodst'] ) && 'publish' === $this->settings['prodst'] ) ? 'selected' : ''; ?>
@@ -662,7 +663,7 @@ class WCIMPH_Admin {
 
 	public function wcpimh_virtual_callback() {
 		?>
-		<select name="<?php echo $this->options_name; ?>[virtual]" id="wcpimh_virtual">
+		<select name="<?php echo esc_html( $this->options_name ); ?>[virtual]" id="wcpimh_virtual">
 			<?php $selected = ( isset( $this->settings['virtual'] ) && $this->settings['virtual'] === 'no' ) ? 'selected' : ''; ?>
 			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 			<?php $selected = ( isset( $this->settings['virtual'] ) && $this->settings['virtual'] === 'yes' ) ? 'selected' : ''; ?>
@@ -673,7 +674,7 @@ class WCIMPH_Admin {
 
 	public function wcpimh_backorders_callback() {
 		?>
-		<select name="<?php echo $this->options_name; ?>[backorders]" id="wcpimh_backorders">
+		<select name="<?php echo esc_html( $this->options_name ); ?>[backorders]" id="wcpimh_backorders">
 			<?php $selected = ( isset( $this->settings['backorders'] ) && $this->settings['backorders'] === 'no' ) ? 'selected' : ''; ?>
 			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 			<?php $selected = ( isset( $this->settings['backorders'] ) && $this->settings['backorders'] === 'yes' ) ? 'selected' : ''; ?>
@@ -705,7 +706,7 @@ class WCIMPH_Admin {
 
 	public function tax_option_callback() {
 		?>
-		<select name="<?php echo $this->options_name; ?>[tax_price_option]" id="wcsen_tax">
+		<select name="<?php echo esc_html( $this->options_name ); ?>[tax_price_option]" id="wcsen_tax">
 			<?php $selected = ( isset( $this->sync_settings['tax_price_option'] ) && $this->sync_settings['tax_price_option'] === 'yes' ) ? 'selected' : ''; ?>
 			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes, tax included', 'connect-woocommerce' ); ?></option>
 			<?php $selected = ( isset( $this->sync_settings['tax_price_option'] ) && $this->sync_settings['tax_price_option'] === 'notify' ) ? 'selected' : ''; ?>
@@ -722,7 +723,7 @@ class WCIMPH_Admin {
 			return false;
 		}
 		?>
-		<select name="<?php echo $this->options_name; ?>[rates]" id="wcpimh_rates">
+		<select name="<?php echo esc_html( $this->options_name ); ?>[rates]" id="wcpimh_rates">
 			<?php
 			foreach ( $rates_options as $value => $label ) {
 				$selected = ( isset( $this->settings['rates'] ) && $this->settings['rates'] === $value ) ? 'selected' : '';
@@ -735,7 +736,7 @@ class WCIMPH_Admin {
 
 	public function wcpimh_catnp_callback() {
 		?>
-		<select name="<?php echo $this->options_name; ?>[catnp]" id="wcpimh_catnp">
+		<select name="<?php echo esc_html( $this->options_name ); ?>[catnp]" id="wcpimh_catnp">
 			<?php $selected = ( isset( $this->settings['catnp'] ) && $this->settings['catnp'] === 'yes' ) ? 'selected' : ''; ?>
 			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
 			<?php $selected = ( isset( $this->settings['catnp'] ) && $this->settings['catnp'] === 'no' ) ? 'selected' : ''; ?>
@@ -747,7 +748,7 @@ class WCIMPH_Admin {
 	public function wcpimh_doctype_callback() {
 		$set_doctype = isset( $this->settings['doctype'] ) ? $this->settings['doctype'] : '';
 		?>
-		<select name="<?php echo $this->options_name; ?>[doctype]" id="wcpimh_doctype">
+		<select name="<?php echo esc_html( $this->options_name ); ?>[doctype]" id="wcpimh_doctype">
 			<?php $selected = ( $set_doctype === 'nosync' || $set_doctype === '' ) ? 'selected' : ''; ?>
 			<option value="nosync" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Not sync', 'connect-woocommerce' ); ?></option>
 
@@ -769,7 +770,7 @@ class WCIMPH_Admin {
 	public function wcpimh_freeorder_callback() {
 		$set_freeorder = isset( $this->settings['freeorder'] ) ? $this->settings['freeorder'] : '';
 		?>
-		<select name="<?php echo $this->options_name; ?>[freeorder]" id="wcpimh_freeorder">
+		<select name="<?php echo esc_html( $this->options_name ); ?>[freeorder]" id="wcpimh_freeorder">
 			<?php $selected = ( $set_freeorder === 'no' || $set_freeorder === '' ) ? 'selected' : ''; ?>
 			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 
@@ -783,7 +784,7 @@ class WCIMPH_Admin {
 	public function wcpimh_ecstatus_callback() {
 		$set_ecstatus = isset( $this->settings['ecstatus'] ) ? $this->settings['ecstatus'] : '';
 		?>
-		<select name="<?php echo $this->options_name; ?>[ecstatus]" id="wcpimh_ecstatus">
+		<select name="<?php echo esc_html( $this->options_name ); ?>[ecstatus]" id="wcpimh_ecstatus">
 			<?php $selected = ( $set_ecstatus === 'nosync' || $set_ecstatus === '' ) ? 'selected' : ''; ?>
 			<option value="all" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'All status orders', 'connect-woocommerce' ); ?></option>
 
@@ -813,7 +814,7 @@ class WCIMPH_Admin {
 	public function wcpimh_sync_callback() {
 		global $connwoo_cron_options;
 		?>
-		<select name="<?php echo $this->options_name; ?>[sync]" id="wcpimh_sync">
+		<select name="<?php echo esc_html( $this->options_name ); ?>[sync]" id="wcpimh_sync">
 			<?php $selected = ( isset( $this->settings['sync'] ) && 'no' === $this->settings['sync'] ) ? 'selected' : ''; ?>
 			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 
@@ -844,7 +845,7 @@ class WCIMPH_Admin {
 
 	public function wcpimh_sync_email_callback() {
 		?>
-		<select name="<?php echo $this->options_name; ?>[sync_email]" id="wcpimh_sync_email">
+		<select name="<?php echo esc_html( $this->options_name ); ?>[sync_email]" id="wcpimh_sync_email">
 			<?php $selected = ( isset( $this->settings['sync_email'] ) && $this->settings['sync_email'] === 'yes' ) ? 'selected' : ''; ?>
 			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
 			<?php $selected = ( isset( $this->settings['sync_email'] ) && $this->settings['sync_email'] === 'no' ) ? 'selected' : ''; ?>
@@ -907,7 +908,7 @@ class WCIMPH_Admin {
 	 */
 	public function vat_show_callback() {
 		?>
-		<select name="<?php echo $this->options_name; ?>_public[vat_show]" id="vat_show">
+		<select name="<?php echo esc_html( $this->options_name ); ?>_public[vat_show]" id="vat_show">
 			<?php 
 			$selected = ( isset( $this->settings_public['vat_show'] ) && $this->settings_public['vat_show'] === 'no' ? 'selected' : '' );
 			?>
@@ -927,7 +928,7 @@ class WCIMPH_Admin {
 	 */
 	public function vat_mandatory_callback() {
 		?>
-		<select name="<?php echo $this->options_name; ?>_public[vat_mandatory]" id="vat_mandatory">
+		<select name="<?php echo esc_html( $this->options_name ); ?>_public[vat_mandatory]" id="vat_mandatory">
 			<?php 
 			$selected = ( isset( $this->settings_public['vat_mandatory'] ) && $this->settings_public['vat_mandatory'] === 'no' ? 'selected' : '' );
 			?>
@@ -947,7 +948,7 @@ class WCIMPH_Admin {
 	 */
 	public function company_field_callback() {
 		?>
-		<select name="<?php echo $this->options_name; ?>_public[company_field]" id="company_field">
+		<select name="<?php echo esc_html( $this->options_name ); ?>_public[company_field]" id="company_field">
 			<?php 
 			$selected = ( isset( $this->settings_public['company_field'] ) && $this->settings_public['company_field'] === 'no' ? 'selected' : '' );
 			?>
@@ -967,7 +968,7 @@ class WCIMPH_Admin {
 	 */
 	public function wcpimh_terms_registration_callback() {
 		?>
-		<select name="<?php echo $this->options_name; ?>_public[terms_registration]" id="terms_registration">
+		<select name="<?php echo esc_html( $this->options_name ); ?>_public[terms_registration]" id="terms_registration">
 			<?php 
 			$selected = ( isset( $this->settings_public['terms_registration'] ) && $this->settings_public['terms_registration'] === 'no' ? 'selected' : '' );
 			?>
@@ -987,7 +988,7 @@ class WCIMPH_Admin {
 	 */
 	public function wcpimh_remove_free_others_callback() {
 		?>
-		<select name="<?php echo $this->options_name; ?>_public[remove_free]" id="remove_free">
+		<select name="<?php echo esc_html( $this->options_name ); ?>_public[remove_free]" id="remove_free">
 			<?php 
 			$selected = ( isset( $this->settings_public['remove_free'] ) && $this->settings_public['remove_free'] === 'no' ? 'selected' : '' );
 			?>
@@ -1007,20 +1008,18 @@ class WCIMPH_Admin {
 	 * Sanitize fiels before saves in DB
 	 *
 	 * @param array $input Input fields.
-	 * @return array
+	 * @return void
 	 */
 	public function sanitize_fields_license( $input ) {
-		$sanitary_values = array();
-		/*
-		if ( isset( $input['remove_free'] ) ) {
-			$sanitary_values['remove_free'] = $input['remove_free'];
+		if ( isset( $_POST[ $this->options_name . '_license_apikey' ] ) ) {
+			update_option( $this->options_name . '_license_apikey', sanitize_text_field( $input[ $this->options_name . '_license_apikey' ] ) );
 		}
-		if ( isset( $_POST['submit_license'] ) ) {
-			$this->validate_license( $input );
-		}
-		*/
 
-		return $sanitary_values;
+		if ( isset( $_POST[ $this->options_name . '_license_product_id' ] ) ) {
+			update_option( $this->options_name . '_license_product_id', sanitize_text_field( $input[ $this->options_name . '_license_product_id' ] ) );
+		}
+
+		$this->validate_license( $_POST );
 	}
 
 	/**
@@ -1030,7 +1029,7 @@ class WCIMPH_Admin {
 	 */
 	public function license_apikey_callback() {
 		$value = get_option( $this->options_name . '_license_apikey' );
-		echo '<input type="text" class="regular-text" name="' .  $this->options_name . '_license_apikey" id="connwoo_license_apikey" value="' . esc_html( $value ) . '">';
+		echo '<input type="text" class="regular-text" name="' . esc_html( $this->options_name ) . '_license_apikey" id="connwoo_license_apikey" value="' . esc_html( $value ) . '">';
 	}
 
 	/**
@@ -1040,7 +1039,7 @@ class WCIMPH_Admin {
 	 */
 	public function license_product_id_callback() {
 		$value = get_option( $this->options_name . '_license_product_id' );
-		echo '<input type="text" class="regular-text" name="' .  $this->options_name . '_license_product_id" size="25" id="connwoo_license_product_id" value="' . esc_html( $value ) . '">';
+		echo '<input type="text" class="regular-text" name="' . esc_html( $this->options_name ) . '_license_product_id" size="25" id="connwoo_license_product_id" value="' . esc_html( $value ) . '">';
 	}
 
 	/**
@@ -1066,7 +1065,7 @@ class WCIMPH_Admin {
 	 * @return void
 	 */
 	public function license_deactivate_callback() {
-		echo '<input type="checkbox" id="' .  $this->options_name . '_license_deactivate_checkbox" name="connwoo_license_deactivate_checkbox" value="on"';
+		echo '<input type="checkbox" id="connwoo_license_deactivate_checkbox" name="' . esc_html( $this->options_name ) . '_license_deactivate_checkbox" value="on"';
 		echo checked( get_option( $this->options_name . '_license_deactivate_checkbox' ), 'on' );
 		echo '/>';
 		echo '<span class="description">';
@@ -1081,7 +1080,7 @@ class WCIMPH_Admin {
 	 */
 	public function validate_license( $input ) {
 		// Load existing options, validate, and update with changes from input before returning.
-		$api_key           = trim( $input[$this->options_name . '_license_apikey'] );
+		$api_key           = trim( $input[ $this->options_name . '_license_apikey' ] );
 		$activation_status = get_option( $this->options_name . '_license_activated' );
 		$checkbox_status   = get_option( $this->options_name . '_license_deactivate_checkbox' );
 		$current_api_key   = ! empty( get_option( $this->options_name . '_license_apikey' ) ) ? get_option( $this->options_name . '_license_apikey' ) : '';
@@ -1144,7 +1143,7 @@ class WCIMPH_Admin {
 				$activate_results = json_decode( $activation_result, true );
 
 				if ( true === $activate_results['success'] && true === $activate_results['activated'] ) {
-					add_settings_error( 'activate_text', 'activate_msg', __( 'AutoTranslate activated. ', 'connect-woocommerce' ) . esc_attr( "{$activate_results['message']}." ), 'updated' );
+					add_settings_error( 'activate_text', 'activate_msg', __( 'Connect WooCommerce activated. ', 'connect-woocommerce' ) . esc_attr( "{$activate_results['message']}." ), 'updated' );
 
 					update_option( $this->options_name . '_license_apikey', $api_key );
 					update_option( $this->options_name . '_license_activated', 'Activated' );
@@ -1304,8 +1303,7 @@ class WCIMPH_Admin {
 			'wc_am_action' => $action,
 			'api_key'      => $api_key,
 			'product_id'   => $product_id,
-			'instance'     => get_option( 
-				$this->options_name . '_license_instance' ),
+			'instance'     => get_option( $this->options_name . '_license_instance' ),
 			'object'       => str_ireplace( array( 'http://', 'https://' ), '', home_url() ),
 		);
 
@@ -1333,10 +1331,10 @@ class WCIMPH_Admin {
 	 * Generate the default data.
 	 */
 	public function license_instance_activation() {
-		$instance_exists = get_option( $this->options_name . '_license_instance' );
+		$instance_exists = get_option( CONWOOLIB_SLUG . '_license_instance' );
 
 		if ( ! $instance_exists ) {
-			update_option( $this->options_name . '_license_instance', wp_generate_password( 20, false ) );
+			update_option( CONWOOLIB_SLUG . '_license_instance', wp_generate_password( 20, false ) );
 		}
 	}
 
@@ -1398,8 +1396,7 @@ class WCIMPH_Admin {
 			'version'      => WCPIMH_VERSION,
 			'product_id'   => get_option( $this->options_name . '_license_product_id' ),
 			'api_key'      => get_option( $this->options_name . '_license_apikey' ),
-			'instance'     => get_option( 
-					$this->options_name . '_license_instance' ),
+			'instance'     => get_option( $this->options_name . '_license_instance' ),
 		);
 
 		// Check for a plugin update.
@@ -1443,7 +1440,7 @@ class WCIMPH_Admin {
 	 *
 	 * @param false|object|array $result The result object or array. Default false.
 	 * @param string             $action The type of information being requested from the Plugin Install API.
-	 * @param object             $args
+	 * @param object             $args   Arguments of object.
 	 *
 	 * @return object
 	 */
@@ -1464,8 +1461,7 @@ class WCIMPH_Admin {
 			'version'      => WCPIMH_VERSION,
 			'product_id'   => get_option( $this->options_name . '_license_product_id' ),
 			'api_key'      => get_option( $this->options_name . '_license_apikey' ),
-			'instance'     => get_option( 
-					$this->options_name . '_license_instance' ),
+			'instance'     => get_option( $this->options_name . '_license_instance' ),
 			'object'       => str_ireplace( array( 'http://', 'https://' ), '', home_url() ),
 		);
 
@@ -1494,8 +1490,8 @@ class WCIMPH_Admin {
 					<p>
 						<?php
 						printf(
-							esc_html__( '<b>Warning!</b> You\'re blocking external requests which means you won\'t be able to get %s updates. Please add %s to %s.', 'connect-woocommerce' ),
-							'AutoTranslate',
+							esc_html__( '<b>Warning!</b> You\'re blocking external requests which means you won\'t be able to get %1$s updates. Please add %2$s to %3$s.', 'connect-woocommerce' ),
+							'Connect WooCommerce',
 							'<strong>' . esc_html( $host ) . '</strong>',
 							'<code>WP_ACCESSIBLE_HOSTS</code>'
 						);
