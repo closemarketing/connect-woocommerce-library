@@ -224,30 +224,16 @@ class Connect_WooCommerce_Orders {
 	 * ---------------------------------------------------------------------------------------------------- */
 
 	/**
-	 * Enqueues Styles for admin
-	 *
-	 * @return void
-	 */
-	public function admin_styles() {
-		wp_enqueue_style(
-			'connect-woocommerce',
-			CONWOOLIB_PLUGIN_URL . 'lib/assets/admin.css',
-			array(),
-			CONWOOLIB_VERSION
-		);
-	}
-
-	/**
 	 * Import products from API
 	 *
 	 * @return void
 	 */
 	public function import_method_orders() {
 		global $connwoo_plugin_options;
-		$not_sapi_cli        = substr( php_sapi_name(), 0, 3 ) !== 'cli' ? true : false;
-		$doing_ajax          = defined( 'DOING_AJAX' ) && DOING_AJAX;
-		$sync_loop           = isset( $_POST['syncLoop'] ) ? (int) sanitize_text_field( $_POST['syncLoop'] ) : 0;
-		$meta_key_order      = '_' . $connwoo_plugin_options['slug'] . '_invoice_id';
+		$not_sapi_cli   = substr( php_sapi_name(), 0, 3 ) !== 'cli' ? true : false;
+		$doing_ajax     = defined( 'DOING_AJAX' ) && DOING_AJAX;
+		$sync_loop      = isset( $_POST['syncLoop'] ) ? (int) sanitize_text_field( $_POST['syncLoop'] ) : 0;
+		$meta_key_order = '_' . $connwoo_plugin_options['slug'] . '_invoice_id';
 
 		// Start.
 		if ( ! isset( $this->orders ) ) {
