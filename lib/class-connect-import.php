@@ -72,9 +72,7 @@ class WCPIMH_Import {
 	public function admin_styles() {
 		wp_enqueue_style(
 			'connect-woocommerce',
-			CONWOOLIB_PLUGIN_URL . 'lib/assets/admin.css',
-			array(),
-			CONWOOLIB_VERSION
+			plugin_dir_url( __FILE__ ) . 'assets/admin.css',
 		);
 	}
 	/**
