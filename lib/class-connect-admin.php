@@ -224,13 +224,31 @@ class WCIMPH_Admin {
 			);
 		}
 
-		add_settings_field(
-			'wcpimh_api',
-			__( 'API Key', 'connect-woocommerce' ),
-			array( $this, 'api_callback' ),
-			'connect-woocommerce-admin',
-			'connect_woocommerce_setting_section'
-		);
+		if ( 'A3' === $connwoo_plugin_options['name'] ) {
+			add_settings_field(
+				'wcpimh_username',
+				__( 'Username', 'connect-woocommerce' ),
+				array( $this, 'username_callback' ),
+				'connect-woocommerce-admin',
+				'connect_woocommerce_setting_section'
+			);
+			add_settings_field(
+				'wcpimh_password',
+				__( 'Password', 'connect-woocommerce' ),
+				array( $this, 'password_callback' ),
+				'connect-woocommerce-admin',
+				'connect_woocommerce_setting_section'
+			);
+
+		} else {
+			add_settings_field(
+				'wcpimh_api',
+				__( 'API Key', 'connect-woocommerce' ),
+				array( $this, 'api_callback' ),
+				'connect-woocommerce-admin',
+				'connect_woocommerce_setting_section'
+			);
+		}
 
 		if ( $connwoo_plugin_options['product_option_stock'] ) {
 			add_settings_field(
@@ -516,6 +534,8 @@ class WCIMPH_Admin {
 		$admin_settings = array(
 			'api'        => '',
 			'idcentre'   => '',
+			'username'   => '',
+			'password'   => '',
 			'stock'      => 'no',
 			'prodst'     => 'draft',
 			'virtual'    => 'no',
@@ -628,6 +648,35 @@ class WCIMPH_Admin {
 		);
 	}
 
+	/**
+	 * Username input
+	 *
+	 * @return void
+	 */
+	public function username_callback() {
+		printf(
+			'<input class="regular-text" type="text" name="' . $this->options_name . '[username]" id="wcpimh_username" value="%s">',
+			isset( $this->settings['username'] ) ? esc_attr( $this->settings['username'] ) : ''
+		);
+	}
+
+	/**
+	 * Password input
+	 *
+	 * @return void
+	 */
+	public function password_callback() {
+		printf(
+			'<input class="regular-text" type="password" name="' . $this->options_name . '[password]" id="wcpimh_password" value="%s">',
+			isset( $this->settings['password'] ) ? esc_attr( $this->settings['password'] ) : ''
+		);
+	}
+
+	/**
+	 * API input
+	 *
+	 * @return void
+	 */
 	public function api_callback() {
 		printf(
 			'<input class="regular-text" type="password" name="' . $this->options_name . '[api]" id="wcpimh_api" value="%s">',
