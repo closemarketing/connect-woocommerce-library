@@ -1,0 +1,71 @@
+.wp-admin .wcpimh-plugin span.wcpimh-pro{ 
+	color: #b4b9be;
+}
+.wp-admin.wcpimh-plugin #wcpimh_catnp,
+.wp-admin.wcpimh-plugin #wcpimh_stock,
+.wp-admin.wcpimh-plugin #wcpimh_catsep {
+	width: 70px;
+}
+.wp-admin.wcpimh-plugin #wcpimh_idcentre,
+.wp-admin.wcpimh-plugin #wcpimh_sync_num {
+	width: 50px;
+}
+.wp-admin.wcpimh-plugin #wcpimh_prodst {
+	width: 150px;
+}
+.wp-admin.wcpimh-plugin #wcpimh_api,
+.wp-admin.wcpimh-plugin #wcpimh_taxinc {
+	width: 270px;
+}
+.wcpimh-plugin #logwrapper {
+	border: 1px solid #aaa;
+	margin: 10px auto;
+}
+.wcpimh-plugin fieldset {
+	padding: 20px;
+	width: auto;
+}
+.wcpimh-plugin #loglist {
+	border: 1px solid #AAAAAA;
+	height: 380px;
+	overflow: auto;
+}
+.wcpimh-plugin #loglist > p {
+	margin: 0;
+	padding: 3px 5px;
+}
+.wcpimh-plugin #loglist > p.odd {
+	background: #dfdfdf;
+}
+.wcpimh-plugin #loglist > p.finish {
+	background: #76d771;
+}
+.wcpimh-plugin .error {
+	color: red;
+}
+
+.wcpimh-plugin .warning {
+	color: orange;
+}
+
+.connwoo-header {
+	background: #D33564 url( 'background.svg' );
+	margin-left: -20px;
+	padding: 20px 15%;
+	display: flex;
+	justify-content: space-between;
+	color: white;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+.connwoo-header .logo {
+	min-width: 20%;
+}
+
+.connwoo-header h2 {
+	float: right;
+	color: white;
+	padding: 10px 0 0 30px;
+	margin: 0;
+}
