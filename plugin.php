@@ -16,30 +16,27 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WCPIMH_VERSION', '2.1.0-beta.1' );
-define( 'WCPIMH_EXPIRE_TOKEN', 259200 );
-define( 'WCPIMH_FILE', __FILE__ );
-
+define( 'CONHOLD_VERSION', '2.1.0-beta.1' );
 define( 'CONHOLD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'CONHOLD_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 
 // Loads translation.
-add_action( 'init', 'wcsen_load_textdomain' );
+add_action( 'init', 'conhold_load_textdomain' );
 /**
  * Load plugin textdomain.
  */
-function wcsen_load_textdomain() {
+function conhold_load_textdomain() {
 	load_plugin_textdomain( 'connect-woocommerce-holded', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 }
 
 /**
  * Default values
  */
-define( 'CONWOOLIB_SLUG', 'connwoo_holded' );
 
 $connwoo_plugin_options = array(
 	'name'                       => 'Holded',
 	'slug'                       => 'connwoo_holded',
+	'version'                    => CONHOLD_VERSION,
 	'plugin_name'                => 'Connect WooCommerce Holded',
 	'plugin_slug'                => 'connect-woocommerce-holded',
 	'api_url'                    => 'https://close.technology/',

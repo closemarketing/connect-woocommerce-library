@@ -39,7 +39,9 @@ class WCIMPH_Admin {
 		add_action( 'admin_init', array( $this, 'page_init' ) );
 
 		// Creates license activation.
-		register_activation_hook( WCPIMH_FILE, array( $this, 'license_instance_activation' ) );
+
+		$parent_file = realpath( __DIR__ . '/../../..' ) . '/plugin.php';
+		register_activation_hook( $parent_file, array( $this, 'license_instance_activation' ) );
 	}
 
 	/**
@@ -1345,6 +1347,7 @@ class WCIMPH_Admin {
 	 * @return array
 	 */
 	private function get_license_defaults( $action, $software_version = false ) {
+		global $connwoo_plugin_options;
 		$api_key    = get_option( $this->options_name . '_license_apikey' );
 		$product_id = get_option( $this->options_name . '_license_product_id' );
 
@@ -1357,7 +1360,7 @@ class WCIMPH_Admin {
 		);
 
 		if ( $software_version ) {
-			$defaults['software_version'] = WCPIMH_VERSION;
+			$defaults['software_version'] = $connwoo_plugin_options['version'];
 		}
 
 		return $defaults;
@@ -1380,17 +1383,17 @@ class WCIMPH_Admin {
 	 * Generate the default data.
 	 */
 	public function license_instance_activation() {
-		$instance_exists = get_option( CONWOOLIB_SLUG . '_license_instance' );
+		$instance_exists = get_option( connwoo_get_plugin_slug() . '_license_instance' );
 
 		if ( ! $instance_exists ) {
-			update_option( CONWOOLIB_SLUG . '_license_instance', wp_generate_password( 20, false ) );
+			update_option( connwoo_get_plugin_slug() . '_license_instance', wp_generate_password( 20, false ) );
 		}
 	}
 
 	/**
 	 * Deactivate the current API Key before activating the new API Key
 	 *
-	 * @param string $current_api_key
+	 * @param string $current_api_key Currents api key.
 	 */
 	public function replace_license_key( $current_api_key ) {
 		$args = array(
@@ -1442,7 +1445,7 @@ class WCIMPH_Admin {
 			'wc_am_action' => 'update',
 			'slug'         => $connwoo_plugin_options['plugin_slug'],
 			'plugin_name'  => $connwoo_plugin_options['plugin_name'],
-			'version'      => WCPIMH_VERSION,
+			'version'      => $connwoo_plugin_options['version'],
 			'product_id'   => get_option( $this->options_name . '_license_product_id' ),
 			'api_key'      => get_option( $this->options_name . '_license_apikey' ),
 			'instance'     => get_option( $this->options_name . '_license_instance' ),
@@ -1457,7 +1460,7 @@ class WCIMPH_Admin {
 
 		if ( false !== $response && true === $response['success'] ) {
 			$new_version  = (string) $response['data']['package']['new_version'];
-			$curr_version = (string) WCPIMH_VERSION;
+			$curr_version = (string) $connwoo_plugin_options['version'];
 
 			$package = array(
 				'id'             => $response['data']['package']['id'],
@@ -1507,7 +1510,7 @@ class WCIMPH_Admin {
 		$args = array(
 			'wc_am_action' => 'plugininformation',
 			'plugin_name'  => $connwoo_plugin_options['plugin_slug'],
-			'version'      => WCPIMH_VERSION,
+			'version'      => $connwoo_plugin_options['version'],
 			'product_id'   => get_option( $this->options_name . '_license_product_id' ),
 			'api_key'      => get_option( $this->options_name . '_license_apikey' ),
 			'instance'     => get_option( $this->options_name . '_license_instance' ),
@@ -1551,7 +1554,6 @@ class WCIMPH_Admin {
 			}
 		}
 	}
-
 }
 
 if ( is_admin() ) {

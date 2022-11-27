@@ -4,8 +4,8 @@
  *
  * @package    WordPress
  * @author     David Perez <david@closemarketing.es>
- * @copyright  2020 Closemarketing
- * @version    1.0
+ * @copyright  2022 Closemarketing
+ * @version    2.1
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -17,17 +17,13 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since 1.0
  */
-class CONNAPI_CLIENTIFY_ERP {
+class CONNAPI_HOLDED_ERP {
 
 	private $settings;
 	
 	public function __construct() {
 		global $connwoo_plugin_options;
 		$this->settings = get_option( $connwoo_plugin_options['slug'] );
-
-		add_filter( 'woocommerce_checkout_fields' , array( $this, 'clientify_cookie_checkout_field' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-		add_action( 'woocommerce_after_checkout_form', array( $this, 'script_cookie_clientify' ) );
 	}
 
 	/**
@@ -338,41 +334,6 @@ class CONNAPI_CLIENTIFY_ERP {
 			);
 		}
 	}
-
-	/**
-	 * Adds field checkout
-	 *
-	 * @param array $fields
-	 * @return array
-	 */
-	public function clientify_cookie_checkout_field( $fields ) {
-		$fields['billing']['clientify_vk'] = array(
-			'type'  => 'hidden',
-			'class' => array( 'clientify_cookie' ),
-		);
-	 
-		return $fields;
-	 
-	}
-
-	/**
-	 * Enqueue Scripts
-	 *
-	 * @return void
-	 */
-	public function enqueue_scripts() {
-		wp_register_script(
-			'connectwoo-clientify-field',
-			CONCLI_PLUGIN_URL . 'includes/assets/clientify-field.js',
-			array(),
-			WCPIMH_VERSION,
-			true
-		);
-	}
-	public function script_cookie_clientify() {
-		wp_enqueue_script( 'connectwoo-clientify-field' );
-	}
-
 }
 
-$connapi_erp = new CONNAPI_CLIENTIFY_ERP();
+$connapi_erp = new CONNAPI_HOLDED_ERP();
