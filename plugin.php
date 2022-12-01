@@ -1,11 +1,11 @@
 <?php
 /**
- * Plugin Name: Connect WooCommerce Holded
+ * Plugin Name: Connect WooCommerce Holded PRO
  * Plugin URI: https://close.technology/wordpress-plugins/connect-woocommerce-holded/
  * Description: Imports Products and data from Holded to WooCommerce.
  * Author: Closetechnology
  * Author URI: https://close.technology/
- * Version: 2.1.0-beta.1
+ * Version: 2.1.0-beta.2
  *
  * @package WordPress
  * Text Domain: connect-woocommerce-holded
@@ -16,9 +16,23 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'CONHOLD_VERSION', '2.1.0-beta.1' );
+define( 'CONHOLD_VERSION', '2.1.0-beta.2' );
 define( 'CONHOLD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'CONHOLD_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
+
+
+register_activation_hook( __FILE__, 'conhold_check_plugin_free' );
+/**
+ * Deactives the free plugin
+ *
+ * @return void
+ */
+function conhold_check_plugin_free() {
+	if ( ! is_plugin_active( 'import-holded-products-woocommerce/import-holded-products-woocommerce.php' ) ) {
+		deactivate_plugins( 'import-holded-products-woocommerce/import-holded-products-woocommerce.php' );
+	}
+}
+
 
 // Loads translation.
 add_action( 'init', 'conhold_load_textdomain' );
@@ -27,6 +41,7 @@ add_action( 'init', 'conhold_load_textdomain' );
  */
 function conhold_load_textdomain() {
 	load_plugin_textdomain( 'connect-woocommerce-holded', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+	load_plugin_textdomain( 'connect-woocommerce', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 }
 
 /**
@@ -50,8 +65,8 @@ $connwoo_plugin_options = array(
 	'settings_logo'              => CONHOLD_PLUGIN_URL . 'includes/assets/logo.svg',
 	'settings_admin_message'     => sprintf(
 		// translators: %s url of contact.
-		__( 'Put the connection ID Centre and API key settings in order to connect and sync products. You have to contract before to <a href="%s" target="_blank">Holded</a>. ', 'connect-woocommerce-products-woocommerce' ),
-		'https://www.bartolomeconsultores.com/contactar/?utm_source=WordPressPlugin'
+		__( 'Put the connection API key settings in order to connect and sync products. You can go here <a href = "%s" target = "_blank">App Holded API</a>.', 'connect-woocommerce-holded' ),
+		'https://app.holded.com/api'
 	),
 );
 

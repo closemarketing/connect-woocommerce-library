@@ -10,6 +10,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+define( 'MAX_LIMIT_HOLDED_API', 500 );
+
 /**
  * LoadsAPI.
  *
@@ -20,7 +22,7 @@ defined( 'ABSPATH' ) || exit;
 class CONNAPI_HOLDED_ERP {
 
 	private $settings;
-	
+
 	public function __construct() {
 		global $connwoo_plugin_options;
 		$this->settings = get_option( $connwoo_plugin_options['slug'] );
@@ -39,300 +41,229 @@ class CONNAPI_HOLDED_ERP {
 	}
 
 	/**
-	 * Compatibility for Library
-	 *
-	 * @return void
-	 */
-	public function get_image_product() {
-		return '';
-	}
-
-	/**
-	 * Converts product from API to SYNC
-	 *
-	 * @param array $products_original API Clientify Product.
-	 * @return array Products converted to manage internally.
-	 */
-	private function convert_products( $products_original ) {
-		$products_converted = array();
-		$i                  = 0;
-
-		foreach ( $products_original as $product ) {
-
-			$products_converted[ $i ] = array(
-				'id'     => isset( $product['id'] ) ? $product['id'] : 0,
-				'name'   => isset( $product['name'] ) ? $product['name'] : '',
-				'desc'   => isset( $product['description'] ) ? $product['description'] : '',
-				'sku'    => isset( $product['sku'] ) ? $product['sku'] : '',
-				'price'  => isset( $product['price'] ) ? $product['price'] : 0,
-				'kind'   => 'simple'
-			);
-			$i++;
-			
-		}
-		/*
-		object product
-		id 				string
-		kind 				string	simple
-		name				string
-		desc				string
-		typeId			string
-		contactId		string
-		contactName		string
-		price				integer
-		tax				integer
-		total				number
-		rates				array of objects
-		object			ADD FIELD
-		hasStock			integer
-		stock				integer
-		barcode			string
-		sku				string
-		cost				integer
-		purchasePrice	number
-		weight			number
-		tags				array of strings
-		categoryId		string
-		factoryCode		string
-		attributes		array of objects
-			object			ADD FIELD
-		forSale			integer
-		forPurchase		integer
-		salesChannelId	string
-		expAccountId	string
-		warehouseId		string
-		variants			array of objects object
-			id					string
-			barcode			string
-			sku				string
-			price				integer
-			cost				integer
-			purchasePrice	number
-			stock				integer
-		*/
-		return $products_converted;
-	}
-
-	/**
 	 * Gets information from Holded CRM
 	 *
-	 * @param string $url URL for module.
 	 * @return array
 	 */
-	private function api( $endpoint, $apikey, $method = 'GET', $query = array(), $type = 'simple' ) {
-		$apikey = isset( $this->settings['api'] ) ? $this->settings['api'] : '';
-		if ( ! $apikey ) {
-			return array(
-				'status' => 'error',
-				'data'   => 'No API Key',
-			);
+	public function get_rates() {
+		if ( ! isset( $this->settings['api'] ) ) {
+			return false;
 		}
-		$args     = array(
-			'method'  => $method,
+
+		$apikey = $this->settings['api'];
+		$args   = array(
 			'headers' => array(
-				'Content-Type'  => 'application/json',
-				'Authorization' => 'Token ' . $apikey,
+				'key' => $apikey,
 			),
-			'timeout' => 120,
+			'timeout' => 10,
 		);
-		if ( ! empty( $query ) ) {
-			$json = wp_json_encode( $query );
-			$json = str_replace( '&amp;', '&', $json );
-			$args['body'] = $json;
+
+		// API.
+		$response      = wp_remote_get( 'https://api.holded.com/api/invoicing/v1/rates/', $args );
+		$body          = wp_remote_retrieve_body( $response );
+		$body_response = json_decode( $body, true );
+
+		if ( isset( $body_response['errors'] ) ) {
+			error_admin_message( 'ERROR', $body_response['errors'][0]['message'] . ' <br/> Api Call Rates: /' );
+			return false;
 		}
-		// Loop.
-		$next          = true;
-		$results_value = array();
-		$url           = 'https://api.clientify.net/v1/' . $endpoint;
 
-		while ( $next ) {
-			$result_api = wp_remote_request( $url, $args );
-			$results    = json_decode( wp_remote_retrieve_body( $result_api ), true );
-			$code       = isset( $result_api['response']['code'] ) ? (int) round( $result_api['response']['code'] / 100, 0 ) : 0;
-
-			if ( 2 === $code && 'simple' === $type ) {
-				return array(
-					'status' => 'ok',
-					'data'   => $results,
-				);
-			} elseif ( 2 === $code && isset( $results['results'] ) ) {
-				$results_value = array_merge( $results_value, $results['results'] );
-			} else {
-				$message = implode( ' ', $result_api['response'] ) . ' ';
-				$body    = json_decode( $result_api['body'], true );
-
-				if ( is_array( $body ) ) {
-					foreach ( $body as $key => $value ) {
-						$message_value = is_array( $value ) ? implode( '.', $value ) : $value;
-						$message      .= $key . ': ' . $message_value;
-					}
+		$array_options = array(
+			'default' => __( 'Default price', 'import-holded-products-woocommerce' ),
+		);
+		if ( ! empty( $body_response ) ) {
+			foreach ( $body_response as $rate ) {
+				if ( isset( $rate['id'] ) && isset( $rate['name'] ) ) {
+					$array_options[ $rate['id'] ] = $rate['name'];
 				}
-				return array(
-					'status' => 'error',
-					'data'   => $message,
-				);
-			}
-
-			if ( isset( $results['next'] ) && $results['next'] ) {
-				$url = $results['next'];
-			} else {
-				$next = false;
 			}
 		}
-
-		return array(
-			'status' => 'ok',
-			'data'   => isset( $results['results'] ) ? $results['results'] : array(),
-		);
+		return $array_options;
 	}
 
 	/**
 	 * Gets information from Holded products
 	 *
 	 * @param string $id Id of product to get information.
-	 * @param string $page Pagination of API.
-	 * @param string $period Date to get YYYYMMDD.
 	 * @return array Array of products imported via API.
 	 */
-	public function get_products( $id = null, $period = null ) {
-		$api_key  = ! empty( $settings['api'] ) ? $settings['api'] : '';
-
-		$products = $this->api( 'products/', $api_key, 'GET', array(), 'all' );
-
-		return $this->convert_products( $products['data'] );
-	}
-
-	/**
-	 * Gets information from Holded products
-	 *
-	 * @param string $period Date YYYYMMDD for syncs.
-	 * @return array Array of products imported via API.
-	 */
-	public function get_products_stock( $period = null ) {
-		return false;
-	}
-
-	/**
-	 * Get properties for orders
-	 *
-	 * @return id
-	 */
-	public function get_properties_order() {
-		return false;
-	}
-
-	/**
-	 * Creates the order to Clientify
-	 *
-	 * @param object $order WooCommerce order object.
-	 * @param string $meta_key String to save in order.
-	 * @return void
-	 */
-	public function create_order( $order, $meta_key ) {
-		$api_key  = ! empty( $this->settings['api'] ) ? $this->settings['api'] : '';
-
-		$order_id          = $order->get_id();
-		$clientify_contact = array(
-			'first_name'     => $order->get_billing_first_name(),
-			'last_name'      => $order->get_billing_last_name(),
-			'email'          => $order->get_billing_email(),
-			'phone'          => $order->get_billing_phone(),
-			'status'         => 'client',
-			'addresses'      => array(
-					array(
-					'street'      => $order->get_billing_address_1() . '  ' . $order->get_billing_address_2(),
-					'city'        => $order->get_billing_city(),
-					'state'       => $order->get_billing_state(),
-					'country'     => $order->get_billing_country(),
-					'postal_code' => $order->get_billing_postcode(),
-					'type'        => 1 
-				),
+	public function get_products( $id = null, $page = null ) {
+		if ( ! isset( $this->settings['api'] ) ) {
+			return false;
+		}
+		$apikey       = $this->settings['api'];
+		$args         = array(
+			'headers' => array(
+				'key' => $apikey,
 			),
-			'visitor_key' => $order->get_meta( 'visitor_vk', true ),
+			'timeout' => 10,
 		);
-		if ( $order->get_billing_company() ) {
-			$clientify_contact['company'] = $order->get_billing_company();
-		} 
-		$result_clientify = $this->api( 'contacts/', $api_key, 'POST', $clientify_contact );
 
-		if ( 'error' !== $result_clientify['status'] && isset( $result_clientify['data']['url'] ) ) {
-			$prefix = strtoupper( substr( parse_url( get_bloginfo( 'url' ) )['host'], 0, 3 ) ) . '_';
-			$order_clientify = array(
-				'contact'    => $result_clientify['data']['url'],
-				'status'     => 'ordered',
-				'order_date' => date( 'c', strtotime( $order->get_date_created() ) ),
-				'order_id'   =>  $prefix . $order_id,
-				'ecommerce'  => 'WooCommerce',
-				'shop_name'  => get_bloginfo( 'name' ),
-				'order_url'  => get_edit_post_link( $order_id ),
-				'currency'   => get_woocommerce_currency(),
-			);
-		}
-		foreach ( $order->get_items() as $item_key => $item_values ) {
-			$item_data    = $item_values->get_data();
-			$item_id      = 0 !== (int) $item_data['variation_id'] ? $item_data['variation_id'] : $item_data['product_id'];
-			$product_item = wc_get_product( $item_id );
-			$categories   = wp_get_post_terms( $item_id, 'product_cat', array( 'fields' => 'names') );
+		$next   = true;
+		$page   = 1;
+		$output = array();
+		$index  = 0;
 
-			$order_clientify['items'][] = array(
-				'name'        => isset( $item_data['name'] ) ? $item_data['name'] : '',
-				'description' => get_post_field( 'post_content', $item_id ),
-				'category'    => $categories[0],
-				'sku'         => $product_item->get_sku(),
-				'image_url'   => get_the_post_thumbnail_url( $item_id, 'post-thumbnail' ),
-				'item_url'    => get_the_permalink( $item_id ),
-				'price'       => floatval( $item_data['subtotal'] ),
-				'quantity'    => floatval( $item_data['quantity'] ),
-				'discount'    => 0
-			);
+		while ( $next ) {
+			$url = '';
+			if ( $page > 1 ) {
+				$url = '?page=' . $page;
+			}
+
+			if ( $id ) {
+				$url = '/' . $id;
+			}
+
+			$response      = wp_remote_get( 'https://api.holded.com/api/invoicing/v1/products' . $url, $args );
+			$body          = wp_remote_retrieve_body( $response );
+			$body_response = json_decode( $body, true );
+
+			if ( isset( $body_response['errors'] ) ) {
+				error_admin_message( 'ERROR', $body_response['errors'][0]['message'] . ' <br/> Api Call: /' );
+				return false;
+			}
+
+			$output = array_merge( $output, $body_response );
+
+			if ( count( $output ) === MAX_LIMIT_HOLDED_API ) {
+				$page++;
+			} else {
+				$next = false;
+			}
 		}
 
-		// Shipping items.
-		$shipping_items = $order->get_items( 'shipping' );
-		foreach ( $shipping_items as $value ) {
+		return $output;
+	}
 
-			$shipping_name  = $value['name'];
-			$shipping_total = floatval( $value['cost'] );
-
-			$order_clientify['items'][] = array(
-				'name'        => $shipping_name,
-				'description' => '',
-				'sku'         => __( 'SHIPPING', 'connect-woocommerce-clientify' ),
-				'price'       => floatval( $shipping_total ),
-				'quantity'    => 1,
-				'discount'    => 0
+	/**
+	 * Create Order to Holded
+	 *
+	 * @param string $order_data Data order.
+	 * @return array Array of products imported via API.
+	 */
+	public function create_order( $order_data ) {
+		if ( ! isset( $this->settings['api'] ) ) {
+			error_admin_message(
+				'ERROR',
+				sprintf(
+					__( 'WooCommerce Holded: Plugin is enabled but no api key or secret provided. Please enter your api key and secret <a href="%s">here</a>.', 'import-holded-products-woocommerce' ),
+					'/wp-admin/admin.php?page=import_holded&tab=settings'
+				)
 			);
+			return false;
+		}
+		$apikey  = isset( $this->settings['api'] ) ? $this->settings['api'] : '';
+		$doctype = isset( $this->settings['doctype'] ) ? $this->settings['doctype'] : 'nosync';
+		if ( 'nosync' === $doctype ) {
+			return false;
+		}
+		$args = array(
+			'headers' => array(
+				'key' => $apikey,
+			),
+			'body'    => $order_data,
+			'timeout' => 10,
+		);
+
+		$response      = wp_remote_post( 'https://api.holded.com/api/invoicing/v1/documents/' . $doctype, $args );
+		$body          = wp_remote_retrieve_body( $response );
+		$body_response = json_decode( $body, true );
+
+		if ( isset( $body_response['errors'] ) ) {
+			error_admin_message( 'ERROR', $body_response['errors'][0]['message'] . ' <br/> Api Call: /' );
+			return false;
 		}
 
-		if ( empty( $order_clientify['items'] ) ) {
-			return array(
-				'status'  => 'error',
-				'message' => $order_id . ' ' . __( 'Error items not valid in the order.', 'connect-woocommerce-clientify' ),
-			);
-		}
-		// Create sales order.
-		$result_order = $this->api( 'orders/', $api_key, 'POST', $order_clientify );
-		if ( ! empty( $result_order['data']['id'] ) && 'error' !== $result_order['status'] ) {
-			// HPOS Update.
-			$order->update_meta_data( $meta_key, $result_order['data']['id'] );
-			$order->save();
+		return $body_response;
+	}
 
-			$order_msg = __( 'Order synced correctly with Clientify, ID: ', 'connect-woocommerce-clientify' ) . $result_order['data']['id'];
-			$order->add_order_note( $order_msg );
-			return array(
-				'status'  => 'ok',
-				'message' => $order_id . ' ' . __( 'num: ', 'import-holded-products-woocommerce-premium' ) . $result_order['data']['id'],
-			);
-		} else {
-			$message_data = is_array( $result_order['data'] ) ? implode( ' ', $result_order['data'] ) : $result_order['data'];
-			$order_msg = __( 'Order error syncing with Clientify. Error: ', 'connect-woocommerce-clientify' ) . $message_data;
-			$order->add_order_note( $order_msg );
+	/**
+	 * Create Order to Holded
+	 *
+	 * @param  string $order_data Data order.
+	 * @return string Path url of file.
+	 */
 
-			return array(
-				'status'  => 'error',
-				'message' => $order_id . ' ' . $result_order['data'],
-			);
+	/**
+	 * Get Order PDF from Holded
+	 *
+	 * @param string $doctype DocType Holded.
+	 * @param string $document_id Document ID from Holded.
+	 * @return string
+	 */
+	public function get_order_pdf( $doctype, $document_id ) {
+		$imh_settings = get_option( 'imhset' );
+		$apikey       = isset( $imh_settings['wcpimh_api'] ) ? $imh_settings['wcpimh_api'] : '';
+
+		if ( empty( $apikey ) ) {
+			error_log( sprintf( __( 'WooCommerce Holded: Plugin is enabled but no api key or secret provided. Please enter your api key and secret <a href="%s">here</a>.', 'import-holded-products-woocommerce' ), '/wp-admin/admin.php?page=import_holded&tab=settings' ) ); // phpcs:ignore.
+			return false;
 		}
+
+		$args     = array(
+			'headers' => array(
+				'key' => $apikey,
+			),
+			'timeout' => 10,
+		);
+		$url      = 'https://api.holded.com/api/invoicing/v1/documents/' . $doctype . '/' . $document_id . '/pdf';
+		$response = wp_remote_get( $url, $args );
+		$body     = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( isset( $body['status'] ) && 0 == $body['status'] ) {
+			return false;
+		}
+
+		$upload_dir = wp_upload_dir();
+		$dir_name   = $upload_dir['basedir'] . '/holded';
+		if ( ! file_exists( $dir_name ) ) {
+			wp_mkdir_p( $dir_name );
+		}
+		$filename = '/' . $doctype . '-' . $document_id . '.pdf';
+		$file     = $dir_name . $filename;
+		file_put_contents( $file, base64_decode( $body['data'] ) );
+
+		return $file;
+	}
+
+	/**
+	 * Gets image product from API holded
+	 *
+	 * @param array  $imh_settings Settings values.
+	 * @param string $holded_id Holded product ID.
+	 * @param int    $product_id Product ID.
+	 * @return array
+	 */
+	public function get_image_product( $imh_settings, $holded_id, $product_id ) {
+		$apikey = $imh_settings['wcpimh_api'] ?? '';
+		$args   = array(
+			'headers' => array(
+				'key' => $apikey,
+			),
+			'timeout' => 10,
+		);
+
+		$response   = wp_remote_get( 'https://api.holded.com/api/invoicing/v1/products/' . $holded_id . '/image/', $args );
+		$body       = wp_remote_retrieve_body( $response );
+		$body_array = json_decode( $body, true );
+
+		if ( isset( $body_array['status'] ) && 0 == $body_array['status'] ) {
+			return false;
+		}
+
+		$headers = (array) $response['headers'];
+		foreach ( $headers as $header ) {
+			$content_type = $header['content-type'];
+			break;
+		}
+		$extension = explode( '/', $content_type, 2 )[1];
+		$filename  = get_the_title( $product_id ) . '.' . $extension;
+		$upload    = wp_upload_bits( $filename, null, $body );
+
+		return array(
+			'upload'       => $upload,
+			'content_type' => $content_type,
+		);
 	}
 }
 
