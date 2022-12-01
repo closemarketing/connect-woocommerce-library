@@ -49,7 +49,7 @@ class WCPIMH_Import {
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_styles' ) );
 		add_filter( 'admin_body_class', array( $this, 'admin_body_class' ) );
 
-		// Settings
+		// Settings.
 		$this->settings = get_option( $connwoo_plugin_options['slug'] );
 	}
 
