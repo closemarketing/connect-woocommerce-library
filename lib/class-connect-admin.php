@@ -635,7 +635,15 @@ class WCIMPH_Admin {
 	 */
 	public function connect_woocommerce_section_info() {
 		global $connwoo_plugin_options;
-		echo esc_html( $connwoo_plugin_options['settings_admin_message'] );
+		$args = array(
+			'a'       => array(
+				'href'  => array(),
+				'title' => array(),
+			),
+			'br'     => array(),
+			'strong' => array(),
+		);
+		echo wp_kses( $connwoo_plugin_options['settings_admin_message'], $args );
 	}
 
 	/**
