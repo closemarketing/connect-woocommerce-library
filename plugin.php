@@ -21,19 +21,6 @@ define( 'CONHOLD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'CONHOLD_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 
 
-register_activation_hook( __FILE__, 'conhold_check_plugin_free' );
-/**
- * Deactives the free plugin
- *
- * @return void
- */
-function conhold_check_plugin_free() {
-	if ( ! is_plugin_active( 'import-holded-products-woocommerce/import-holded-products-woocommerce.php' ) ) {
-		deactivate_plugins( 'import-holded-products-woocommerce/import-holded-products-woocommerce.php' );
-	}
-}
-
-
 // Loads translation.
 add_action( 'init', 'conhold_load_textdomain' );
 /**
@@ -70,5 +57,5 @@ $connwoo_plugin_options = array(
 	),
 );
 
-require_once dirname( __FILE__ ) . '/includes/connect-woocommerce/loader.php';
-require_once dirname( __FILE__ ) . '/includes/class-api-holded.php';
+require_once CONHOLD_PLUGIN_PATH . '/includes/connect-woocommerce/loader.php';
+require_once CONHOLD_PLUGIN_PATH . '/includes/class-api-holded.php';
