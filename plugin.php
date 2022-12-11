@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'CONHOLD_VERSION', '2.1.0-beta.2' );
+define( 'WCPIMH_VERSION', '2.1.0-beta.2' );
 define( 'CONHOLD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'CONHOLD_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 
