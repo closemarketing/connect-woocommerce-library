@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
  * @copyright  2019 Closemarketing
  * @version    0.1
  */
-class { connwoo_get_plugin_slug() . '_Admin' } {
+class CONNWOOO_Admin {
 	/**
 	 * Settings
 	 *
@@ -67,7 +67,7 @@ class { connwoo_get_plugin_slug() . '_Admin' } {
 	 */
 	public function create_admin_page() {
 		global $connwoo_plugin_options;
-		$this->settings  = get_option( $this->options_name );
+		$this->settings        = get_option( $this->options_name );
 		$this->settings_public = get_option( $this->options_name . '_public' );
 		?>
 		<div class="header-wrap">
@@ -1505,5 +1505,5 @@ class { connwoo_get_plugin_slug() . '_Admin' } {
 }
 
 if ( is_admin() ) {
-	new { connwoo_get_plugin_slug() . '_Admin' }();
+	new CONNWOOO_Admin();
 }
