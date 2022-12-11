@@ -170,7 +170,7 @@ class CONNWOOO_Admin {
 				$plugin_url = 'https://www.close.technology/wordpress-plugins/connect-woocommerce-' . strtolower( $connwoo_plugin_options['name'] ) . '/';
 				echo sprintf(
 					// translators: %1$s Plugin URL %2$s Name of plugin.
-					esc_html__( 'With the <a href="%1$s" target="_blank">Connect WooCommerce for %2$s</a> license, you\'ll have updates and automatic fixes to what\'s new or change in your system, so you\'ll always have the latest functionalities for the plugin.', 'connect-woocommerce' ),
+					__( 'With the <a href="%1$s" target="_blank">Connect WooCommerce for %2$s</a> license, you\'ll have updates and automatic fixes to what\'s new or change in your system, so you\'ll always have the latest functionalities for the plugin.', 'connect-woocommerce' ),
 					esc_url( $plugin_url ),
 					esc_html( $connwoo_plugin_options['name'] )
 				);
@@ -180,7 +180,7 @@ class CONNWOOO_Admin {
 				echo '<p>';
 				echo sprintf(
 					// translators: %1$s Plugin URL %2$s Name of plugin.
-					esc_html__( 'Visit the <a href="%1$s" target="_blank">Connect WooCommerce for %2$s</a> page and purchase the licenses you need, depending on the number of WordPress MultiSites you\'re using.', 'connect-woocommerce' ),
+					__( 'Visit the <a href="%1$s" target="_blank">Connect WooCommerce for %2$s</a> page and purchase the licenses you need, depending on the number of WordPress MultiSites you\'re using.', 'connect-woocommerce' ),
 					esc_url( $plugin_url ),
 					esc_html( $connwoo_plugin_options['name'] )
 				);
