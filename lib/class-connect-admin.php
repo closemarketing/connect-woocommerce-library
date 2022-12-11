@@ -39,8 +39,8 @@ class WCIMPH_Admin {
 	 * Construct of class
 	 */
 	public function __construct() {
-		global $wpdb;
-		$this->table_sync = $wpdb->prefix . 'connwoo_product_sync';
+		global $wpdb, $connwoo_plugin_options;
+		$this->table_sync   = $wpdb->prefix . 'sync_' . $connwoo_plugin_options['slug'];
 		$this->label_pro  = __( '(ONLY PRO VERSION)', 'connect-woocommerce' );
 		add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
 		add_action( 'admin_init', array( $this, 'page_init' ) );
