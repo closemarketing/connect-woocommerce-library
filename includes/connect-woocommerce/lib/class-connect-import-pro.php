@@ -53,8 +53,8 @@ class Connect_WooCommerce_Import_PRO {
 	 * Constructs of class
 	 */
 	public function __construct() {
-		global $wpdb, $connwoo_plugin_options;
-		$this->table_sync = $wpdb->prefix . 'sync_' . $connwoo_plugin_options['slug'];
+		global $wpdb;
+		$this->table_sync = $wpdb->prefix . 'sync_' . CWLIB_SLUG;
 
 		$this->sync_period = isset( $this->settings['sync'] ) ? strval( $this->settings['sync'] ) : 'no';
 

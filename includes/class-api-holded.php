@@ -32,8 +32,7 @@ class CONNAPI_HOLDED_ERP {
 	 * Construct of Class
 	 */
 	public function __construct() {
-		global $connwoo_plugin_options;
-		$this->settings = get_option( $connwoo_plugin_options['slug'] );
+		$this->settings = get_option( CWLIB_SLUG );
 	}
 
 	/**

@@ -36,6 +36,8 @@ function conhold_load_textdomain() {
  * Default values
  */
 
+define( 'CWLIB_SLUG', 'connwoo_holded' );
+
 $connwoo_plugin_options = array(
 	'name'                       => 'Holded',
 	'slug'                       => 'connwoo_holded',

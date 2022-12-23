@@ -33,7 +33,7 @@ class Connect_WooCommerce_Orders {
 	 */
 	public function __construct() {
 		global $connwoo_plugin_options;
-		$this->sync_settings = get_option( $connwoo_plugin_options['slug'] );
+		$this->sync_settings = get_option( CWLIB_SLUG );
 		$ecstatus            = isset( $this->sync_settings['ecstatus'] ) ? $this->sync_settings['ecstatus'] : $connwoo_plugin_options['order_only_order_completed'];
 
 		add_action( 'admin_print_footer_scripts', array( $this, 'admin_print_footer_scripts' ), 11, 1 );
