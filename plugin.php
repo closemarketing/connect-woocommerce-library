@@ -17,6 +17,7 @@
 defined( 'ABSPATH' ) || exit;
 
 define( 'WCPIMH_VERSION', '2.1.0-beta.2' );
+define( 'WCPIMH_FILE', __FILE__ );
 define( 'CONHOLD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'CONHOLD_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 
@@ -38,7 +39,7 @@ function conhold_load_textdomain() {
 $connwoo_plugin_options = array(
 	'name'                       => 'Holded',
 	'slug'                       => 'connwoo_holded',
-	'version'                    => CONHOLD_VERSION,
+	'version'                    => WCPIMH_VERSION,
 	'plugin_name'                => 'Connect WooCommerce Holded',
 	'plugin_slug'                => 'connect-woocommerce-holded',
 	'api_url'                    => 'https://close.technology/',
