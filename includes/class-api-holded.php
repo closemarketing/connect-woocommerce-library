@@ -21,8 +21,16 @@ define( 'MAX_LIMIT_HOLDED_API', 500 );
  */
 class CONNAPI_HOLDED_ERP {
 
+	/**
+	 * Settings options
+	 *
+	 * @var array
+	 */
 	private $settings;
 
+	/**
+	 * Construct of Class
+	 */
 	public function __construct() {
 		global $connwoo_plugin_options;
 		$this->settings = get_option( $connwoo_plugin_options['slug'] );
@@ -43,33 +51,77 @@ class CONNAPI_HOLDED_ERP {
 	/**
 	 * Gets information from Holded CRM
 	 *
+	 * @param string $url URL for module.
 	 * @return array
 	 */
-	public function get_rates() {
-		if ( ! isset( $this->settings['api'] ) ) {
-			return false;
+	private function api( $endpoint, $method = 'GET', $query = array() ) {
+		$apikey = isset( $this->settings['api'] ) ? $this->settings['api'] : '';
+		if ( ! $apikey ) {
+			return array(
+				'status' => 'error',
+				'data'   => __( 'No API Key', 'connect-woocommerce-holded' ),
+			);
 		}
-
-		$apikey = $this->settings['api'];
-		$args   = array(
+		$args     = array(
+			'method'  => $method,
 			'headers' => array(
 				'key' => $apikey,
 			),
-			'timeout' => 10,
+			'timeout' => 120,
 		);
+		if ( ! empty( $query ) ) {
+			$args['body'] = $query;
+		}
+		// Loop.
+		$next          = true;
+		$results_value = array();
+		$url           = 'https://api.holded.com/api/invoicing/v1/' . $endpoint;
 
-		// API.
-		$response      = wp_remote_get( 'https://api.holded.com/api/invoicing/v1/rates/', $args );
-		$body          = wp_remote_retrieve_body( $response );
-		$body_response = json_decode( $body, true );
+		while ( $next ) {
+			$result_api = wp_remote_request( $url, $args );
+			$results    = json_decode( wp_remote_retrieve_body( $result_api ), true );
+			$code       = isset( $result_api['response']['code'] ) ? (int) round( $result_api['response']['code'] / 100, 0 ) : 0;
 
-		if ( isset( $body_response['errors'] ) ) {
-			error_admin_message( 'ERROR', $body_response['errors'][0]['message'] . ' <br/> Api Call Rates: /' );
-			return false;
+			if ( 2 !== $code ) {
+				$message = implode( ' ', $result_api['response'] ) . ' ';
+				$body    = json_decode( $result_api['body'], true );
+
+				if ( is_array( $body ) ) {
+					foreach ( $body as $key => $value ) {
+						$message_value = is_array( $value ) ? implode( '.', $value ) : $value;
+						$message      .= $key . ': ' . $message_value;
+					}
+				}
+				return array(
+					'status' => 'error',
+					'data'   => $message,
+				);
+			}
+
+			if ( isset( $results['next'] ) && $results['next'] ) {
+				$url = $results['next'];
+			} else {
+				$next = false;
+			}
 		}
 
+		return array(
+			'status' => 'ok',
+			'data'   => isset( $results['results'] ) ? $results['results'] : array(),
+		);
+	}
+
+	/**
+	 * Gets information from Holded CRM
+	 *
+	 * @return array
+	 */
+	public function get_rates() {
+
+		$response_rates = $this->api( 'rates/', 'GET' );
+
 		$array_options = array(
-			'default' => __( 'Default price', 'import-holded-products-woocommerce' ),
+			'default' => __( 'Default price', 'connect-woocommerce-holded' ),
 		);
 		if ( ! empty( $body_response ) ) {
 			foreach ( $body_response as $rate ) {
@@ -141,7 +193,8 @@ class CONNAPI_HOLDED_ERP {
 	 * @param string $order_data Data order.
 	 * @return array Array of products imported via API.
 	 */
-	public function create_order( $order_data ) {
+	public function create_order( $order, $meta_key_order ) {
+
 		if ( ! isset( $this->settings['api'] ) ) {
 			error_admin_message(
 				'ERROR',
@@ -152,37 +205,228 @@ class CONNAPI_HOLDED_ERP {
 			);
 			return false;
 		}
-		$apikey  = isset( $this->settings['api'] ) ? $this->settings['api'] : '';
-		$doctype = isset( $this->settings['doctype'] ) ? $this->settings['doctype'] : 'nosync';
+		$apikey    = isset( $this->settings['api'] ) ? $this->settings['api'] : '';
+		$doctype   = isset( $this->settings['doctype'] ) ? $this->settings['doctype'] : 'nosync';
+		$design_id = isset( $this->settings['design_id'] ) ? $this->settings['design_id'] : '';
 		if ( 'nosync' === $doctype ) {
 			return false;
 		}
+
+		$order_id = $order->get_id();
+		$doclang  = $order->get_billing_country() !== 'ES' ? 'en' : 'es';
+		$url_test = wc_get_endpoint_url( 'shop' );
+
+		if ( empty( $order->get_billing_company() ) ) {
+			$contact_name = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
+		} else {
+			$contact_name = $order->get_billing_company();
+		}
+
+		$fields = array(
+			'contactCode'            => get_post_meta( $order_id, '_billing_vat', true ),
+			'contactName'            => $contact_name,
+			'woocommerceCustomer'    => $order->get_user()->data->user_login,
+			'marketplace'            => 'woocommerce',
+			'woocommerceOrderStatus' => $order->get_status(),
+			'woocommerceOrderId'     => $order_id,
+			'woocommerceUrl'         => $url_test,
+			'woocommerceStore'       => get_bloginfo( 'name', 'display' ),
+			'contactEmail'           => $order->get_billing_email(),
+			'contact_phone'          => $order->get_billing_phone(),
+			'contactAddress'         => $order->get_billing_address_1() . ',' . $order->get_billing_address_2(),
+			'contactCity'            => $order->get_billing_city(),
+			'contactCp'              => $order->get_billing_postcode(),
+			'contactProvince'        => $order->get_billing_state(),
+			'contactCountry'         => $order->get_billing_country(),
+			'desc'                   => '',
+			'date'                   => $order->get_date_completed() ? strtotime( $order->get_date_completed() ) : strtotime( $order->get_date_created() ),
+			'datestart'              => strtotime( $order->get_date_created() ),
+			'notes'                  => $order->get_customer_note(),
+			'saleschannel'           => null,
+			'language'               => $doclang,
+			'pmtype'                 => null,
+			'items'                  => array(),
+			'shippingAddress'        => $order->get_shipping_address_1() ? $order->get_shipping_address_1() . ',' . $order->get_shipping_address_2() : '',
+			'shippingPostalCode'     => $order->get_shipping_postcode(),
+			'shippingCity'           => $order->get_shipping_city(),
+			'shippingProvince'       => $order->get_shipping_state(),
+			'shippingCountry'        => $order->get_shipping_country(),
+			'designId'               => $design_id,
+			'woocommerceTaxes'       => wp_json_encode( $order->get_tax_totals() ),
+		);
+
+		$ordered_items  = $order->get_items();
+		$shipping_items = $order->get_items( 'shipping' );
+
+		$wc_payment_method = get_post_meta( $order_id, '_payment_method', true );
+		$fields['notes']  .= ' ';
+		switch ( $wc_payment_method ) {
+			case 'cod':
+				$fields['notes'] .= __( 'Paid by cash', 'import-holded-products-woocommerce-premium' );
+				break;
+			case 'cheque':
+				$fields['notes'] .= __( 'Paid by check', 'import-holded-products-woocommerce-premium' );
+				break;
+			case 'paypal':
+				$fields['notes'] .= __( 'Paid by paypal', 'import-holded-products-woocommerce-premium' );
+				break;
+			case 'bacs':
+				$fields['notes'] .= __( 'Paid by bank transfer', 'import-holded-products-woocommerce-premium' );
+				break;
+			default:
+				$fields['notes'] .= __( 'Paid by', 'import-holded-products-woocommerce-premium' ) . ' ' . (string) $wc_payment_method;
+				break;
+		}
+		$fields['items'] = $this->review_items( $ordered_items );
+
+		foreach ( $shipping_items as $value ) {
+
+			$shipping_name  = $value['name'];
+			$shipping_total = floatval( $value['cost'] );
+
+			$shipping_tax     = 0;
+			$shipping_tax_per = 0;
+
+			if ( is_serialized( $value['taxes'] ) ) {
+				$shipping_tax = maybe_unserialize( $value['taxes'] );
+
+				if ( count( $shipping_tax ) ) {
+					if ( $shipping_tax && array_key_exists( 1, $shipping_tax ) ) {
+						$shipping_tax = $shipping_tax[1];
+					}
+				}
+
+				if ( is_numeric( $shipping_tax ) ) {
+					$shipping_tax_per = round( ( ( $shipping_tax * 100 ) / $shipping_total ), 4 );
+				}
+			}
+
+			$fields['items'][] = array(
+				'name'     => $shipping_name,
+				'desc'     => '',
+				'units'    => 1,
+				'subtotal' => floatval( $shipping_total ),
+				'tax'      => floatval( $shipping_tax_per ),
+				'k'        => 'shipping',
+			);
+		}
+		// Flat rate fix.
+		if ( $order->has_shipping_method( 'flat_rate' ) ) {
+
+		}
+
+		// Create salesorder.
+		// Sends to API.
 		$args = array(
 			'headers' => array(
 				'key' => $apikey,
 			),
-			'body'    => $order_data,
+			'body'    => $fields,
 			'timeout' => 10,
 		);
 
-		$response      = wp_remote_post( 'https://api.holded.com/api/invoicing/v1/documents/' . $doctype, $args );
-		$body          = wp_remote_retrieve_body( $response );
-		$body_response = json_decode( $body, true );
+		$response = wp_remote_post( 'https://api.holded.com/api/invoicing/v1/documents/' . $doctype, $args );
+		$body     = wp_remote_retrieve_body( $response );
+		$result   = json_decode( $body, true );
 
-		if ( isset( $body_response['errors'] ) ) {
-			error_admin_message( 'ERROR', $body_response['errors'][0]['message'] . ' <br/> Api Call: /' );
+		if ( isset( $result['errors'] ) ) {
+			error_admin_message( 'ERROR', $result['errors'][0]['message'] . ' <br/> Api Call: /' );
 			return false;
 		}
 
-		return $body_response;
+		if ( isset( $result['invoiceNum'] ) ) {
+			update_post_meta( $order_id, $meta_key_order, $result['invoiceNum'] );
+			update_post_meta( $order_id, '_holded_doc_id', $result['id'] );
+			update_post_meta( $order_id, '_holded_doc_type', $doctype );
+
+			$order_msg = __( 'Order synced correctly with Holded, ID: ', 'import-holded-products-woocommerce-premium' ) . $result['invoiceNum'];
+
+			$order->add_order_note( $order_msg );
+			return array(
+				'status'  => 'ok',
+				'message' => $doctype . ' ' . __( 'num: ', 'import-holded-products-woocommerce-premium' ) . $result['invoiceNum'],
+			);
+		}
 	}
 
+
 	/**
-	 * Create Order to Holded
+	 * Review items
 	 *
-	 * @param  string $order_data Data order.
-	 * @return string Path url of file.
+	 * @param object $ordered_items Items ordered.
+	 * @return object
 	 */
+	private function review_items( $ordered_items ) {
+		global $connwoo_plugin_options;
+		$subproducts  = 0;
+		$fields_items = array();
+		$index        = 0;
+		$index_bund   = 0;
+		foreach ( $ordered_items as $order_item ) {
+
+			$product = wc_get_product( $order_item['product_id'] );
+
+			if ( $product->is_type( 'woosb' ) ) {
+				$woosb_ids   = get_post_meta( $order_item['product_id'], 'woosb_ids', true );
+				$woosb_prods = explode( ',', $woosb_ids );
+
+				foreach ( $woosb_prods as $woosb_ids ) {
+					$wb_prod = explode( '/', $woosb_ids );
+					$wb_prod_id = $wb_prod[0];
+				}
+				$subproducts = count( $woosb_prods );
+
+				$fields_items[ $index ] = array(
+					'name'     => $order_item['name'],
+					'desc'     => '',
+					'units'    => floatval( $order_item['qty'] ),
+					'subtotal' => 0,
+					'tax'      => 0,
+					'stock'    => $product->get_stock_quantity(),
+				);
+
+				// Use Source product ID instead of SKU.
+				$prod_key         = '_' . $connwoo_plugin_options['slug'] . '_productid';
+				$source_productid = get_post_meta( $order_item['product_id'], $prod_key, true );
+				if ( $source_productid ) {
+					$fields_items[ $index ]['productId'] = $source_productid;
+				} else {
+					$fields_items[ $index ]['sku'] = $product->get_sku();
+				}
+				$index_bund = $index;
+				$index++;
+
+			} elseif ( $subproducts > 0 ) {
+				$subproducts = --$subproducts;
+				$vat_per = 0;
+				if ( floatval( $order_item['line_total'] ) ) {
+					$vat_per = round( ( floatval( $order_item['line_tax'] ) * 100 ) / ( floatval( $order_item['line_total'] ) ), 4 );
+				}
+				$product_cost = floatval( $order_item['line_total'] );
+				$fields_items[ $index_bund ]['subtotal'] = $fields_items[ $index_bund ]['subtotal'] + $product_cost;
+				$fields_items[ $index_bund ]['tax'] = round( $vat_per, 0 );
+			} else {
+				$vat_per = 0;
+				if ( floatval( $order_item['line_total'] ) ) {
+					$vat_per = round( ( floatval( $order_item['line_tax'] ) * 100 ) / ( floatval( $order_item['line_total'] ) ), 4 );
+				}
+				$product_cost = ( floatval( $order_item['line_total'] ) ) / ( floatval( $order_item['qty'] ) );
+
+				$fields_items[] = array(
+					'name'     => $order_item['name'],
+					'desc'     => '',
+					'units'    => floatval( $order_item['qty'] ),
+					'subtotal' => floatval( $product_cost ),
+					'tax'      => floatval( $vat_per ),
+					'sku'      => $product->get_sku(),
+					'stock'    => $product->get_stock_quantity(),
+				);
+				$index++;
+			}
+		}
+
+		return $fields_items;
+	}
 
 	/**
 	 * Get Order PDF from Holded
