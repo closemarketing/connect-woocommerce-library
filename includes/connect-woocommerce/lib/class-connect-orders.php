@@ -182,10 +182,9 @@ class Connect_WooCommerce_Orders {
 	public function create_invoice( $order_id, $completed_date ) {
 		global $connapi_erp, $connwoo_plugin_options;
 		$doctype        = isset( $this->sync_settings['doctype'] ) ? $this->sync_settings['doctype'] : 'nosync';
-		$design_id      = isset( $this->sync_settings['design_id'] ) ? $this->sync_settings['design_id'] : '';
 		$order          = wc_get_order( $order_id );
 		$order_total    = (int) $order->get_total();
-		$meta_key_order = '_' . $connwoo_plugin_options['slug'] . 'invoice_id';
+		$meta_key_order = '_' . $connwoo_plugin_options['slug'] . '_invoice_id';
 		$ec_invoice_id  = get_post_meta( $order_id, $meta_key_order, true );
 		$freeorder      = isset( $this->sync_settings['freeorder'] ) ? $this->sync_settings['freeorder'] : 'no';
 

@@ -236,7 +236,7 @@ class CONNWOOO_Admin {
 			add_settings_field(
 				'wcpimh_stock',
 				__( 'Import stock?', 'connect-woocommerce' ),
-				array( $this, 'wcpimh_stock_callback' ),
+				array( $this, 'stock_callback' ),
 				'connect-woocommerce-admin',
 				'connect_woocommerce_setting_section'
 			);
@@ -245,7 +245,7 @@ class CONNWOOO_Admin {
 		add_settings_field(
 			'wcpimh_prodst',
 			__( 'Default status for new products?', 'connect-woocommerce' ),
-			array( $this, 'wcpimh_prodst_callback' ),
+			array( $this, 'prodst_callback' ),
 			'connect-woocommerce-admin',
 			'connect_woocommerce_setting_section'
 		);
@@ -253,7 +253,7 @@ class CONNWOOO_Admin {
 		add_settings_field(
 			'wcpimh_virtual',
 			__( 'Virtual products?', 'connect-woocommerce' ),
-			array( $this, 'wcpimh_virtual_callback' ),
+			array( $this, 'virtual_callback' ),
 			'connect-woocommerce-admin',
 			'connect_woocommerce_setting_section'
 		);
@@ -261,7 +261,7 @@ class CONNWOOO_Admin {
 		add_settings_field(
 			'wcpimh_backorders',
 			__( 'Allow backorders?', 'connect-woocommerce' ),
-			array( $this, 'wcpimh_backorders_callback' ),
+			array( $this, 'backorders_callback' ),
 			'connect-woocommerce-admin',
 			'connect_woocommerce_setting_section'
 		);
@@ -270,7 +270,7 @@ class CONNWOOO_Admin {
 		add_settings_field(
 			'wcpimh_catsep',
 			$label_cat,
-			array( $this, 'wcpimh_catsep_callback' ),
+			array( $this, 'catsep_callback' ),
 			'connect-woocommerce-admin',
 			'connect_woocommerce_setting_section'
 		);
@@ -278,7 +278,7 @@ class CONNWOOO_Admin {
 		add_settings_field(
 			'wcpimh_filter',
 			__( 'Filter products by tags? (separated by comma and no space)', 'connect-woocommerce' ),
-			array( $this, 'wcpimh_filter_callback' ),
+			array( $this, 'filter_callback' ),
 			'connect-woocommerce-admin',
 			'connect_woocommerce_setting_section'
 		);
@@ -613,7 +613,13 @@ class CONNWOOO_Admin {
 	 */
 	public function connect_woocommerce_section_info() {
 		global $connwoo_plugin_options;
-		echo esc_html( $connwoo_plugin_options['settings_admin_message'] );
+		$arr = array(
+			'a' => array(
+				'href'   => array(),
+				'target' => array(),
+			),
+		);
+		echo wp_kses( $connwoo_plugin_options['settings_admin_message'], $arr );
 	}
 
 	/**
@@ -635,7 +641,7 @@ class CONNWOOO_Admin {
 		);
 	}
 
-	public function wcpimh_stock_callback() {
+	public function stock_callback() {
 		?>
 		<select name="<?php echo esc_html( $this->options_name ); ?>[stock]" id="wcpimh_stock">
 			<?php $selected = ( isset( $this->settings['stock'] ) && $this->settings['stock'] === 'yes' ) ? 'selected' : ''; ?>
@@ -646,7 +652,7 @@ class CONNWOOO_Admin {
 		<?php
 	}
 
-	public function wcpimh_prodst_callback() {
+	public function prodst_callback() {
 		?>
 		<select name="<?php echo esc_html( $this->options_name ); ?>[prodst]" id="wcpimh_prodst">
 			<?php $selected = ( isset( $this->settings['prodst'] ) && 'draft' === $this->settings['prodst'] ) ? 'selected' : ''; ?>
@@ -661,7 +667,7 @@ class CONNWOOO_Admin {
 		<?php
 	}
 
-	public function wcpimh_virtual_callback() {
+	public function virtual_callback() {
 		?>
 		<select name="<?php echo esc_html( $this->options_name ); ?>[virtual]" id="wcpimh_virtual">
 			<?php $selected = ( isset( $this->settings['virtual'] ) && $this->settings['virtual'] === 'no' ) ? 'selected' : ''; ?>
@@ -672,7 +678,7 @@ class CONNWOOO_Admin {
 		<?php
 	}
 
-	public function wcpimh_backorders_callback() {
+	public function backorders_callback() {
 		?>
 		<select name="<?php echo esc_html( $this->options_name ); ?>[backorders]" id="wcpimh_backorders">
 			<?php $selected = ( isset( $this->settings['backorders'] ) && $this->settings['backorders'] === 'no' ) ? 'selected' : ''; ?>
@@ -690,14 +696,14 @@ class CONNWOOO_Admin {
 	 *
 	 * @return void
 	 */
-	public function wcpimh_catsep_callback() {
+	public function catsep_callback() {
 		printf(
 			'<input class="regular-text" type="text" name="' . $this->options_name . '[catsep]" id="wcpimh_catsep" value="%s">',
 			isset( $this->settings['catsep'] ) ? esc_attr( $this->settings['catsep'] ) : ''
 		);
 	}
 
-	public function wcpimh_filter_callback() {
+	public function filter_callback() {
 		printf(
 			'<input class="regular-text" type="text" name="' . $this->options_name . '[filter]" id="wcpimh_filter" value="%s">',
 			isset( $this->settings['filter'] ) ? esc_attr( $this->settings['filter'] ) : ''
