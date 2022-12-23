@@ -33,8 +33,8 @@ class CONNWOOO_Admin {
 	 */
 	public function __construct() {
 		global $wpdb, $connwoo_plugin_options;
-		$this->table_sync   = $wpdb->prefix . 'sync_' . $connwoo_plugin_options['slug'];
-		$this->options_name = $connwoo_plugin_options['slug'];
+		$this->table_sync   = $wpdb->prefix . 'sync_' . CWLIB_SLUG;
+		$this->options_name = CWLIB_SLUG;
 		add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
 		add_action( 'admin_init', array( $this, 'page_init' ) );
 
@@ -1337,10 +1337,10 @@ class CONNWOOO_Admin {
 	 * Generate the default data.
 	 */
 	public function license_instance_activation() {
-		$instance_exists = get_option( CONWOOLIB_SLUG . '_license_instance' );
+		$instance_exists = get_option( CWLIB_SLUG . '_license_instance' );
 
 		if ( ! $instance_exists ) {
-			update_option( CONWOOLIB_SLUG . '_license_instance', wp_generate_password( 20, false ) );
+			update_option( CWLIB_SLUG . '_license_instance', wp_generate_password( 20, false ) );
 		}
 	}
 

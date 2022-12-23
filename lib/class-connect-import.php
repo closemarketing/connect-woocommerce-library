@@ -40,8 +40,6 @@ class WCPIMH_Import {
 	 * Constructs of class
 	 */
 	public function __construct() {
-		global $connwoo_plugin_options;
-
 		add_action( 'admin_print_footer_scripts', array( $this, 'admin_print_footer_scripts' ), 11, 1 );
 		add_action( 'wp_ajax_wcpimh_import_products', array( $this, 'wcpimh_import_products' ) );
 
@@ -50,7 +48,7 @@ class WCPIMH_Import {
 		add_filter( 'admin_body_class', array( $this, 'admin_body_class' ) );
 
 		// Settings.
-		$this->settings = get_option( $connwoo_plugin_options['slug'] );
+		$this->settings = get_option( CWLIB_SLUG );
 	}
 
 	/**
