@@ -819,15 +819,14 @@ class CONNWOOO_Admin {
 	 * @return void
 	 */
 	public function sync_callback() {
-		global $connwoo_cron_options;
 		?>
 		<select name="<?php echo esc_html( $this->options_name ); ?>[sync]" id="wcpimh_sync">
 			<?php $selected = ( isset( $this->settings['sync'] ) && 'no' === $this->settings['sync'] ) ? 'selected' : ''; ?>
 			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 
 			<?php
-			if ( ! empty( $connwoo_cron_options ) ) {
-				foreach ( $connwoo_cron_options as $cron_option ) {
+			if ( ! empty( CWLIB_CRON ) ) {
+				foreach ( CWLIB_CRON as $cron_option ) {
 					$selected = ( isset( $this->settings['sync'] ) && $cron_option['cron'] === $this->settings['sync'] ) ? 'selected' : '';
 					echo '<option value="' . esc_html( $cron_option['cron'] ) . '" ' . esc_html( $selected ) . '>';
 					echo esc_html( $cron_option['display'] ) . '</option>';

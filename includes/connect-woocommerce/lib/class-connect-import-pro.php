@@ -72,10 +72,9 @@ class Connect_WooCommerce_Import_PRO {
 	 * @return void
 	 */
 	public function action_scheduler() {
-		global $connwoo_cron_options;
-		$pos = array_search( $this->sync_period, array_column( $connwoo_cron_options, 'cron' ), true );
+		$pos = array_search( $this->sync_period, array_column( CWLIB_CRON, 'cron' ), true );
 		if ( false !== $pos ) {
-			$cron_option = $connwoo_cron_options[ $pos ];
+			$cron_option = CWLIB_CRON[ $pos ];
 		}
 
 		if ( isset( $cron_option['cron'] ) && false === as_has_scheduled_action( $cron_option['cron'] ) ) {
