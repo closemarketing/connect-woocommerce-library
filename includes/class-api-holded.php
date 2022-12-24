@@ -261,19 +261,19 @@ class CONNAPI_HOLDED_ERP {
 		$fields['notes']  .= ' ';
 		switch ( $wc_payment_method ) {
 			case 'cod':
-				$fields['notes'] .= __( 'Paid by cash', 'import-holded-products-woocommerce-premium' );
+				$fields['notes'] .= __( 'Paid by cash', 'connect-woocommerce-holded' );
 				break;
 			case 'cheque':
-				$fields['notes'] .= __( 'Paid by check', 'import-holded-products-woocommerce-premium' );
+				$fields['notes'] .= __( 'Paid by check', 'connect-woocommerce-holded' );
 				break;
 			case 'paypal':
-				$fields['notes'] .= __( 'Paid by paypal', 'import-holded-products-woocommerce-premium' );
+				$fields['notes'] .= __( 'Paid by paypal', 'connect-woocommerce-holded' );
 				break;
 			case 'bacs':
-				$fields['notes'] .= __( 'Paid by bank transfer', 'import-holded-products-woocommerce-premium' );
+				$fields['notes'] .= __( 'Paid by bank transfer', 'connect-woocommerce-holded' );
 				break;
 			default:
-				$fields['notes'] .= __( 'Paid by', 'import-holded-products-woocommerce-premium' ) . ' ' . (string) $wc_payment_method;
+				$fields['notes'] .= __( 'Paid by', 'connect-woocommerce-holded' ) . ' ' . (string) $wc_payment_method;
 				break;
 		}
 		$fields['items'] = $this->review_items( $ordered_items );
@@ -334,16 +334,18 @@ class CONNAPI_HOLDED_ERP {
 		}
 
 		if ( isset( $result['invoiceNum'] ) ) {
-			update_post_meta( $order_id, $meta_key_order, $result['invoiceNum'] );
-			update_post_meta( $order_id, '_holded_doc_id', $result['id'] );
-			update_post_meta( $order_id, '_holded_doc_type', $doctype );
+			// HPOS Update.
+			$order->update_meta_data( $meta_key_order, $result['invoiceNum'] );
+			$order->update_meta_data( '_holded_doc_id', $result['id'] );
+			$order->update_meta_data( '_holded_doc_type', $doctype );
+			$order->save();
 
-			$order_msg = __( 'Order synced correctly with Holded, ID: ', 'import-holded-products-woocommerce-premium' ) . $result['invoiceNum'];
+			$order_msg = __( 'Order synced correctly with Holded, ID: ', 'connect-woocommerce-holded' ) . $result['invoiceNum'];
 
 			$order->add_order_note( $order_msg );
 			return array(
 				'status'  => 'ok',
-				'message' => $doctype . ' ' . __( 'num: ', 'import-holded-products-woocommerce-premium' ) . $result['invoiceNum'],
+				'message' => $doctype . ' ' . __( 'num: ', 'connect-woocommerce-holded' ) . $result['invoiceNum'],
 			);
 		}
 	}
