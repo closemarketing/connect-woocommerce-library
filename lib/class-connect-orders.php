@@ -9,6 +9,9 @@
  */
 
 defined( 'ABSPATH' ) || exit;
+
+use Automattic\WooCommerce\Utilities\OrderUtil;
+
 /**
  * Class Orders integration
  */
@@ -62,11 +65,13 @@ class Connect_WooCommerce_Orders {
 			add_filter( 'woocommerce_email_attachments', array( $this, 'attach_file_woocommerce_email' ), 10, 3 );
 		}
 
-		// Order Columns.
+		// Order Columns HPOS.
 		add_filter( 'manage_woocommerce_page_wc-orders_columns', array( $this, 'custom_shop_order_column' ), 20 );
 		add_action( 'manage_woocommerce_page_wc-orders_custom_column', array( $this, 'custom_orders_list_column_content' ), 20, 2 );
+		// Order Columns CPT.
+		add_filter( 'manage_edit-shop_order_columns', array( $this, 'custom_shop_order_column' ), 20 );
+		add_action( 'manage_shop_order_posts_custom_column', array( $this, 'custom_orders_list_column_content' ), 20, 2 );
 	}
-
 	/**
 	 * Order completed
 	 *
@@ -193,23 +198,28 @@ class Connect_WooCommerce_Orders {
 	 */
 	public function create_invoice( $order_id, $completed_date ) {
 		global $connapi_erp, $connwoo_plugin_options;
-		$doctype       = isset( $this->sync_settings['doctype'] ) ? $this->sync_settings['doctype'] : 'nosync';
-		$order         = wc_get_order( $order_id );
-		$order_total   = (int) $order->get_total();
-		$ec_invoice_id = $order->get_meta( $this->meta_key_order );
-		$freeorder     = isset( $this->sync_settings['freeorder'] ) ? $this->sync_settings['freeorder'] : 'no';
+		$doctype        = isset( $this->sync_settings['doctype'] ) ? $this->sync_settings['doctype'] : 'nosync';
+		$order          = wc_get_order( $order_id );
+		$order_total    = (int) $order->get_total();
+		$ec_invoice_id  = $order->get_meta( $this->meta_key_order );
+		$freeorder      = isset( $this->sync_settings['freeorder'] ) ? $this->sync_settings['freeorder'] : 'no';
+		$order_free_msg = __( 'Free order not created in ', 'connect-woocommerce' ) . $connwoo_plugin_options['name'];
 
 		// Not create order if free.
-		if ( 'no' === $freeorder && 0 === $order_total ) {
+		if ( 'no' === $freeorder && 0 === $order_total && empty( $ec_invoice_id ) ) {
 			$order->update_meta_data( $this->meta_key_order, 'nocreate' );
 			$order->save();
 
-			$order_msg = __( 'Free order not created in ', 'connect-woocommerce' ) . $connwoo_plugin_options['name'];
-
-			$order->add_order_note( $order_msg );
+			$order->add_order_note( $order_free_msg );
 			return array(
 				'status'  => 'ok',
-				'message' => $order_msg,
+				'message' => $order_free_msg,
+			);
+		} elseif ( ! empty( $ec_invoice_id ) && 'nocreate' === $ec_invoice_id ) {
+			$order_free_msg = __( 'Free order not created in ', 'connect-woocommerce' ) . $connwoo_plugin_options['name'];
+			return array(
+				'status'  => 'ok',
+				'message' => $order_free_msg,
 			);
 		}
 
@@ -240,50 +250,49 @@ class Connect_WooCommerce_Orders {
 	 * @return void
 	 */
 	public function import_method_orders() {
-		global $connwoo_plugin_options;
-		$not_sapi_cli   = substr( php_sapi_name(), 0, 3 ) !== 'cli' ? true : false;
-		$doing_ajax     = defined( 'DOING_AJAX' ) && DOING_AJAX;
-		$sync_loop      = isset( $_POST['syncLoop'] ) ? (int) sanitize_text_field( $_POST['syncLoop'] ) : 0;
+		$not_sapi_cli = substr( php_sapi_name(), 0, 3 ) !== 'cli' ? true : false;
+		$doing_ajax   = defined( 'DOING_AJAX' ) && DOING_AJAX;
+		$sync_loop    = isset( $_POST['syncLoop'] ) ? (int) sanitize_text_field( $_POST['syncLoop'] ) : 0;
 
 		// Start.
-		if ( ! isset( $this->orders ) ) {
-			$orders = get_posts(
+		if ( ! session_id() ) {
+			session_start();
+		}
+		if ( 0 === $sync_loop ) {
+			$orders = wc_get_orders(
 				array(
-					'post_type'      => 'shop_order',
-					'post_status'    => array( 'wc-completed' ),
+					'status'    => array( 'wc-completed' ),
 					'posts_per_page' => -1,
+					'orderby' => 'date',
+					'order'   => 'ASC',
 				)
 			);
 
 			// Get Completed date not order date.
 			foreach ( $orders as $order ) {
-				$completed_date = get_post_meta( $order->ID, '_completed_date', true );
-				if ( empty( $completed_date ) ) {
-					$this->orders[] = array(
+				if ( $order->has_status('completed') ) {
+					$sync_orders[] = array(
 						'id'   => $order->ID,
-						'date' => $order->post_date,
-					);
-				} else {
-					$this->orders[] = array(
-						'id'   => $order->ID,
-						'date' => $completed_date,
+						'date' => $order->get_date_completed(),
 					);
 				}
 			}
+			$_SESSION['sync_orders'] = $sync_orders;
+		} else {
+			$sync_orders = $_SESSION['sync_orders'];
 		}
 
-		if ( false === $this->orders ) {
+		if ( false === $sync_orders ) {
 			if ( $doing_ajax ) {
 				wp_send_json_error( array( 'msg' => 'Error' ) );
 			} else {
 				die();
 			}
 		} else {
-			$orders_array           = $this->orders;
-			$orders_count           = count( $orders_array );
-			$item                   = $orders_array[ $sync_loop ];
-			$error_orders_html      = '';
+			$orders_count           = count( $sync_orders );
+			$item                   = $sync_orders[ $sync_loop ];
 			$this->msg_error_orders = array();
+			$order                  = wc_get_order( $item['id'] );
 
 			if ( $orders_count ) {
 				if ( ( $doing_ajax ) || $not_sapi_cli ) {
@@ -301,10 +310,12 @@ class Connect_WooCommerce_Orders {
 						die( esc_html( __( 'No orders to import', 'connect-woocommerce' ) ) );
 					}
 				} else {
-					$ec_invoice_id = get_post_meta( $item['id'], $this->meta_key_order, true );
+					$ec_invoice_id = $order->get_meta( $this->meta_key_order );
 
-					if ( ! empty( $ec_invoice_id ) ) {
+					if ( ! empty( $ec_invoice_id ) && 'nocreate' !== $ec_invoice_id ) {
 						$this->ajax_msg .= __( 'Order already exported to API ID:', 'connect-woocommerce' ) . $ec_invoice_id;
+					} elseif ( ! empty( $ec_invoice_id ) && 'nocreate' !== $ec_invoice_id ) {
+						$this->ajax_msg .= __( 'Free order not exported', 'connect-woocommerce' );
 					} else {
 						$result = $this->create_invoice( $item['id'], $item['date'] );
 
@@ -318,9 +329,11 @@ class Connect_WooCommerce_Orders {
 					$orders_synced = $sync_loop + 1;
 
 					if ( $orders_synced <= $orders_count ) {
-						$this->ajax_msg = '[' . date_i18n( 'H:i:s' ) . '] ' . $orders_synced . '/' . $orders_count . ' ' . __( 'orders. ', 'connect-woocommerce' ) . $this->ajax_msg;
+						$order_date = date( 'd-m-Y H:m', strtotime( $order->get_date_created() ) );
+						$this->ajax_msg = '[' . date_i18n( 'H:i:s' ) . '] ' . $orders_synced . '/' . $orders_count . ' ' . __( 'orders. ', 'connect-woocommerce' ) .' ' . __( 'Created:', 'connect-woocommerce' ) . ' ' . $order_date . ' ' . $this->ajax_msg;
 						if ( $ec_invoice_id ) {
-							$this->ajax_msg .= ' <a href="' . get_edit_post_link( $post_id ) . '" target="_blank">' . __( 'View', 'connect-woocommerce' ) . '</a>';
+							$link = get_bloginfo('wpurl') . '/wp-admin/admin.php?page=wc-orders&id=' . $item['id'] . '&action=edit';
+							$this->ajax_msg .= ' <a href="' . $link . '" target="_blank">' . __( 'View', 'connect-woocommerce' ) . '</a>';
 						}
 						if ( $orders_synced == $orders_count ) {
 							$this->ajax_msg .= '<p class="finish">' . __( 'All caught up!', 'connect-woocommerce' ) . '</p>';
