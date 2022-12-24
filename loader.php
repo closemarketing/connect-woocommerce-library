@@ -11,7 +11,6 @@
 defined( 'ABSPATH' ) || exit;
 
 require_once plugin_dir_path( __FILE__ ) . '/lib/helpers-functions.php';
-require_once plugin_dir_path( __FILE__ ) . '/lib/helpers-cron.php';
 
 // Includes files.
 require_once plugin_dir_path( __FILE__ ) . '/lib/class-connect-admin.php';
