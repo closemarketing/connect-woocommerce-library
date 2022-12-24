@@ -29,12 +29,20 @@ class Connect_WooCommerce_Orders {
 	private $sync_settings;
 
 	/**
+	 * Private Meta key order.
+	 *
+	 * @var [type]
+	 */
+	private $meta_key_order;
+
+	/**
 	 * Init and hook in the integration.
 	 */
 	public function __construct() {
 		global $connwoo_plugin_options;
-		$this->sync_settings = get_option( CWLIB_SLUG );
-		$ecstatus            = isset( $this->sync_settings['ecstatus'] ) ? $this->sync_settings['ecstatus'] : $connwoo_plugin_options['order_only_order_completed'];
+		$this->sync_settings  = get_option( CWLIB_SLUG );
+		$ecstatus             = isset( $this->sync_settings['ecstatus'] ) ? $this->sync_settings['ecstatus'] : $connwoo_plugin_options['order_only_order_completed'];
+		$this->meta_key_order = '_' . $connwoo_plugin_options['slug'] . '_invoice_id';
 
 		add_action( 'admin_print_footer_scripts', array( $this, 'admin_print_footer_scripts' ), 11, 1 );
 		add_action( 'wp_ajax_wcpimh_import_orders', array( $this, 'wcpimh_import_orders' ) );
@@ -53,6 +61,10 @@ class Connect_WooCommerce_Orders {
 		if ( $connwoo_plugin_options['order_send_attachments'] ) {
 			add_filter( 'woocommerce_email_attachments', array( $this, 'attach_file_woocommerce_email' ), 10, 3 );
 		}
+
+		// Order Columns.
+		add_filter( 'manage_edit-shop_order_columns', array( $this, 'custom_shop_order_column' ), 20 );
+		add_action( 'manage_shop_order_posts_custom_column' , array( $this, 'custom_orders_list_column_content' ), 20, 2 );
 	}
 
 	/**
@@ -181,16 +193,16 @@ class Connect_WooCommerce_Orders {
 	 */
 	public function create_invoice( $order_id, $completed_date ) {
 		global $connapi_erp, $connwoo_plugin_options;
-		$doctype        = isset( $this->sync_settings['doctype'] ) ? $this->sync_settings['doctype'] : 'nosync';
-		$order          = wc_get_order( $order_id );
-		$order_total    = (int) $order->get_total();
-		$meta_key_order = '_' . $connwoo_plugin_options['slug'] . '_invoice_id';
-		$ec_invoice_id  = get_post_meta( $order_id, $meta_key_order, true );
-		$freeorder      = isset( $this->sync_settings['freeorder'] ) ? $this->sync_settings['freeorder'] : 'no';
+		$doctype       = isset( $this->sync_settings['doctype'] ) ? $this->sync_settings['doctype'] : 'nosync';
+		$order         = wc_get_order( $order_id );
+		$order_total   = (int) $order->get_total();
+		$ec_invoice_id = $order->get_meta( $this->meta_key_order );
+		$freeorder     = isset( $this->sync_settings['freeorder'] ) ? $this->sync_settings['freeorder'] : 'no';
 
 		// Not create order if free.
 		if ( 'no' === $freeorder && 0 === $order_total ) {
-			update_post_meta( $order_id, $meta_key_order, 'nocreate' );
+			$order->update_meta_data( $this->meta_key_order, 'nocreate' );
+			$order->save();
 
 			$order_msg = __( 'Free order not created in ', 'connect-woocommerce' ) . $connwoo_plugin_options['name'];
 
@@ -204,7 +216,7 @@ class Connect_WooCommerce_Orders {
 		// Create the inovice.
 		if ( empty( $ec_invoice_id ) ) {
 			try {
-				return $connapi_erp->create_order( $order, $meta_key_order );
+				return $connapi_erp->create_order( $order, $this->meta_key_order );
 			} catch ( Exception $e ) {
 				return array(
 					'status'  => 'error',
@@ -232,7 +244,6 @@ class Connect_WooCommerce_Orders {
 		$not_sapi_cli   = substr( php_sapi_name(), 0, 3 ) !== 'cli' ? true : false;
 		$doing_ajax     = defined( 'DOING_AJAX' ) && DOING_AJAX;
 		$sync_loop      = isset( $_POST['syncLoop'] ) ? (int) sanitize_text_field( $_POST['syncLoop'] ) : 0;
-		$meta_key_order = '_' . $connwoo_plugin_options['slug'] . '_invoice_id';
 
 		// Start.
 		if ( ! isset( $this->orders ) ) {
@@ -290,7 +301,7 @@ class Connect_WooCommerce_Orders {
 						die( esc_html( __( 'No orders to import', 'connect-woocommerce' ) ) );
 					}
 				} else {
-					$ec_invoice_id = get_post_meta( $item['id'], $meta_key_order, true );
+					$ec_invoice_id = get_post_meta( $item['id'], $this->meta_key_order, true );
 
 					if ( ! empty( $ec_invoice_id ) ) {
 						$this->ajax_msg .= __( 'Order already exported to API ID:', 'connect-woocommerce' ) . $ec_invoice_id;
@@ -457,6 +468,46 @@ class Connect_WooCommerce_Orders {
 		return $attachments;
 	}
 
+	/**
+	 * Add columns to order list
+	 *
+	 * @param array $columns Columns for order.
+	 * @return array
+	 */
+	public function custom_shop_order_column( $columns ) {
+		global $connwoo_plugin_options;
+
+		$reordered_columns = array();
+		// Inserting columns to a specific location.
+		foreach ( $columns as $key => $column ) {
+			$reordered_columns[ $key ] = $column;
+			if ( 'order_status' === $key ) {
+				// Inserting after "Status" column.
+				$reordered_columns[ $connwoo_plugin_options['slug'] ] = $connwoo_plugin_options['name'];
+			}
+		}
+		return $reordered_columns;
+	}
+
+	/**
+	 * Adding custom fields meta data for each new column
+	 *
+	 * @param string $column Column name.
+	 * @param int    $order_id $order id.
+	 * @return void
+	 */
+	public function custom_orders_list_column_content( $column, $order_id ) {
+		global $connwoo_plugin_options;
+
+		switch ( $column ) {
+			case $connwoo_plugin_options['slug']:
+				// Get custom order meta data.
+				$order = wc_get_order( $order_id );
+				echo esc_html( $order->get_meta( $this->meta_key_order ) );
+				unset( $order );
+				break;
+		}
+	}
 
 }
 
