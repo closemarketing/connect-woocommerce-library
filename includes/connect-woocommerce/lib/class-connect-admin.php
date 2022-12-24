@@ -32,7 +32,7 @@ class CONNWOOO_Admin {
 	 * Construct of class
 	 */
 	public function __construct() {
-		global $wpdb, $connwoo_plugin_options;
+		global $wpdb;
 		$this->table_sync   = $wpdb->prefix . 'sync_' . CWLIB_SLUG;
 		$this->options_name = CWLIB_SLUG;
 		add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
@@ -185,7 +185,7 @@ class CONNWOOO_Admin {
 					esc_html( $connwoo_plugin_options['name'] )
 				);
 				echo '</p>';
-				echo '<p style="color:#50575e;">' . esc_html__( 'Instance:', 'pbc' ) . ' ' . esc_html( get_option( $this->options_name . '_license_instance' ) ) . '</p>';
+				echo '<p style="color:#50575e;">' . esc_html__( 'Instance:', 'connect-woocommerce' ) . ' ' . esc_html( get_option( $this->options_name . '_license_instance' ) ) . '</p>';
 				echo '</div></div>';
 			}
 			?>
@@ -366,7 +366,7 @@ class CONNWOOO_Admin {
 		add_settings_field(
 			'wcpimh_sync',
 			$name_sync,
-			array( $this, 'wcpimh_sync_callback' ),
+			array( $this, 'sync_callback' ),
 			'connect-woocommerce-automate',
 			'connect_woocommerce_setting_automate'
 		);
@@ -375,14 +375,15 @@ class CONNWOOO_Admin {
 		add_settings_field(
 			'wcpimh_sync_num',
 			$name_sync,
-			array( $this, 'wcpimh_sync_num_callback' ),
+			array( $this, 'sync_num_callback' ),
 			'connect-woocommerce-automate',
 			'connect_woocommerce_setting_automate'
 		);
+
 		add_settings_field(
 			'wcpimh_sync_email',
 			__( 'Do you want to receive an email when all products are synced?', 'connect-woocommerce' ),
-			array( $this, 'wcpimh_sync_email_callback' ),
+			array( $this, 'sync_email_callback' ),
 			'connect-woocommerce-automate',
 			'connect_woocommerce_setting_automate'
 		);
@@ -817,7 +818,7 @@ class CONNWOOO_Admin {
 	 *
 	 * @return void
 	 */
-	public function wcpimh_sync_callback() {
+	public function sync_callback() {
 		global $connwoo_cron_options;
 		?>
 		<select name="<?php echo esc_html( $this->options_name ); ?>[sync]" id="wcpimh_sync">
@@ -842,14 +843,14 @@ class CONNWOOO_Admin {
 	 *
 	 * @return void
 	 */
-	public function wcpimh_sync_num_callback() {
+	public function sync_num_callback() {
 		printf(
 			'<input class="regular-text" type="text" name="' . $this->options_name . '[sync_num]" id="wcpimh_sync_num" value="%s">',
 			isset( $this->settings['sync_num'] ) ? esc_attr( $this->settings['sync_num'] ) : 5
 		);
 	}
 
-	public function wcpimh_sync_email_callback() {
+	public function sync_email_callback() {
 		?>
 		<select name="<?php echo esc_html( $this->options_name ); ?>[sync_email]" id="wcpimh_sync_email">
 			<?php $selected = ( isset( $this->settings['sync_email'] ) && $this->settings['sync_email'] === 'yes' ) ? 'selected' : ''; ?>
@@ -1115,7 +1116,7 @@ class CONNWOOO_Admin {
 					update_option( $this->options_name . '_license_activated', 'Deactivated' );
 					update_option( $this->options_name . '_license_apikey', '' );
 					update_option( $this->options_name . '_license_product_id', '' );
-					add_settings_error( 'wc_am_deactivate_text', 'deactivate_msg', esc_html__( 'License AutoTranslate deactivated. ', 'connect-woocommerce' ) . esc_attr( "{$deactivation_result['activations_remaining']}." ), 'updated' );
+					add_settings_error( 'wc_am_deactivate_text', 'deactivate_msg', esc_html__( 'License Connect WooCommerce deactivated. ', 'connect-woocommerce' ) . esc_attr( "{$deactivation_result['activations_remaining']}." ), 'updated' );
 
 					return;
 				}

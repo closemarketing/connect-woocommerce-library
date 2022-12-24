@@ -54,8 +54,8 @@ class Connect_WooCommerce_Import_PRO {
 	 */
 	public function __construct() {
 		global $wpdb;
-		$this->table_sync = $wpdb->prefix . 'sync_' . CWLIB_SLUG;
-
+		$this->table_sync  = $wpdb->prefix . 'sync_' . CWLIB_SLUG;
+		$this->settings    = get_option( CWLIB_SLUG );
 		$this->sync_period = isset( $this->settings['sync'] ) ? strval( $this->settings['sync'] ) : 'no';
 
 		// Schedule.
