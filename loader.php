@@ -5,7 +5,7 @@
  * @package    WordPress
  * @author     David Perez <david@closemarketing.es>
  * @copyright  2022 Closemarketing
- * @version    1.0
+ * @version    1.2
  */
 
 defined( 'ABSPATH' ) || exit;
