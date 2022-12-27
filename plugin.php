@@ -5,7 +5,7 @@
  * Description: Imports Products and data from Holded to WooCommerce.
  * Author: Closetechnology
  * Author URI: https://close.technology/
- * Version: 2.1.0-beta.2
+ * Version: 2.1.0-rc.1
  *
  * @package WordPress
  * Text Domain: connect-woocommerce-holded
@@ -14,9 +14,9 @@
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
  */
 
-defined( 'ABSPATH' ) || exit;
+defined( 'ABSPATH' ) || exit;s
 
-define( 'WCPIMH_VERSION', '2.1.0-beta.2' );
+define( 'WCPIMH_VERSION', '2.1.0-rc.1' );
 define( 'WCPIMH_FILE', __FILE__ );
 define( 'CONHOLD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'CONHOLD_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
