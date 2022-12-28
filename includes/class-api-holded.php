@@ -61,7 +61,7 @@ class CONNAPI_HOLDED_ERP {
 				'data'   => __( 'No API Key', 'connect-woocommerce-holded' ),
 			);
 		}
-		$args     = array(
+		$args = array(
 			'method'  => $method,
 			'headers' => array(
 				'key' => $apikey,
@@ -71,42 +71,32 @@ class CONNAPI_HOLDED_ERP {
 		if ( ! empty( $query ) ) {
 			$args['body'] = $query;
 		}
-		// Loop.
-		$next          = true;
-		$results_value = array();
+
 		$url           = 'https://api.holded.com/api/invoicing/v1/' . $endpoint;
 
-		while ( $next ) {
-			$result_api = wp_remote_request( $url, $args );
-			$results    = json_decode( wp_remote_retrieve_body( $result_api ), true );
-			$code       = isset( $result_api['response']['code'] ) ? (int) round( $result_api['response']['code'] / 100, 0 ) : 0;
+		$result_api = wp_remote_request( $url, $args );
+		$results    = json_decode( wp_remote_retrieve_body( $result_api ), true );
+		$code       = isset( $result_api['response']['code'] ) ? (int) round( $result_api['response']['code'] / 100, 0 ) : 0;
 
-			if ( 2 !== $code ) {
-				$message = implode( ' ', $result_api['response'] ) . ' ';
-				$body    = json_decode( $result_api['body'], true );
+		if ( 2 !== $code ) {
+			$message = implode( ' ', $result_api['response'] ) . ' ';
+			$body    = json_decode( $result_api['body'], true );
 
-				if ( is_array( $body ) ) {
-					foreach ( $body as $key => $value ) {
-						$message_value = is_array( $value ) ? implode( '.', $value ) : $value;
-						$message      .= $key . ': ' . $message_value;
-					}
+			if ( is_array( $body ) ) {
+				foreach ( $body as $key => $value ) {
+					$message_value = is_array( $value ) ? implode( '.', $value ) : $value;
+					$message      .= $key . ': ' . $message_value;
 				}
-				return array(
-					'status' => 'error',
-					'data'   => $message,
-				);
 			}
-
-			if ( isset( $results['next'] ) && $results['next'] ) {
-				$url = $results['next'];
-			} else {
-				$next = false;
-			}
+			return array(
+				'status' => 'error',
+				'data'   => $message,
+			);
 		}
 
 		return array(
 			'status' => 'ok',
-			'data'   => isset( $results['results'] ) ? $results['results'] : array(),
+			'data'   => $results,
 		);
 	}
 
@@ -122,8 +112,8 @@ class CONNAPI_HOLDED_ERP {
 		$array_options = array(
 			'default' => __( 'Default price', 'connect-woocommerce-holded' ),
 		);
-		if ( ! empty( $body_response ) ) {
-			foreach ( $body_response as $rate ) {
+		if ( 'ok' === $response_rates['status'] && ! empty( $response_rates['data'] ) ) {
+			foreach ( $response_rates['data'] as $rate ) {
 				if ( isset( $rate['id'] ) && isset( $rate['name'] ) ) {
 					$array_options[ $rate['id'] ] = $rate['name'];
 				}
@@ -142,10 +132,9 @@ class CONNAPI_HOLDED_ERP {
 		if ( ! isset( $this->settings['api'] ) ) {
 			return false;
 		}
-		$apikey       = $this->settings['api'];
-		$args         = array(
+		$args = array(
 			'headers' => array(
-				'key' => $apikey,
+				'key' => $this->settings['api'],
 			),
 			'timeout' => 10,
 		);
@@ -153,7 +142,6 @@ class CONNAPI_HOLDED_ERP {
 		$next   = true;
 		$page   = 1;
 		$output = array();
-		$index  = 0;
 
 		while ( $next ) {
 			$url = '';
@@ -176,7 +164,7 @@ class CONNAPI_HOLDED_ERP {
 
 			$output = array_merge( $output, $body_response );
 
-			if ( count( $output ) === MAX_LIMIT_HOLDED_API ) {
+			if ( count( $body_response ) === MAX_LIMIT_HOLDED_API ) {
 				$page++;
 			} else {
 				$next = false;
