@@ -50,7 +50,9 @@ class CONNAPI_HOLDED_ERP {
 	/**
 	 * Gets information from Holded CRM
 	 *
-	 * @param string $url URL for module.
+	 * @param string $endpoint URL for module.
+	 * @param string $method   Connection method.
+	 * @param string $query    Query for API.
 	 * @return array
 	 */
 	private function api( $endpoint, $method = 'GET', $query = array() ) {
@@ -72,7 +74,7 @@ class CONNAPI_HOLDED_ERP {
 			$args['body'] = $query;
 		}
 
-		$url           = 'https://api.holded.com/api/invoicing/v1/' . $endpoint;
+		$url = 'https://api.holded.com/api/invoicing/v1/' . $endpoint;
 
 		$result_api = wp_remote_request( $url, $args );
 		$results    = json_decode( wp_remote_retrieve_body( $result_api ), true );
@@ -125,7 +127,8 @@ class CONNAPI_HOLDED_ERP {
 	/**
 	 * Gets information from Holded products
 	 *
-	 * @param string $id Id of product to get information.
+	 * @param string $id   Id of product to get information.
+	 * @param string $page Page of api query.
 	 * @return array Array of products imported via API.
 	 */
 	public function get_products( $id = null, $page = null ) {
@@ -177,7 +180,8 @@ class CONNAPI_HOLDED_ERP {
 	/**
 	 * Create Order to Holded
 	 *
-	 * @param string $order_data Data order.
+	 * @param object $order          Order object.
+	 * @param string $meta_key_order Meta key for invoice.
 	 * @return array Array of products imported via API.
 	 */
 	public function create_order( $order, $meta_key_order ) {
@@ -186,6 +190,7 @@ class CONNAPI_HOLDED_ERP {
 			error_admin_message(
 				'ERROR',
 				sprintf(
+					// translators: %s URL for admin settings.
 					__( 'WooCommerce Holded: Plugin is enabled but no api key or secret provided. Please enter your api key and secret <a href="%s">here</a>.', 'import-holded-products-woocommerce' ),
 					'/wp-admin/admin.php?page=import_holded&tab=settings'
 				)
@@ -210,7 +215,7 @@ class CONNAPI_HOLDED_ERP {
 		}
 
 		$fields = array(
-			'contactCode'            => get_post_meta( $order_id, '_billing_vat', true ),
+			'contactCode'            => $order->get_meta( '_billing_vat' ),
 			'contactName'            => $contact_name,
 			'woocommerceCustomer'    => $order->get_user()->data->user_login,
 			'marketplace'            => 'woocommerce',
@@ -245,7 +250,7 @@ class CONNAPI_HOLDED_ERP {
 		$ordered_items  = $order->get_items();
 		$shipping_items = $order->get_items( 'shipping' );
 
-		$wc_payment_method = get_post_meta( $order_id, '_payment_method', true );
+		$wc_payment_method = $order->get_meta( '_payment_method' );
 		$fields['notes']  .= ' ';
 		switch ( $wc_payment_method ) {
 			case 'cod':
@@ -297,13 +302,8 @@ class CONNAPI_HOLDED_ERP {
 				'k'        => 'shipping',
 			);
 		}
-		// Flat rate fix.
-		if ( $order->has_shipping_method( 'flat_rate' ) ) {
-
-		}
 
 		// Create salesorder.
-		// Sends to API.
 		$args = array(
 			'headers' => array(
 				'key' => $apikey,
@@ -360,7 +360,7 @@ class CONNAPI_HOLDED_ERP {
 				$woosb_prods = explode( ',', $woosb_ids );
 
 				foreach ( $woosb_prods as $woosb_ids ) {
-					$wb_prod = explode( '/', $woosb_ids );
+					$wb_prod    = explode( '/', $woosb_ids );
 					$wb_prod_id = $wb_prod[0];
 				}
 				$subproducts = count( $woosb_prods );
@@ -387,13 +387,13 @@ class CONNAPI_HOLDED_ERP {
 
 			} elseif ( $subproducts > 0 ) {
 				$subproducts = --$subproducts;
-				$vat_per = 0;
+				$vat_per     = 0;
 				if ( floatval( $order_item['line_total'] ) ) {
 					$vat_per = round( ( floatval( $order_item['line_tax'] ) * 100 ) / ( floatval( $order_item['line_total'] ) ), 4 );
 				}
-				$product_cost = floatval( $order_item['line_total'] );
+				$product_cost                            = floatval( $order_item['line_total'] );
 				$fields_items[ $index_bund ]['subtotal'] = $fields_items[ $index_bund ]['subtotal'] + $product_cost;
-				$fields_items[ $index_bund ]['tax'] = round( $vat_per, 0 );
+				$fields_items[ $index_bund ]['tax']      = round( $vat_per, 0 );
 			} else {
 				$vat_per = 0;
 				if ( floatval( $order_item['line_total'] ) ) {
@@ -443,7 +443,7 @@ class CONNAPI_HOLDED_ERP {
 		$response = wp_remote_get( $url, $args );
 		$body     = json_decode( wp_remote_retrieve_body( $response ), true );
 
-		if ( isset( $body['status'] ) && 0 == $body['status'] ) {
+		if ( isset( $body['status'] ) && 0 === (int) $body['status'] ) {
 			return false;
 		}
 
@@ -480,7 +480,7 @@ class CONNAPI_HOLDED_ERP {
 		$body       = wp_remote_retrieve_body( $response );
 		$body_array = json_decode( $body, true );
 
-		if ( isset( $body_array['status'] ) && 0 == $body_array['status'] ) {
+		if ( isset( $body_array['status'] ) && 0 === (int) $body_array['status'] ) {
 			return false;
 		}
 
