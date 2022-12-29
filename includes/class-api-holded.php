@@ -508,6 +508,19 @@ class CONNAPI_HOLDED_ERP {
 			'content_type' => $content_type,
 		);
 	}
+
+	/**
+	 * Get URL link api edit
+	 *
+	 * @param object $order Order object.
+	 * @return string
+	 */
+	public function get_url_link_api( $order ) {
+		global $connwoo_plugin_options;
+		$api_doc_id   = $order->get_meta( '_' . $connwoo_plugin_options['slug'] . '_doc_id' );
+		$api_doc_type = $order->get_meta( '_' . $connwoo_plugin_options['slug'] . '_doc_type' );
+		return 'https://app.holded.com/sales/revenue#open:' . $api_doc_type . '-' . $api_doc_id;
+	}
 }
 
 $connapi_erp = new CONNAPI_HOLDED_ERP();

@@ -42,6 +42,8 @@ WordPress installation and then activate the Plugin from Plugins page.
 == Changelog ==
 = 2.1.0 =
 *   New Admin design.
+*   Protected folder invoice.
+*   Order columns for API.
 *   Fix: error message order.
 *   Fix: Shipping order cost fixed not implemented in order.
 *   Fix: Fatal error no products in automation.
