@@ -10,19 +10,10 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use Automattic\WooCommerce\Utilities\OrderUtil;
-
 /**
  * Class Orders integration
  */
 class Connect_WooCommerce_Orders {
-
-	/**
-	 * Array of orders to export
-	 *
-	 * @var array
-	 */
-	private $orders;
 
 	/**
 	 * Array of sync settings
@@ -381,19 +372,20 @@ class Connect_WooCommerce_Orders {
 	 * Email attachmets
 	 *
 	 * @param file    $attachments Files to attach.
-	 * @param integer $id Order ID.
+	 * @param integer $action      Action name.
 	 * @param object  $email_order Order object.
 	 * @return file
 	 */
-	public function attach_file_woocommerce_email( $attachments, $id, $email_order ) {
+	public function attach_file_woocommerce_email( $attachments, $action, $email_order ) {
 		global $connapi_erp, $connwoo_plugin_options;
-		$order_id     = $email_order->get_id();
-		$remote_slug  = $connwoo_plugin_options['slug'];
-		$api_doc_id   = get_post_meta( $order_id, '_' . $remote_slug . '_doc_id', true );
-		$api_doc_type = get_post_meta( $order_id, '_' . $remote_slug . '_doc_type', true );
+		$settings     = get_option( CWLIB_SLUG );
+		$apikey       = isset( $settings['api'] ) ? $settings['api'] : '';
+		$order        = wc_get_order( $email_order );
+		$api_doc_id   = $order->get_meta( '_' . $connwoo_plugin_options['slug'] . '_doc_id' );
+		$api_doc_type = $order->get_meta( '_' . $connwoo_plugin_options['slug'] . '_doc_type' );
 
-		if ( $api_doc_id ) {
-			$file_document_path = $connapi_erp->get_order_pdf( $api_doc_type, $api_doc_id );
+		if ( $api_doc_id && $apikey ) {
+			$file_document_path = $connapi_erp->get_order_pdf( $apikey, $api_doc_type, $api_doc_id );
 
 			if ( is_file( $file_document_path ) ) {
 				$attachments[] = $file_document_path;
