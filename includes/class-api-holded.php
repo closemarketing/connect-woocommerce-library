@@ -185,7 +185,7 @@ class CONNAPI_HOLDED_ERP {
 	 * @return array Array of products imported via API.
 	 */
 	public function create_order( $order, $meta_key_order ) {
-
+		global $connwoo_plugin_options;
 		if ( ! isset( $this->settings['api'] ) ) {
 			error_admin_message(
 				'ERROR',
@@ -324,8 +324,8 @@ class CONNAPI_HOLDED_ERP {
 		if ( isset( $result['invoiceNum'] ) ) {
 			// HPOS Update.
 			$order->update_meta_data( $meta_key_order, $result['invoiceNum'] );
-			$order->update_meta_data( '_holded_doc_id', $result['id'] );
-			$order->update_meta_data( '_holded_doc_type', $doctype );
+			$order->update_meta_data( '_' . $connwoo_plugin_options['slug'] . '_doc_id', $result['id'] );
+			$order->update_meta_data( '_' . $connwoo_plugin_options['slug'] . '_doc_type', $doctype );
 			$order->save();
 
 			$order_msg = __( 'Order synced correctly with Holded, ID: ', 'connect-woocommerce-holded' ) . $result['invoiceNum'];
@@ -424,10 +424,8 @@ class CONNAPI_HOLDED_ERP {
 	 * @param string $document_id Document ID from Holded.
 	 * @return string
 	 */
-	public function get_order_pdf( $doctype, $document_id ) {
-		$imh_settings = get_option( 'imhset' );
-		$apikey       = isset( $imh_settings['wcpimh_api'] ) ? $imh_settings['wcpimh_api'] : '';
-
+	public function get_order_pdf( $apikey, $doctype, $document_id ) {
+		global $connwoo_plugin_options;
 		if ( empty( $apikey ) ) {
 			error_log( sprintf( __( 'WooCommerce Holded: Plugin is enabled but no api key or secret provided. Please enter your api key and secret <a href="%s">here</a>.', 'import-holded-products-woocommerce' ), '/wp-admin/admin.php?page=import_holded&tab=settings' ) ); // phpcs:ignore.
 			return false;
@@ -448,12 +446,24 @@ class CONNAPI_HOLDED_ERP {
 		}
 
 		$upload_dir = wp_upload_dir();
-		$dir_name   = $upload_dir['basedir'] . '/holded';
-		if ( ! file_exists( $dir_name ) ) {
-			wp_mkdir_p( $dir_name );
+		$dirname    = $upload_dir['basedir'] . '/' . $connwoo_plugin_options['plugin_slug'] . '/';
+
+		if ( ! file_exists( $dirname ) ) {
+			wp_mkdir_p( $dirname );
+
+			// Create htaccess.
+			$protect_file_path = $dirname . '.htaccess';
+			$protect_content = '<FilesMatch ".*">
+	Order Allow,Deny
+	Deny from All
+</FilesMatch>';
+			$file_protect = fopen( $protect_file_path, 'w' );
+			fwrite( $file_protect, $protect_content );
+			fclose( $file_protect );
 		}
-		$filename = '/' . $doctype . '-' . $document_id . '.pdf';
-		$file     = $dir_name . $filename;
+
+		$filename = $doctype . '-' . $document_id . '.pdf';
+		$file     = $dirname . $filename;
 		file_put_contents( $file, base64_decode( $body['data'] ) );
 
 		return $file;
