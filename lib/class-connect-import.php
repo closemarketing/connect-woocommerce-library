@@ -296,28 +296,28 @@ class WCPIMH_Import {
 				$product_props['sku'] = $item['sku'];
 				// Check if the product can be sold.
 				if ( 'no' === $import_stock && $item['price'] > 0 ) {
-					$product_props['stock_status'] = 'instock';
+					$product_props['stock_status']       = 'instock';
 					$product_props['catalog_visibility'] = 'visible';
 					wp_remove_object_terms( $product_id, 'exclude-from-catalog', 'product_visibility' );
 					wp_remove_object_terms( $product_id, 'exclude-from-search', 'product_visibility' );
 				} elseif ( 'yes' === $import_stock && $item['stock'] > 0 ) {
-					$product_props['manage_stock'] = true;
-					$product_props['stock_quantity'] = $item['stock'];
-					$product_props['stock_status'] = 'instock';
+					$product_props['manage_stock']       = true;
+					$product_props['stock_quantity']     = $item['stock'];
+					$product_props['stock_status']       = 'instock';
 					$product_props['catalog_visibility'] = 'visible';
 					wp_remove_object_terms( $product_id, 'exclude-from-catalog', 'product_visibility' );
 					wp_remove_object_terms( $product_id, 'exclude-from-search', 'product_visibility' );
 				} elseif ( 'yes' === $import_stock && 0 === $item['stock'] ) {
-					$product_props['manage_stock'] = true;
+					$product_props['manage_stock']       = true;
 					$product_props['catalog_visibility'] = 'hidden';
-					$product_props['stock_quantity'] = 0;
-					$product_props['stock_status'] = 'outofstock';
+					$product_props['stock_quantity']     = 0;
+					$product_props['stock_status']       = 'outofstock';
 					wp_set_object_terms( $product_id, array( 'exclude-from-catalog', 'exclude-from-search' ), 'product_visibility' );
 				} else {
-					$product_props['manage_stock'] = true;
+					$product_props['manage_stock']       = true;
 					$product_props['catalog_visibility'] = 'hidden';
-					$product_props['stock_quantity'] = $item['stock'];
-					$product_props['stock_status'] = 'outofstock';
+					$product_props['stock_quantity']     = $item['stock'];
+					$product_props['stock_status']       = 'outofstock';
 					wp_set_object_terms( $product_id, array( 'exclude-from-catalog', 'exclude-from-search' ), 'product_visibility' );
 				}
 				break;

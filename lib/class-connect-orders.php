@@ -112,84 +112,6 @@ class Connect_WooCommerce_Orders {
 	}
 
 	/**
-	 * Review items
-	 *
-	 * @param object $ordered_items Items ordered.
-	 * @return object
-	 */
-	private function review_items( $ordered_items ) {
-		global $connwoo_plugin_options;
-		$subproducts  = 0;
-		$fields_items = array();
-		$index        = 0;
-		$index_bund   = 0;
-		foreach ( $ordered_items as $order_item ) {
-
-			$product = wc_get_product( $order_item['product_id'] );
-
-			if ( $product->is_type( 'woosb' ) ) {
-				$woosb_ids   = get_post_meta( $order_item['product_id'], 'woosb_ids', true );
-				$woosb_prods = explode( ',', $woosb_ids );
-
-				foreach ( $woosb_prods as $woosb_ids ) {
-					$wb_prod = explode( '/', $woosb_ids );
-					$wb_prod_id = $wb_prod[0];
-				}
-				$subproducts = count( $woosb_prods );
-
-				$fields_items[ $index ] = array(
-					'name'     => $order_item['name'],
-					'desc'     => '',
-					'units'    => floatval( $order_item['qty'] ),
-					'subtotal' => 0,
-					'tax'      => 0,
-					'stock'    => $product->get_stock_quantity(),
-				);
-
-				// Use Source product ID instead of SKU.
-				$prod_key         = '_' . $connwoo_plugin_options['slug'] . '_productid';
-				$source_productid = get_post_meta( $order_item['product_id'], $prod_key, true );
-				if ( $source_productid ) {
-					$fields_items[ $index ]['productId'] = $source_productid;
-				} else {
-					$fields_items[ $index ]['sku'] = $product->get_sku();
-				}
-				$index_bund = $index;
-				$index++;
-
-			} elseif ( $subproducts > 0 ) {
-				$subproducts = --$subproducts;
-				$vat_per = 0;
-				if ( floatval( $order_item['line_total'] ) ) {
-					$vat_per = round( ( floatval( $order_item['line_tax'] ) * 100 ) / ( floatval( $order_item['line_total'] ) ), 4 );
-				}
-				$product_cost = floatval( $order_item['line_total'] );
-				$fields_items[ $index_bund ]['subtotal'] = $fields_items[ $index_bund ]['subtotal'] + $product_cost;
-				$fields_items[ $index_bund ]['tax'] = round( $vat_per, 0 );
-			} else {
-				$vat_per = 0;
-				if ( floatval( $order_item['line_total'] ) ) {
-					$vat_per = round( ( floatval( $order_item['line_tax'] ) * 100 ) / ( floatval( $order_item['line_total'] ) ), 4 );
-				}
-				$product_cost = ( floatval( $order_item['line_total'] ) ) / ( floatval( $order_item['qty'] ) );
-
-				$fields_items[] = array(
-					'name'     => $order_item['name'],
-					'desc'     => '',
-					'units'    => floatval( $order_item['qty'] ),
-					'subtotal' => floatval( $product_cost ),
-					'tax'      => floatval( $vat_per ),
-					'sku'      => $product->get_sku(),
-					'stock'    => $product->get_stock_quantity(),
-				);
-				$index++;
-			}
-		}
-
-		return $fields_items;
-	}
-
-	/**
 	 * Creates invoice data to API
 	 *
 	 * @param string $order_id Order id to api.
@@ -200,7 +122,7 @@ class Connect_WooCommerce_Orders {
 		global $connapi_erp, $connwoo_plugin_options;
 		$doctype        = isset( $this->sync_settings['doctype'] ) ? $this->sync_settings['doctype'] : 'nosync';
 		$order          = wc_get_order( $order_id );
-		$order_total    = (int) $order->get_total();
+		$order_total    = (float) $order->get_total();
 		$ec_invoice_id  = $order->get_meta( $this->meta_key_order );
 		$freeorder      = isset( $this->sync_settings['freeorder'] ) ? $this->sync_settings['freeorder'] : 'no';
 		$order_free_msg = __( 'Free order not created in ', 'connect-woocommerce' ) . $connwoo_plugin_options['name'];

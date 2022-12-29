@@ -90,7 +90,7 @@ class CONNWOOO_Admin {
 		<div class="wrap">
 			<?php settings_errors(); ?>
 
-			<?php $active_tab = isset( $_GET['tab'] ) ? strval( $_GET['tab'] ) : 'sync'; ?>
+			<?php $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'sync'; ?>
 
 			<h2 class="nav-tab-wrapper">
 				<a href="?page=connect_woocommerce&tab=sync" class="nav-tab <?php echo 'sync' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sync products', 'connect-woocommerce' ); ?></a>
@@ -142,7 +142,8 @@ class CONNWOOO_Admin {
 					);
 					?>
 				</form>
-			<?php }
+				<?php
+			}
 
 			if ( 'orders' === $active_tab ) {
 				$this->page_sync_orders();
@@ -295,11 +296,11 @@ class CONNWOOO_Admin {
 
 		if ( $connwoo_plugin_options['product_price_rate_option'] ) {
 			$label_filter = __( 'Product price rate for this eCommerce', 'connect-woocommerce' );
-			$desc_tip = __( 'Copy and paste the ID of the rates for publishing in the web', 'connect-woocommerce' );
+			$desc_tip     = __( 'Copy and paste the ID of the rates for publishing in the web', 'connect-woocommerce' );
 			add_settings_field(
 				'wcpimh_rates',
 				$label_filter,
-				array( $this, 'wcpimh_rates_callback' ),
+				array( $this, 'rates_callback' ),
 				'connect-woocommerce-admin',
 				'connect_woocommerce_setting_section'
 			);
@@ -309,7 +310,7 @@ class CONNWOOO_Admin {
 		add_settings_field(
 			'wcpimh_catnp',
 			$name_catnp,
-			array( $this, 'wcpimh_catnp_callback' ),
+			array( $this, 'catnp_callback' ),
 			'connect-woocommerce-admin',
 			'connect_woocommerce_setting_section'
 		);
@@ -319,7 +320,7 @@ class CONNWOOO_Admin {
 				add_settings_field(
 					'wcpimh_doctype',
 					$name_docorder,
-					array( $this, 'wcpimh_doctype_callback' ),
+					array( $this, 'doctype_callback' ),
 					'connect-woocommerce-admin',
 					'connect_woocommerce_setting_section'
 				);
@@ -328,7 +329,7 @@ class CONNWOOO_Admin {
 			add_settings_field(
 				'wcpimh_freeorder',
 				$name_docorder,
-				array( $this, 'wcpimh_freeorder_callback' ),
+				array( $this, 'freeorder_callback' ),
 				'connect-woocommerce-admin',
 				'connect_woocommerce_setting_section'
 			);
@@ -337,7 +338,7 @@ class CONNWOOO_Admin {
 			add_settings_field(
 				'wcpimh_ecstatus',
 				$name_docorder,
-				array( $this, 'wcpimh_ecstatus_callback' ),
+				array( $this, 'ecstatus_callback' ),
 				'connect-woocommerce-admin',
 				'connect_woocommerce_setting_section'
 			);
@@ -434,7 +435,7 @@ class CONNWOOO_Admin {
 		add_settings_field(
 			'wcpimh_remove_free_others',
 			__( 'Remove other shipping methods when free is possible?', 'connect-woocommerce' ),
-			array( $this, 'wcpimh_remove_free_others_callback' ),
+			array( $this, 'remove_free_others_callback' ),
 			'connect-woocommerce-public',
 			'imhset_pub_setting_section'
 		);
@@ -442,7 +443,7 @@ class CONNWOOO_Admin {
 		add_settings_field(
 			'wcpimh_terms_registration',
 			__( 'Adds terms and conditions in registration page?', 'connect-woocommerce' ),
-			array( $this, 'wcpimh_terms_registration_callback' ),
+			array( $this, 'terms_registration_callback' ),
 			'connect-woocommerce-public',
 			'imhset_pub_setting_section'
 		);
@@ -635,6 +636,11 @@ class CONNWOOO_Admin {
 		);
 	}
 
+	/**
+	 * API field
+	 *
+	 * @return void
+	 */
 	public function api_callback() {
 		printf(
 			'<input class="regular-text" type="password" name="' . esc_html( $this->options_name ) . '[api]" id="wcpimh_api" value="%s">',
@@ -642,52 +648,65 @@ class CONNWOOO_Admin {
 		);
 	}
 
+	/**
+	 * Stock field
+	 *
+	 * @return void
+	 */
 	public function stock_callback() {
+		$stock_option = isset( $this->settings['stock'] ) ? $this->settings['stock'] : 'no';
 		?>
 		<select name="<?php echo esc_html( $this->options_name ); ?>[stock]" id="wcpimh_stock">
-			<?php $selected = ( isset( $this->settings['stock'] ) && $this->settings['stock'] === 'yes' ) ? 'selected' : ''; ?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
-			<?php $selected = ( isset( $this->settings['stock'] ) && $this->settings['stock'] === 'no' ) ? 'selected' : ''; ?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
+			<option value="yes" <?php selected( $stock_option, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
+			<option value="no" <?php selected( $stock_option, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 		</select>
 		<?php
 	}
 
+	/**
+	 * Product status
+	 *
+	 * @return void
+	 */
 	public function prodst_callback() {
+		$product_status = isset( $this->settings['prodst'] ) ? $this->settings['prodst'] : 'draft';
 		?>
 		<select name="<?php echo esc_html( $this->options_name ); ?>[prodst]" id="wcpimh_prodst">
-			<?php $selected = ( isset( $this->settings['prodst'] ) && 'draft' === $this->settings['prodst'] ) ? 'selected' : ''; ?>
-			<option value="draft" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Draft', 'connect-woocommerce' ); ?></option>
-			<?php $selected = ( isset( $this->settings['prodst'] ) && 'publish' === $this->settings['prodst'] ) ? 'selected' : ''; ?>
-			<option value="publish" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Publish', 'connect-woocommerce' ); ?></option>
-			<?php $selected = ( isset( $this->settings['prodst'] ) && 'pending' === $this->settings['prodst'] ) ? 'selected' : ''; ?>
-			<option value="pending" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Pending', 'connect-woocommerce' ); ?></option>
-			<?php $selected = ( isset( $this->settings['prodst'] ) && 'private' === $this->settings['prodst'] ) ? 'selected' : ''; ?>
-			<option value="private" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Private', 'connect-woocommerce' ); ?></option>
+			<option value="draft" <?php selected( $product_status, 'draft' ); ?>><?php esc_html_e( 'Draft', 'connect-woocommerce' ); ?></option>
+			<option value="publish" <?php selected( $product_status, 'publish' ); ?>><?php esc_html_e( 'Publish', 'connect-woocommerce' ); ?></option>
+			<option value="pending" <?php selected( $product_status, 'pending' ); ?>><?php esc_html_e( 'Pending', 'connect-woocommerce' ); ?></option>
+			<option value="private" <?php selected( $product_status, 'private' ); ?>><?php esc_html_e( 'Private', 'connect-woocommerce' ); ?></option>
 		</select>
 		<?php
 	}
 
+	/**
+	 * Virtual products
+	 *
+	 * @return void
+	 */
 	public function virtual_callback() {
+		$virtual_option = isset( $this->settings['virtual'] ) ? $this->settings['virtual'] : 'no';
 		?>
 		<select name="<?php echo esc_html( $this->options_name ); ?>[virtual]" id="wcpimh_virtual">
-			<?php $selected = ( isset( $this->settings['virtual'] ) && $this->settings['virtual'] === 'no' ) ? 'selected' : ''; ?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
-			<?php $selected = ( isset( $this->settings['virtual'] ) && $this->settings['virtual'] === 'yes' ) ? 'selected' : ''; ?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
+			<option value="no" <?php selected( $virtual_option, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
+			<option value="yes" <?php selected( $virtual_option, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
 		</select>
 		<?php
 	}
 
+	/**
+	 * Back orders
+	 *
+	 * @return void
+	 */
 	public function backorders_callback() {
+		$backorders = isset( $this->settings['backorders'] ) ? $this->settings['backorders'] : 'no';
 		?>
 		<select name="<?php echo esc_html( $this->options_name ); ?>[backorders]" id="wcpimh_backorders">
-			<?php $selected = ( isset( $this->settings['backorders'] ) && $this->settings['backorders'] === 'no' ) ? 'selected' : ''; ?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
-			<?php $selected = ( isset( $this->settings['backorders'] ) && $this->settings['backorders'] === 'yes' ) ? 'selected' : ''; ?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
-			<?php $selected = ( isset( $this->settings['backorders'] ) && $this->settings['backorders'] === 'notify' ) ? 'selected' : ''; ?>
-			<option value="notify" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Notify', 'connect-woocommerce' ); ?></option>
+			<option value="no" <?php selected( $backorders, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
+			<option value="yes" <?php selected( $backorders, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
+			<option value="notify" <?php selected( $backorders, 'notify' ); ?>><?php esc_html_e( 'Notify', 'connect-woocommerce' ); ?></option>
 		</select>
 		<?php
 	}
@@ -704,6 +723,11 @@ class CONNWOOO_Admin {
 		);
 	}
 
+	/**
+	 * Filter products
+	 *
+	 * @return void
+	 */
 	public function filter_callback() {
 		printf(
 			'<input class="regular-text" type="text" name="' . $this->options_name . '[filter]" id="wcpimh_filter" value="%s">',
@@ -711,92 +735,112 @@ class CONNWOOO_Admin {
 		);
 	}
 
+	/**
+	 * Tax option
+	 *
+	 * @return void
+	 */
 	public function tax_option_callback() {
+		$tax_price = isset( $this->settings['tax'] ) ? $this->settings['tax'] : 'no';
 		?>
-		<select name="<?php echo esc_html( $this->options_name ); ?>[tax_price_option]" id="wcsen_tax">
-			<?php $selected = ( isset( $this->sync_settings['tax_price_option'] ) && $this->sync_settings['tax_price_option'] === 'yes' ) ? 'selected' : ''; ?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes, tax included', 'connect-woocommerce' ); ?></option>
-			<?php $selected = ( isset( $this->sync_settings['tax_price_option'] ) && $this->sync_settings['tax_price_option'] === 'notify' ) ? 'selected' : ''; ?>
-			<?php $selected = ( isset( $this->sync_settings['tax_price_option'] ) && $this->sync_settings['tax_price_option'] === 'no' ) ? 'selected' : ''; ?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No, tax not included', 'connect-woocommerce' ); ?></option>
+		<select name="<?php echo esc_html( $this->options_name ); ?>[tax_price]" id="wcsen_tax">
+			<option value="yes" <?php selected( $tax_price, 'yes' ); ?>><?php esc_html_e( 'Yes, tax included', 'connect-woocommerce' ); ?></option>
+			<option value="no" <?php selected( $tax_price, 'no' ); ?>><?php esc_html_e( 'No, tax not included', 'connect-woocommerce' ); ?></option>
 		</select>
 		<?php
 	}
 
-	public function wcpimh_rates_callback() {
+	/**
+	 * Rates option from API
+	 *
+	 * @return void
+	 */
+	public function rates_callback() {
 		global $connapi_erp;
 		$rates_options = $connapi_erp->get_rates();
 		if ( empty( $rates_options ) ) {
-			return false;
+			return;
 		}
 		?>
 		<select name="<?php echo esc_html( $this->options_name ); ?>[rates]" id="wcpimh_rates">
 			<?php
 			foreach ( $rates_options as $value => $label ) {
-				$selected = ( isset( $this->settings['rates'] ) && $this->settings['rates'] === $value ) ? 'selected' : '';
-				echo '<option value="' . esc_html( $value ) . '" ' . esc_html( $selected ) . '>' . esc_html( $label ) . '</option>';
+				echo '<option value="' . esc_html( $value ) . '" ';
+				selected( $value, $this->settings['rates'] );
+				echo '>' . esc_html( $label ) . '</option>';
 			}
 			?>
 		</select>
 		<?php
 	}
 
-	public function wcpimh_catnp_callback() {
+	/**
+	 * Category for new products
+	 *
+	 * @return void
+	 */
+	public function catnp_callback() {
+		$categorynp = isset( $this->settings['catnp'] ) ? $this->settings['catnp'] : 'yes';
 		?>
 		<select name="<?php echo esc_html( $this->options_name ); ?>[catnp]" id="wcpimh_catnp">
-			<?php $selected = ( isset( $this->settings['catnp'] ) && $this->settings['catnp'] === 'yes' ) ? 'selected' : ''; ?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
-			<?php $selected = ( isset( $this->settings['catnp'] ) && $this->settings['catnp'] === 'no' ) ? 'selected' : ''; ?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
+			<option value="yes" <?php selected( $categorynp, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
+
+			<option value="no" <?php selected( $categorynp, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 		</select>
 		<?php
 	}
 
-	public function wcpimh_doctype_callback() {
-		$set_doctype = isset( $this->settings['doctype'] ) ? $this->settings['doctype'] : '';
+	/**
+	 * Document type
+	 *
+	 * @return void
+	 */
+	public function doctype_callback() {
+		$doctype = isset( $this->settings['doctype'] ) ? $this->settings['doctype'] : 'invoice';
 		?>
 		<select name="<?php echo esc_html( $this->options_name ); ?>[doctype]" id="wcpimh_doctype">
-			<?php $selected = ( $set_doctype === 'nosync' || $set_doctype === '' ) ? 'selected' : ''; ?>
-			<option value="nosync" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Not sync', 'connect-woocommerce' ); ?></option>
+			<option value="nosync" <?php selected( $doctype, 'nosync' ); ?>><?php esc_html_e( 'Not sync', 'connect-woocommerce' ); ?></option>
 
-			<?php $selected = ( isset( $set_doctype ) && 'invoice' === $set_doctype ) ? 'selected' : ''; ?>
-			<option value="invoice" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Invoice', 'connect-woocommerce' ); ?></option>
+			<option value="invoice" <?php selected( $doctype, 'invoice' ); ?>><?php esc_html_e( 'Invoice', 'connect-woocommerce' ); ?></option>
 
-			<?php $selected = ( isset( $set_doctype ) && 'salesreceipt' === $set_doctype ) ? 'selected' : ''; ?>
-			<option value="salesreceipt" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Sales receipt', 'connect-woocommerce' ); ?></option>
+			<option value="salesreceipt" <?php selected( $doctype, 'salesreceipt' ); ?>><?php esc_html_e( 'Sales receipt', 'connect-woocommerce' ); ?></option>
 
-			<?php $selected = ( isset( $set_doctype ) && 'salesorder' === $set_doctype ) ? 'selected' : ''; ?>
-			<option value="salesorder" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Sales order', 'connect-woocommerce' ); ?></option>
+			<option value="salesorder" <?php selected( $doctype, 'salesorder' ); ?>><?php esc_html_e( 'Sales order', 'connect-woocommerce' ); ?></option>
 
-			<?php $selected = ( isset( $set_doctype ) && 'waybill' === $set_doctype ) ? 'selected' : ''; ?>
-			<option value="waybill" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Waybill', 'connect-woocommerce' ); ?></option>
+			<option value="waybill" <?php selected( $doctype, 'waybill' ); ?>><?php esc_html_e( 'Waybill', 'connect-woocommerce' ); ?></option>
 		</select>
 		<?php
 	}
 
-	public function wcpimh_freeorder_callback() {
-		$set_freeorder = isset( $this->settings['freeorder'] ) ? $this->settings['freeorder'] : '';
+	/**
+	 * Freeorder option to send API
+	 *
+	 * @return void
+	 */
+	public function freeorder_callback() {
+		$freeorder = isset( $this->settings['freeorder'] ) ? $this->settings['freeorder'] : 'no';
 		?>
 		<select name="<?php echo esc_html( $this->options_name ); ?>[freeorder]" id="wcpimh_freeorder">
-			<?php $selected = ( $set_freeorder === 'no' || $set_freeorder === '' ) ? 'selected' : ''; ?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
+			<option value="no" <?php selected( $freeorder, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 
-			<?php $selected = ( isset( $set_freeorder ) && 'yes' === $set_freeorder ) ? 'selected' : ''; ?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
+			<option value="yes" <?php selected( $freeorder, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
 
 		</select>
 		<?php
 	}
 
-	public function wcpimh_ecstatus_callback() {
-		$set_ecstatus = isset( $this->settings['ecstatus'] ) ? $this->settings['ecstatus'] : '';
+	/**
+	 * Send API depending order status
+	 *
+	 * @return void
+	 */
+	public function ecstatus_callback() {
+		$ecstatus = isset( $this->settings['ecstatus'] ) ? $this->settings['ecstatus'] : 'all';
 		?>
 		<select name="<?php echo esc_html( $this->options_name ); ?>[ecstatus]" id="wcpimh_ecstatus">
-			<?php $selected = ( $set_ecstatus === 'nosync' || $set_ecstatus === '' ) ? 'selected' : ''; ?>
-			<option value="all" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'All status orders', 'connect-woocommerce' ); ?></option>
+			<option value="all" <?php selected( $ecstatus, 'all' ); ?>><?php esc_html_e( 'All status orders', 'connect-woocommerce' ); ?></option>
 
-			<?php $selected = ( isset( $set_ecstatus ) && 'completed' === $set_ecstatus ) ? 'selected' : ''; ?>
-			<option value="completed" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Only Completed', 'connect-woocommerce' ); ?></option>
+			<option value="completed" <?php selected( $ecstatus, 'completed' ); ?>><?php esc_html_e( 'Only Completed', 'connect-woocommerce' ); ?></option>
 		</select>
 		<?php
 	}
@@ -819,17 +863,16 @@ class CONNWOOO_Admin {
 	 * @return void
 	 */
 	public function sync_callback() {
+		$sync = isset( $this->settings['sync'] ) ? $this->settings['sync'] : 'no';
 		?>
 		<select name="<?php echo esc_html( $this->options_name ); ?>[sync]" id="wcpimh_sync">
-			<?php $selected = ( isset( $this->settings['sync'] ) && 'no' === $this->settings['sync'] ) ? 'selected' : ''; ?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
-
+			<option value="no" <?php selected( $sync, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 			<?php
 			if ( ! empty( CWLIB_CRON ) ) {
 				foreach ( CWLIB_CRON as $cron_option ) {
-					$selected = ( isset( $this->settings['sync'] ) && $cron_option['cron'] === $this->settings['sync'] ) ? 'selected' : '';
-					echo '<option value="' . esc_html( $cron_option['cron'] ) . '" ' . esc_html( $selected ) . '>';
-					echo esc_html( $cron_option['display'] ) . '</option>';
+					echo '<option value="' . esc_html( $cron_option['cron'] ) . '" ';
+					selected( $sync, $cron_option['cron'] );
+					echo '>' . esc_html( $cron_option['display'] ) . '</option>';
 				}
 			}
 			?>
@@ -849,19 +892,26 @@ class CONNWOOO_Admin {
 		);
 	}
 
+	/**
+	 * Sync email options
+	 *
+	 * @return void
+	 */
 	public function sync_email_callback() {
+		$sync_email = isset( $this->settings['sync_email'] ) ? $this->settings['sync_email'] : 'no';
 		?>
 		<select name="<?php echo esc_html( $this->options_name ); ?>[sync_email]" id="wcpimh_sync_email">
-			<?php $selected = ( isset( $this->settings['sync_email'] ) && $this->settings['sync_email'] === 'yes' ) ? 'selected' : ''; ?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
-			<?php $selected = ( isset( $this->settings['sync_email'] ) && $this->settings['sync_email'] === 'no' ) ? 'selected' : ''; ?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
+			<option value="yes" <?php selected( $sync_email, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
+
+			<option value="no" <?php selected( $sync_email, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 		</select>
 		<?php
 	}
+
 	/**
-	 * # Public
+	 * # Public Settings
 	 * ---------------------------------------------------------------------------------------------------- */
+
 	/**
 	 * Sanitize fiels before saves in DB
 	 *
@@ -913,16 +963,12 @@ class CONNWOOO_Admin {
 	 * @return void
 	 */
 	public function vat_show_callback() {
+		$vat_show = isset( $this->settings_public['vat_show'] ) ? $this->settings_public['vat_show'] : 'yes';
 		?>
 		<select name="<?php echo esc_html( $this->options_name ); ?>_public[vat_show]" id="vat_show">
-			<?php 
-			$selected = ( isset( $this->settings_public['vat_show'] ) && $this->settings_public['vat_show'] === 'no' ? 'selected' : '' );
-			?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
-			<?php 
-			$selected = ( isset( $this->settings_public['vat_show'] ) && $this->settings_public['vat_show'] === 'yes' ? 'selected' : '' );
-			?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
+			<option value="no" <?php selected( $vat_show, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
+
+			<option value="yes" <?php selected( $vat_show, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
 		</select>
 		<?php
 	}
@@ -933,16 +979,12 @@ class CONNWOOO_Admin {
 	 * @return void
 	 */
 	public function vat_mandatory_callback() {
+		$vat_mandatory = isset( $this->settings_public['vat_mandatory'] ) ? $this->settings_public['vat_mandatory'] : 'no';
 		?>
 		<select name="<?php echo esc_html( $this->options_name ); ?>_public[vat_mandatory]" id="vat_mandatory">
-			<?php 
-			$selected = ( isset( $this->settings_public['vat_mandatory'] ) && $this->settings_public['vat_mandatory'] === 'no' ? 'selected' : '' );
-			?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
-			<?php 
-			$selected = ( isset( $this->settings_public['vat_mandatory'] ) && $this->settings_public['vat_mandatory'] === 'yes' ? 'selected' : '' );
-			?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
+			<option value="no" <?php selected( $vat_mandatory, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
+
+			<option value="yes" <?php selected( $vat_mandatory, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
 		</select>
 		<?php
 	}
@@ -953,16 +995,12 @@ class CONNWOOO_Admin {
 	 * @return void
 	 */
 	public function company_field_callback() {
+		$company_field = isset( $this->settings_public['company_field'] ) ? $this->settings_public['company_field'] : 'no';
 		?>
 		<select name="<?php echo esc_html( $this->options_name ); ?>_public[company_field]" id="company_field">
-			<?php 
-			$selected = ( isset( $this->settings_public['company_field'] ) && $this->settings_public['company_field'] === 'no' ? 'selected' : '' );
-			?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
-			<?php 
-			$selected = ( isset( $this->settings_public['company_field'] ) && $this->settings_public['company_field'] === 'yes' ? 'selected' : '' );
-			?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
+			<option value="no" <?php selected( $company_field, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
+
+			<option value="yes" <?php selected( $company_field, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
 		</select>
 		<?php
 	}
@@ -972,17 +1010,13 @@ class CONNWOOO_Admin {
 	 *
 	 * @return void
 	 */
-	public function wcpimh_terms_registration_callback() {
+	public function terms_registration_callback() {
+		$terms_registration = isset( $this->settings_public['terms_registration'] ) ? $this->settings_public['terms_registration'] : 'no';
 		?>
 		<select name="<?php echo esc_html( $this->options_name ); ?>_public[terms_registration]" id="terms_registration">
-			<?php 
-			$selected = ( isset( $this->settings_public['terms_registration'] ) && $this->settings_public['terms_registration'] === 'no' ? 'selected' : '' );
-			?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
-			<?php 
-			$selected = ( isset( $this->settings_public['terms_registration'] ) && $this->settings_public['terms_registration'] === 'yes' ? 'selected' : '' );
-			?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
+			<option value="no" <?php selected( $terms_registration, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
+
+			<option value="yes" <?php selected( $terms_registration, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
 		</select>
 		<?php
 	}
@@ -992,17 +1026,13 @@ class CONNWOOO_Admin {
 	 *
 	 * @return void
 	 */
-	public function wcpimh_remove_free_others_callback() {
+	public function remove_free_others_callback() {
+		$remove_free = isset( $this->settings_public['remove_free'] ) ? $this->settings_public['remove_free'] : 'yes';
 		?>
 		<select name="<?php echo esc_html( $this->options_name ); ?>_public[remove_free]" id="remove_free">
-			<?php 
-			$selected = ( isset( $this->settings_public['remove_free'] ) && $this->settings_public['remove_free'] === 'no' ? 'selected' : '' );
-			?>
-			<option value="no" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
-			<?php 
-			$selected = ( isset( $this->settings_public['remove_free'] ) && $this->settings_public['remove_free'] === 'yes' ? 'selected' : '' );
-			?>
-			<option value="yes" <?php echo esc_html( $selected ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
+			<option value="no" <?php selected( $remove_free, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
+
+			<option value="yes" <?php selected( $remove_free, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
 		</select>
 		<?php
 	}
@@ -1091,9 +1121,7 @@ class CONNWOOO_Admin {
 		$checkbox_status   = get_option( $this->options_name . '_license_deactivate_checkbox' );
 		$current_api_key   = ! empty( get_option( $this->options_name . '_license_apikey' ) ) ? get_option( $this->options_name . '_license_apikey' ) : '';
 
-		/**
-		* @since 2.3
-		*/
+		// @since 2.3
 		if ( isset( $input[ $this->options_name . '_license_product_id' ] ) ) {
 			$new_product_id = absint( $input[ $this->options_name . '_license_product_id' ] );
 
@@ -1103,7 +1131,7 @@ class CONNWOOO_Admin {
 		}
 
 		// Deactivates API Key key activation.
-		if ( isset( $input[ $this->options_name . '_license_deactivate_checkbox'] ) && 'on' === $input[ $this->options_name . '_license_deactivate_checkbox' ] ) {
+		if ( isset( $input[ $this->options_name . '_license_deactivate_checkbox' ] ) && 'on' === $input[ $this->options_name . '_license_deactivate_checkbox' ] ) {
 			$args = array(
 				'api_key' => ! empty( $api_key ) ? $api_key : '',
 			);
@@ -1200,7 +1228,7 @@ class CONNWOOO_Admin {
 	/**
 	 * Sends the request to deactivate to the API Manager.
 	 *
-	 * @param array $args
+	 * @param array $args Arguments to deactive.
 	 *
 	 * @return string
 	 */
@@ -1251,7 +1279,7 @@ class CONNWOOO_Admin {
 		if ( $live ) {
 			$license_status = $this->license_key_status();
 
-			return ! empty( $license_status ) && ! empty( $license_status['data'][ 'activated' ] ) && $license_status['data'][ 'activated' ];
+			return ! empty( $license_status ) && ! empty( $license_status['data']['activated'] ) && $license_status['data']['activated'];
 		}
 
 		/**
@@ -1298,7 +1326,8 @@ class CONNWOOO_Admin {
 	/**
 	 * Get license defaults
 	 *
-	 * @param [type] $action
+	 * @param string $action            Action to license defaults.
+	 * @param string $software_version Software version.
 	 * @return array
 	 */
 	private function get_license_defaults( $action, $software_version = false ) {
@@ -1318,13 +1347,12 @@ class CONNWOOO_Admin {
 		}
 
 		return $defaults;
-
 	}
 
 	/**
 	 * Builds the URL containing the API query string for activation, deactivation, and status requests.
 	 *
-	 * @param array $args
+	 * @param array $args Arguments data.
 	 *
 	 * @return string
 	 */
@@ -1347,7 +1375,7 @@ class CONNWOOO_Admin {
 	/**
 	 * Deactivate the current API Key before activating the new API Key
 	 *
-	 * @param string $current_api_key
+	 * @param string $current_api_key current api key.
 	 */
 	public function replace_license_key( $current_api_key ) {
 		$args = array(
@@ -1362,7 +1390,7 @@ class CONNWOOO_Admin {
 	 *
 	 * @since  2.0
 	 *
-	 * @param array $args
+	 * @param array $args Arguments for query.
 	 *
 	 * @return bool|string $response
 	 */
@@ -1496,6 +1524,7 @@ class CONNWOOO_Admin {
 					<p>
 						<?php
 						printf(
+							// translators: %1$s Name of library %2$s host %3$s Accesible hosts.
 							esc_html__( '<b>Warning!</b> You\'re blocking external requests which means you won\'t be able to get %1$s updates. Please add %2$s to %3$s.', 'connect-woocommerce' ),
 							'Connect WooCommerce',
 							'<strong>' . esc_html( $host ) . '</strong>',
