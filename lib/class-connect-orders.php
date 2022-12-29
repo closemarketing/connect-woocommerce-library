@@ -424,13 +424,20 @@ class Connect_WooCommerce_Orders {
 	 * @return void
 	 */
 	public function custom_orders_list_column_content( $column, $order_id ) {
-		global $connwoo_plugin_options;
+		global $connwoo_plugin_options, $connapi_erp;
 
 		switch ( $column ) {
 			case $connwoo_plugin_options['slug']:
 				// Get custom order meta data.
-				$order = wc_get_order( $order_id );
+				$order    = wc_get_order( $order_id );
+				$edit_url = $connapi_erp->get_url_link_api( $order );
+				if ( $edit_url ) {
+					echo '<a href="' . esc_url( $edit_url ) . '" target="_blank">';
+				}
 				echo esc_html( $order->get_meta( $this->meta_key_order ) );
+				if ( $edit_url ) {
+					echo '</a>';
+				}
 				unset( $order );
 				break;
 		}
