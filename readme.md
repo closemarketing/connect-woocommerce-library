@@ -2,6 +2,12 @@
 
 ## Changelog
 
+### 1.2
+
+* Added License.
+* Fixed loaders.
+* Merge to Holded.
+
 ### 1.1
 
 * Dynamic name options.

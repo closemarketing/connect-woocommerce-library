@@ -40,8 +40,6 @@ class WCPIMH_Import {
 	 * Constructs of class
 	 */
 	public function __construct() {
-		global $connwoo_plugin_options;
-
 		add_action( 'admin_print_footer_scripts', array( $this, 'admin_print_footer_scripts' ), 11, 1 );
 		add_action( 'wp_ajax_wcpimh_import_products', array( $this, 'wcpimh_import_products' ) );
 
@@ -49,8 +47,8 @@ class WCPIMH_Import {
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_styles' ) );
 		add_filter( 'admin_body_class', array( $this, 'admin_body_class' ) );
 
-		// Settings
-		$this->settings = get_option( $connwoo_plugin_options['slug'] );
+		// Settings.
+		$this->settings = get_option( CWLIB_SLUG );
 	}
 
 	/**
@@ -70,11 +68,9 @@ class WCPIMH_Import {
 	 * @return void
 	 */
 	public function admin_styles() {
-		wp_enqueue_style(
+		wp_enqueue_style( // phpcs:ignore
 			'connect-woocommerce',
-			CONWOOLIB_PLUGIN_URL . 'lib/assets/admin.css',
-			array(),
-			CONWOOLIB_VERSION
+			plugin_dir_url( __FILE__ ) . 'assets/admin.css',
 		);
 	}
 	/**
@@ -188,8 +184,8 @@ class WCPIMH_Import {
 	 */
 	public function find_product( $sku ) {
 		global $wpdb;
-		$post_type = 'product';
-		$meta_key  = '_sku';
+		$post_type    = 'product';
+		$meta_key     = '_sku';
 		$result_query = $wpdb->get_var( $wpdb->prepare( "SELECT P.ID FROM $wpdb->posts AS P LEFT JOIN $wpdb->postmeta AS PM ON PM.post_id = P.ID WHERE P.post_type = '$post_type' AND PM.meta_key='$meta_key' AND PM.meta_value=%s AND P.post_status != 'trash' LIMIT 1", $sku ) );
 
 		return $result_query;
@@ -280,8 +276,6 @@ class WCPIMH_Import {
 				'purchase_note'      => '',
 				'virtual'            => $is_virtual,
 				'downloadable'       => false,
-				//'category_ids'       => '',
-				//'tag_ids'            => '',
 				'shipping_class_id'  => 0,
 				'image_id'           => '',
 				'gallery_image_ids'  => '',
@@ -302,28 +296,28 @@ class WCPIMH_Import {
 				$product_props['sku'] = $item['sku'];
 				// Check if the product can be sold.
 				if ( 'no' === $import_stock && $item['price'] > 0 ) {
-					$product_props['stock_status'] = 'instock';
+					$product_props['stock_status']       = 'instock';
 					$product_props['catalog_visibility'] = 'visible';
 					wp_remove_object_terms( $product_id, 'exclude-from-catalog', 'product_visibility' );
 					wp_remove_object_terms( $product_id, 'exclude-from-search', 'product_visibility' );
 				} elseif ( 'yes' === $import_stock && $item['stock'] > 0 ) {
-					$product_props['manage_stock'] = true;
-					$product_props['stock_quantity'] = $item['stock'];
-					$product_props['stock_status'] = 'instock';
+					$product_props['manage_stock']       = true;
+					$product_props['stock_quantity']     = $item['stock'];
+					$product_props['stock_status']       = 'instock';
 					$product_props['catalog_visibility'] = 'visible';
 					wp_remove_object_terms( $product_id, 'exclude-from-catalog', 'product_visibility' );
 					wp_remove_object_terms( $product_id, 'exclude-from-search', 'product_visibility' );
 				} elseif ( 'yes' === $import_stock && 0 === $item['stock'] ) {
-					$product_props['manage_stock'] = true;
+					$product_props['manage_stock']       = true;
 					$product_props['catalog_visibility'] = 'hidden';
-					$product_props['stock_quantity'] = 0;
-					$product_props['stock_status'] = 'outofstock';
+					$product_props['stock_quantity']     = 0;
+					$product_props['stock_status']       = 'outofstock';
 					wp_set_object_terms( $product_id, array( 'exclude-from-catalog', 'exclude-from-search' ), 'product_visibility' );
 				} else {
-					$product_props['manage_stock'] = true;
+					$product_props['manage_stock']       = true;
 					$product_props['catalog_visibility'] = 'hidden';
-					$product_props['stock_quantity'] = $item['stock'];
-					$product_props['stock_status'] = 'outofstock';
+					$product_props['stock_quantity']     = $item['stock'];
+					$product_props['stock_status']       = 'outofstock';
 					wp_set_object_terms( $product_id, array( 'exclude-from-catalog', 'exclude-from-search' ), 'product_visibility' );
 				}
 				break;
@@ -364,7 +358,7 @@ class WCPIMH_Import {
 	 * @return boolean True to not get the product, false to get it.
 	 */
 	private function filter_product( $tag_product ) {
-		$tags_option  = explode( ',', $this->settings['filter'] );
+		$tags_option = explode( ',', $this->settings['filter'] );
 
 		if ( empty( array_intersect( $tags_option, $tag_product ) ) ) {
 			return true;
@@ -664,7 +658,7 @@ class WCPIMH_Import {
 	 */
 	public function send_product_errors() {
 		global $connwoo_plugin_options;
-		// Send to WooCommerce Logger
+		// Send to WooCommerce Logger.
 		$logger = wc_get_logger();
 
 		$error_content = '';
