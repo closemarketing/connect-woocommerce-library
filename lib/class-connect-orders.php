@@ -42,14 +42,14 @@ class Connect_WooCommerce_Orders {
 		add_action( 'wp_ajax_wcpimh_import_orders', array( $this, 'wcpimh_import_orders' ) );
 
 		if ( 'all' === $ecstatus ) {
-			add_action( 'woocommerce_order_status_pending', array( $this, 'process_order' ) );
-			add_action( 'woocommerce_order_status_failed', array( $this, 'process_order' ) );
-			add_action( 'woocommerce_order_status_processing', array( $this, 'process_order' ) );
-			add_action( 'woocommerce_order_status_refunded', array( $this, 'process_order' ) );
-			add_action( 'woocommerce_order_status_cancelled', array( $this, 'process_order' ) );
+			add_action( 'woocommerce_order_status_pending', array( $this, 'create_invoice' ) );
+			add_action( 'woocommerce_order_status_failed', array( $this, 'create_invoice' ) );
+			add_action( 'woocommerce_order_status_processing', array( $this, 'create_invoice' ) );
+			add_action( 'woocommerce_order_status_refunded', array( $this, 'create_invoice' ) );
+			add_action( 'woocommerce_order_status_cancelled', array( $this, 'create_invoice' ) );
 			add_action( 'woocommerce_refund_created', array( $this, 'refunded_created' ), 10, 2 );
 		}
-		add_action( 'woocommerce_order_status_completed', array( $this, 'process_order' ) );
+		add_action( 'woocommerce_order_status_completed', array( $this, 'create_invoice' ) );
 
 		// Email attachments.
 		if ( $connwoo_plugin_options['order_send_attachments'] ) {
@@ -63,16 +63,6 @@ class Connect_WooCommerce_Orders {
 		add_filter( 'manage_edit-shop_order_columns', array( $this, 'custom_shop_order_column' ), 20 );
 		add_action( 'manage_shop_order_posts_custom_column', array( $this, 'custom_orders_list_column_content' ), 20, 2 );
 	}
-	/**
-	 * Order completed
-	 *
-	 * @param int $order_id Order id.
-	 * @return void
-	 */
-	public function process_order( $order_id ) {
-		$date = date( 'Y-m-d' );
-		$this->create_invoice( $order_id, $date );
-	}
 
 	/**
 	 * Refund created
@@ -85,31 +75,13 @@ class Connect_WooCommerce_Orders {
 	}
 
 	/**
-	 * Get message
-	 *
-	 * @param string $message Message of error.
-	 * @param string $type    Type of message.
-	 * @return string Error
-	 */
-	private function get_message( $message, $type = 'error' ) {
-		ob_start();
-
-		?>
-		<div class="<?php echo esc_html( $type ); ?>">
-			<p><?php echo esc_html( $message ); ?></p>
-		</div>
-		<?php
-		return ob_get_clean();
-	}
-
-	/**
 	 * Creates invoice data to API
 	 *
 	 * @param string $order_id Order id to api.
 	 * @param date   $completed_date Completed data.
 	 * @return array
 	 */
-	public function create_invoice( $order_id, $completed_date ) {
+	public function create_invoice( $order_id, $force = false ) {
 		global $connapi_erp, $connwoo_plugin_options;
 		$doctype        = isset( $this->sync_settings['doctype'] ) ? $this->sync_settings['doctype'] : 'nosync';
 		$order          = wc_get_order( $order_id );
@@ -230,7 +202,7 @@ class Connect_WooCommerce_Orders {
 					} elseif ( ! empty( $ec_invoice_id ) && 'nocreate' !== $ec_invoice_id ) {
 						$this->ajax_msg .= __( 'Free order not exported', 'connect-woocommerce' );
 					} else {
-						$result = $this->create_invoice( $item['id'], $item['date'] );
+						$result = $this->create_invoice( $item['id'] );
 
 						$this->ajax_msg .= 'ok' === $result['status'] ? __( 'Order Created.', 'connect-woocommerce' ) : __( 'Order not created.', 'connect-woocommerce' );
 
