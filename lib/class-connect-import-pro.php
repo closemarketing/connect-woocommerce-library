@@ -53,9 +53,9 @@ class Connect_WooCommerce_Import_PRO {
 	 * Constructs of class
 	 */
 	public function __construct() {
-		global $wpdb, $connwoo_plugin_options;
-		$this->table_sync = $wpdb->prefix . 'sync_' . $connwoo_plugin_options['slug'];
-
+		global $wpdb;
+		$this->table_sync  = $wpdb->prefix . 'sync_' . CWLIB_SLUG;
+		$this->settings    = get_option( CWLIB_SLUG );
 		$this->sync_period = isset( $this->settings['sync'] ) ? strval( $this->settings['sync'] ) : 'no';
 
 		// Schedule.
@@ -72,10 +72,9 @@ class Connect_WooCommerce_Import_PRO {
 	 * @return void
 	 */
 	public function action_scheduler() {
-		global $connwoo_cron_options;
-		$pos = array_search( $this->sync_period, array_column( $connwoo_cron_options, 'cron' ), true );
+		$pos = array_search( $this->sync_period, array_column( CWLIB_CRON, 'cron' ), true );
 		if ( false !== $pos ) {
-			$cron_option = $connwoo_cron_options[ $pos ];
+			$cron_option = CWLIB_CRON[ $pos ];
 		}
 
 		if ( isset( $cron_option['cron'] ) && false === as_has_scheduled_action( $cron_option['cron'] ) ) {
