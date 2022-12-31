@@ -318,7 +318,10 @@ class CONNAPI_HOLDED_ERP {
 
 		if ( isset( $result['errors'] ) ) {
 			error_admin_message( 'ERROR', $result['errors'][0]['message'] . ' <br/> Api Call: /' );
-			return false;
+			return array(
+				'status'  => 'error',
+				'message' => $doctype . ' ' . $result['errors'][0]['message'],
+			);
 		}
 
 		if ( isset( $result['invoiceNum'] ) ) {
