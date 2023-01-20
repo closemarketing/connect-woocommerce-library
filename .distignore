@@ -11,3 +11,4 @@ phpunit.xml.dist
 .phpcs.xml.dist
 /vendor
 /tests
+/bin
