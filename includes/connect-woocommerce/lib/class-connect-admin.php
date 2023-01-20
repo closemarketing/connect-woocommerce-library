@@ -530,6 +530,7 @@ class CONNWOOO_Admin {
 	 * @return array
 	 */
 	public function sanitize_fields_settings( $input ) {
+		global $connapi_erp;
 		$sanitary_values = array();
 		$imh_settings    = get_option( $this->options_name );
 

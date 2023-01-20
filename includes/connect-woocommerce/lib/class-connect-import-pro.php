@@ -50,6 +50,13 @@ class Connect_WooCommerce_Import_PRO {
 	private $sync_period;
 
 	/**
+	 * Settings of plugin
+	 *
+	 * @var array
+	 */
+	private $settings;
+
+	/**
 	 * Constructs of class
 	 */
 	public function __construct() {

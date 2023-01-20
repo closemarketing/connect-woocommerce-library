@@ -37,6 +37,20 @@ class WCPIMH_Import {
 	private $error_product_import;
 
 	/**
+	 * Settings of plugin
+	 *
+	 * @var array
+	 */
+	private $settings;
+
+	/**
+	 * Message to show when import is finished
+	 *
+	 * @var string
+	 */
+	private $msg_error_products;
+
+	/**
 	 * Constructs of class
 	 */
 	public function __construct() {
@@ -217,7 +231,7 @@ class WCPIMH_Import {
 	 * @param string $product_id Product ID. If is null, is new product.
 	 * @param string $type Type of the product.
 	 * @param array  $pack_items Array of packs: post_id and qty.
-	 * @return void.
+	 * @return int $product_id Product ID.
 	 */
 	public function sync_product( $item, $product_id = 0, $type, $pack_items = null ) {
 		global $connwoo_pro;
@@ -350,6 +364,7 @@ class WCPIMH_Import {
 		if ( 'pack' === $type && class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
 			wp_set_object_terms( $product_id, 'woosb', 'product_type' );
 		}
+		return $product_id;
 	}
 	/**
 	 * Filters product to not import to web
@@ -374,17 +389,17 @@ class WCPIMH_Import {
 	 * @return int
 	 */
 	public function create_product_post( $item ) {
-		$prod_status  = ( isset( $this->settings['prodst'] ) && $this->settings['prodst'] ) ? $this->settings['prodst'] : 'draft';
+		$prod_status = ( isset( $this->settings['prodst'] ) && $this->settings['prodst'] ) ? $this->settings['prodst'] : 'draft';
 
 		$post_type = 'product';
 		$sku_key   = '_sku';
-		$post_arg = array(
+		$post_arg  = array(
 			'post_title'   => ( $item['name'] ) ? $item['name'] : '',
 			'post_content' => ( $item['desc'] ) ? $item['desc'] : '',
 			'post_status'  => $prod_status,
 			'post_type'    => $post_type,
 		);
-		$post_id  = wp_insert_post( $post_arg );
+		$post_id   = wp_insert_post( $post_arg );
 		if ( $post_id ) {
 			update_post_meta( $post_id, $sku_key, $item['sku'] );
 		}
@@ -474,9 +489,6 @@ class WCPIMH_Import {
 			$item                     = $api_products[ $sync_loop ];
 			$this->msg_error_products = array();
 
-			// For testing:
-			// $products_count = 45; .
-
 			if ( $products_count ) {
 				if ( ( $doing_ajax ) || $not_sapi_cli ) {
 					$limit = 10;
@@ -493,12 +505,11 @@ class WCPIMH_Import {
 						die( esc_html( __( 'No products to import', 'connect-woocommerce' ) ) );
 					}
 				} else {
-					$is_new_product      = false;
 					$post_id             = 0;
 					$is_filtered_product = empty( $item['tags'] ) ? false : $this->filter_product( $item['tags'] );
 
 					if ( ! $is_filtered_product && $item['sku'] && 'simple' === $item['kind'] ) {
-						$this->sync_product_simple( $item );
+						$post_id = $this->sync_product_simple( $item );
 					} elseif ( ! $is_filtered_product && 'variants' === $item['kind'] && class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
 						// Variable product.
 						// Check if any variants exists.
@@ -522,7 +533,7 @@ class WCPIMH_Import {
 							$this->ajax_msg .= __( 'Product not imported becouse any variant has got SKU: ', 'connect-woocommerce' ) . $item['name'] . '(' . $item['kind'] . ') <br/>';
 						} else {
 							// Update meta for product.
-							$this->sync_product( $item, $post_parent, 'variable' );
+							$post_id = $this->sync_product( $item, $post_parent, 'variable' );
 							if ( 0 === $post_parent || false === $post_parent ) {
 								$this->ajax_msg .= $msg_product_created;
 							} else {
@@ -549,11 +560,11 @@ class WCPIMH_Import {
 									$this->ajax_msg .= ' x ' . $pack_item['u'];
 								}
 								$this->ajax_msg .= '<br/>';
-								$pack_items = substr( $pack_items, 0, -1 );
+								$pack_items      = substr( $pack_items, 0, -1 );
 							}
 
 							// Update meta for product.
-							$this->sync_product( $item, $post_id, 'pack', $pack_items );
+							$post_id = $this->sync_product( $item, $post_id, 'pack', $pack_items );
 						} else {
 							if ( $doing_ajax ) {
 								wp_send_json_error(
@@ -575,7 +586,6 @@ class WCPIMH_Import {
 						$this->ajax_msg .= '<span class="warning">' . __( 'Product needs Plugin to import: ', 'connect-woocommerce' );
 						$this->ajax_msg .= '<a href="https://wordpress.org/plugins/woo-product-bundle/" target="_blank">WPC Product Bundles for WooCommerce</a> ';
 						$this->ajax_msg .= '(' . $item['kind'] . ') </span></br>';
-
 					} elseif ( $is_filtered_product ) {
 						// Product not synced without SKU.
 						$this->ajax_msg .= '<span class="warning">' . __( 'Product filtered to not import: ', 'connect-woocommerce' ) . $item['name'] . '(' . $item['kind'] . ') </span></br>';
@@ -585,9 +595,9 @@ class WCPIMH_Import {
 
 						$this->error_product_import[] = array(
 							'prod_id' => $item['id'],
-							'name'      => $item['name'],
-							'sku'       => $item['sku'],
-							'error'     => __( 'SKU not finded in Simple product. Product not imported. ', 'connect-woocommerce' ),
+							'name'    => $item['name'],
+							'sku'     => $item['sku'],
+							'error'   => __( 'SKU not finded in Simple product. Product not imported. ', 'connect-woocommerce' ),
 						);
 					} elseif ( 'simple' !== $item['kind'] ) {
 						// Product not synced without SKU.
@@ -595,9 +605,9 @@ class WCPIMH_Import {
 
 						$this->error_product_import[] = array(
 							'prod_id' => $item['id'],
-							'name'      => $item['name'],
-							'sku'       => $item['sku'],
-							'error'     => __( 'Product type not supported. Product not imported: ', 'connect-woocommerce' ),
+							'name'    => $item['name'],
+							'sku'     => $item['sku'],
+							'error'   => __( 'Product type not supported. Product not imported: ', 'connect-woocommerce' ),
 						);
 					}
 				}
@@ -608,6 +618,14 @@ class WCPIMH_Import {
 					if ( $products_synced <= $products_count ) {
 						$this->ajax_msg = '[' . date_i18n( 'H:i:s' ) . '] ' . $products_synced . '/' . $products_count . ' ' . __( 'products. ', 'connect-woocommerce' ) . $this->ajax_msg;
 						if ( $post_id ) {
+							// Get taxonomies from post_id.
+							$term_list = wp_get_post_terms( $post_id, 'product_cat', array( 'fields' => 'names' ) );
+							if ( ! empty( $term_list ) && is_array( $term_list ) ) {
+								$this->ajax_msg .= ' <span class="taxonomies">' . __( 'Categories: ', 'connect-woocommerce' );
+								$this->ajax_msg .= implode( ', ', $term_list ) . '</span>';
+							}
+
+							// Get link to product.
 							$this->ajax_msg .= ' <a href="' . get_edit_post_link( $post_id ) . '" target="_blank">' . __( 'View', 'connect-woocommerce' ) . '</a>';
 						}
 						if ( $products_synced == $products_count ) {
@@ -687,11 +705,7 @@ class WCPIMH_Import {
 		}
 		// Sends an email to admin.
 		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
-		wp_mail( get_option( 'admin_email' ), __( 'Error in Products Synced in', 'connect-woocommerce' ) . ' ' . get_option( 'blogname' ), $error_content, $headers );
-
-
-
-		
+		wp_mail( get_option( 'admin_email' ), __( 'Error in Products Synced in', 'connect-woocommerce' ) . ' ' . get_option( 'blogname' ), $error_content, $headers );	
 	}
 
 	/**
