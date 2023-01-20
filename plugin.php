@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Connect WooCommerce Holded PRO
  * Plugin URI: https://close.technology/wordpress-plugins/connect-woocommerce-holded/
- * Description: Imports Products and data from Holded to WooCommerce.
+ * Description: Connects Holded with WooCommerce and syncs products, customers, orders and stock.
  * Author: Closetechnology
  * Author URI: https://close.technology/
  * Version: 2.1.0-rc.5
