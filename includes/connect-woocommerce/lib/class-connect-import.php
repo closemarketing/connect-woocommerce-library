@@ -109,46 +109,6 @@ class WCPIMH_Import {
 	}
 
 	/**
-	 * Assigns the array to a taxonomy, and creates missing term
-	 *
-	 * @param string $post_id Post id of actual post id.
-	 * @param array  $taxonomy_slug Slug of taxonomy.
-	 * @param array  $category_array Array of category.
-	 * @return void
-	 */
-	private function assign_product_term( $post_id, $taxonomy_slug, $category_array ) {
-		$parent_term      = '';
-		$term_levels      = count( $category_array );
-		$term_level_index = 1;
-		foreach ( $category_array as $category_name ) {
-			$category_name = $this->sanitize_text( $category_name );
-			$search_term   = term_exists( $category_name, $taxonomy_slug );
-
-			if ( 0 === $search_term || null === $search_term ) {
-				// Creates taxonomy.
-				$args_term = array(
-					'slug' => sanitize_title( $category_name ),
-				);
-				if ( $parent_term ) {
-					$args_term['parent'] = $parent_term;
-				}
-				$search_term = wp_insert_term(
-					$category_name,
-					$taxonomy_slug,
-					$args_term
-				);
-			}
-			if ( $term_level_index === $term_levels ) {
-				wp_set_object_terms( $post_id, (int) $search_term['term_id'], $taxonomy_slug );
-			}
-
-			// Next iteration for child.
-			$parent_term = $search_term['term_id'];
-			$term_level_index++;
-		}
-	}
-
-	/**
 	 * Create a new global attribute.
 	 *
 	 * @param string $raw_name Attribute name (label).
@@ -233,13 +193,14 @@ class WCPIMH_Import {
 	 * @param array  $pack_items Array of packs: post_id and qty.
 	 * @return int $product_id Product ID.
 	 */
-	public function sync_product( $item, $product_id = 0, $type, $pack_items = null ) {
+	public function sync_product( $item, $product_id = 0, $type = 'simple', $pack_items = null ) {
 		global $connwoo_pro;
-		$import_stock     = isset( $this->settings['stock'] ) ? $this->settings['stock'] : 'no';
-		$is_virtual       = ( isset( $this->settings['virtual'] ) && 'yes' === $this->settings['virtual'] ) ? true : false;
-		$allow_backorders = isset( $this->settings['backorders'] ) ? $this->settings['backorders'] : 'yes';
-		$rate_id          = isset( $this->settings['rates'] ) ? $this->settings['rates'] : 'default';
-		$post_status      = ( isset( $this->settings['prodst'] ) && $this->settings['prodst'] ) ? $this->settings['prodst'] : 'draft';
+		$import_stock     = ! empty( $this->settings['stock'] ) ? $this->settings['stock'] : 'no';
+		$is_virtual       = ! empty( $this->settings['virtual'] ) && 'yes' === $this->settings['virtual'] ? true : false;
+		$allow_backorders = ! empty( $this->settings['backorders'] ) ? $this->settings['backorders'] : 'yes';
+		$rate_id          = ! empty( $this->settings['rates'] ) ? $this->settings['rates'] : 'default';
+		$post_status      = ! empty( $this->settings['prodst'] ) ? $this->settings['prodst'] : 'draft';
+		$attribute_cat_id = ! empty( $this->settings['catattr'] ) ? $this->settings['catattr'] : '';
 		$is_new_product   = ( 0 === $product_id || false === $product_id ) ? true : false;
 
 		/**
@@ -346,9 +307,10 @@ class WCPIMH_Import {
 				}
 				break;
 		}
-
-		if ( class_exists( 'Connect_WooCommerce_Import_PRO' ) && isset( $item['type'] ) && ! empty( $item['type'] ) ) {
-			$categories_ids = $connwoo_pro->get_categories_ids( $item['type'], $is_new_product );
+		$attributes = ! empty( $item['attributes'] ) && is_array( $item['attributes'] ) ? $item['attributes'] : array();
+		$category   = array_search( $attribute_cat_id, array_column( $attributes, 'id', 'value' ) );
+		if ( class_exists( 'Connect_WooCommerce_Import_PRO' ) && $category ) {
+			$categories_ids = $connwoo_pro->get_categories_ids( $category, $is_new_product );
 			if ( ! empty( $categories_ids ) ) {
 				$product_props['category_ids'] = $categories_ids;
 			}

@@ -125,6 +125,32 @@ class CONNAPI_HOLDED_ERP {
 	}
 
 	/**
+	 * Gets information from Holded CRM
+	 *
+	 * @return array
+	 */
+	public function get_attributes() {
+
+		$response_products = $this->api( 'products/', 'GET' );
+
+		$array_options = array(
+			'' => __( 'None', 'connect-woocommerce-holded' ),
+		);
+		if ( 'ok' === $response_products['status'] && ! empty( $response_products['data'] ) ) {
+			foreach ( $response_products['data'] as $product ) {
+				if ( ! empty( $product['attributes'] ) ) {
+					foreach ( $product['attributes'] as $attribute ) {
+						if ( isset( $attribute['id'] ) && isset( $attribute['name'] ) ) {
+							$array_options[ $attribute['id'] ] = $attribute['name'];
+						}
+					}
+				}
+			}
+		}
+		return $array_options;
+	}
+
+	/**
 	 * Gets information from Holded products
 	 *
 	 * @param string $id   Id of product to get information.

@@ -44,6 +44,7 @@ WordPress installation and then activate the Plugin from Plugins page.
 *   New Admin design.
 *   Protected folder invoice.
 *   Order columns for API.
+*   Added option for Categories as attribute.
 *   Fix: error message order.
 *   Fix: Shipping order cost fixed not implemented in order.
 *   Fix: Fatal error no products in automation.

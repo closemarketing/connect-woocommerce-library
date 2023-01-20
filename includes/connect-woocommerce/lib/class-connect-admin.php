@@ -29,6 +29,27 @@ class CONNWOOO_Admin {
 	private $settings;
 
 	/**
+	 * Options name for getting settings
+	 *
+	 * @var array
+	 */
+	private $options_name;
+
+	/**
+	 * Settings public
+	 *
+	 * @var array
+	 */
+	private $settings_public;
+
+	/**
+	 * Table sync
+	 *
+	 * @var string
+	 */
+	private $table_sync;
+
+	/**
 	 * Construct of class
 	 */
 	public function __construct() {
@@ -215,7 +236,7 @@ class CONNWOOO_Admin {
 			'connect-woocommerce-admin'
 		);
 
-		if ( 'NEO' === $connwoo_plugin_options['name'] ) {
+		if ( 'connwoo_neo' === $connwoo_plugin_options['slug'] ) {
 			add_settings_field(
 				'wcpimh_idcentre',
 				__( 'NEO ID Centre', 'connect-woocommerce' ),
@@ -225,7 +246,7 @@ class CONNWOOO_Admin {
 			);
 		}
 
-		if ( 'A3' === $connwoo_plugin_options['name'] ) {
+		if ( 'connwoo_a3' === $connwoo_plugin_options['slug'] ) {
 			add_settings_field(
 				'wcpimh_username',
 				__( 'Username', 'connect-woocommerce' ),
@@ -240,7 +261,6 @@ class CONNWOOO_Admin {
 				'connect-woocommerce-admin',
 				'connect_woocommerce_setting_section'
 			);
-
 		} else {
 			add_settings_field(
 				'wcpimh_api',
@@ -285,14 +305,23 @@ class CONNWOOO_Admin {
 			'connect_woocommerce_setting_section'
 		);
 
-		$label_cat = __( 'Category separator', 'connect-woocommerce' );
 		add_settings_field(
 			'wcpimh_catsep',
-			$label_cat,
+			__( 'Category separator', 'connect-woocommerce' ),
 			array( $this, 'catsep_callback' ),
 			'connect-woocommerce-admin',
 			'connect_woocommerce_setting_section'
 		);
+
+		if ( 'connwoo_holded' === $connwoo_plugin_options['slug'] ) {
+			add_settings_field(
+				'wcpimh_catattr',
+				__( 'Attribute to use as category', 'connect-woocommerce' ),
+				array( $this, 'catattr_callback' ),
+				'connect-woocommerce-admin',
+				'connect_woocommerce_setting_section'
+			);
+		}
 
 		add_settings_field(
 			'wcpimh_filter',
@@ -544,6 +573,7 @@ class CONNWOOO_Admin {
 			'virtual'    => 'no',
 			'backorders' => 'no',
 			'catsep'     => '',
+			'catattr'    => '',
 			'filter'     => '',
 			'rates'      => 'default',
 			'catnp'      => 'yes',
@@ -767,6 +797,31 @@ class CONNWOOO_Admin {
 			'<input class="regular-text" type="text" name="' . $this->options_name . '[catsep]" id="wcpimh_catsep" value="%s">',
 			isset( $this->settings['catsep'] ) ? esc_attr( $this->settings['catsep'] ) : ''
 		);
+	}
+
+	/**
+	 * Get categories to use as attributes
+	 *
+	 * @return void
+	 */
+	public function catattr_callback() {
+		global $connapi_erp;
+		$catattr_options = $connapi_erp->get_attributes();
+		if ( empty( $catattr_options ) ) {
+			return;
+		}
+		$saved_attr = isset( $this->settings['catattr'] ) ? $this->settings['catattr'] : '';
+		?>
+		<select name="<?php echo esc_html( $this->options_name ); ?>[catattr]" id="wcpimh_catattr">
+			<?php
+			foreach ( $catattr_options as $value => $label ) {
+				echo '<option value="' . esc_html( $value ) . '" ';
+				selected( $value, $saved_attr );
+				echo '>' . esc_html( $label ) . '</option>';
+			}
+			?>
+		</select>
+		<?php
 	}
 
 	/**
