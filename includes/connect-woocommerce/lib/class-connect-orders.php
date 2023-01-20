@@ -52,9 +52,7 @@ class Connect_WooCommerce_Orders {
 		add_action( 'woocommerce_order_status_completed', array( $this, 'create_invoice' ) );
 
 		// Email attachments.
-		if ( $connwoo_plugin_options['order_send_attachments'] ) {
-			add_filter( 'woocommerce_email_attachments', array( $this, 'attach_file_woocommerce_email' ), 10, 3 );
-		}
+		add_action( 'plugins_loaded', array( $this, 'woocommerce_extensions_email' ), 0 );
 
 		// Order Columns HPOS.
 		add_filter( 'manage_woocommerce_page_wc-orders_columns', array( $this, 'custom_shop_order_column' ), 20 );
@@ -337,6 +335,18 @@ class Connect_WooCommerce_Orders {
 				});
 			</script>
 			<?php
+		}
+	}
+
+	/**
+	 * Loads after woocommerce
+	 *
+	 * @return void
+	 */
+	public function woocommerce_extensions_email() {
+		global $connwoo_plugin_options;
+		if ( $connwoo_plugin_options['order_send_attachments'] ) {
+			add_filter( 'woocommerce_email_attachments', array( $this, 'attach_file_woocommerce_email' ), 10, 3 );
 		}
 	}
 
