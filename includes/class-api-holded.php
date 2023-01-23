@@ -506,8 +506,8 @@ class CONNAPI_HOLDED_ERP {
 	 * @param int    $product_id Product ID.
 	 * @return array
 	 */
-	public function get_image_product( $imh_settings, $holded_id, $product_id ) {
-		$apikey = $imh_settings['wcpimh_api'] ?? '';
+	public function get_image_product( $settings, $holded_id, $product_id ) {
+		$apikey = isset( $settings['api'] ) ? $settings['api'] : '';
 		$args   = array(
 			'headers' => array(
 				'key' => $apikey,
