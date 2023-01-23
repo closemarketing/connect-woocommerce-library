@@ -306,7 +306,7 @@ class Connect_WooCommerce_Import_PRO {
 	/**
 	 * Get categories ids
 	 *
-	 * @param array   $item_type Type of the product.
+	 * @param string  $item_type Type of the product.
 	 * @param boolean $is_new_product Is new.
 	 * @return array
 	 */
@@ -320,14 +320,12 @@ class Connect_WooCommerce_Import_PRO {
 			( ! empty( $item_type ) && 'no' === $category_newp && false === $is_new_product )
 		) {
 			$category_array = array();
-			foreach ( $item_type as $category ) {
-				if ( $category_sep && strpos( $category['name'], $category_sep ) ) {
-					$category_array = explode( $category_sep, $category['name'] );
-				} else {
-					$category_array[] = $category['name'];
-				}
-				$categories_ids = $this->find_categories_ids( $category_array );
+			if ( $category_sep && strpos( $item_type, $category_sep ) ) {
+				$category_array = explode( $category_sep, $item_type );
+			} else {
+				$category_array[] = $item_type;
 			}
+			$categories_ids = $this->find_categories_ids( $category_array );
 		}
 		return $categories_ids;
 	}

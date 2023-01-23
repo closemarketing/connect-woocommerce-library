@@ -308,9 +308,9 @@ class WCPIMH_Import {
 				break;
 		}
 		$attributes = ! empty( $item['attributes'] ) && is_array( $item['attributes'] ) ? $item['attributes'] : array();
-		$category   = array_search( $attribute_cat_id, array_column( $attributes, 'id', 'value' ) );
-		if ( class_exists( 'Connect_WooCommerce_Import_PRO' ) && $category ) {
-			$categories_ids = $connwoo_pro->get_categories_ids( $category, $is_new_product );
+		$item_type  = array_search( $attribute_cat_id, array_column( $attributes, 'id', 'value' ) );
+		if ( class_exists( 'Connect_WooCommerce_Import_PRO' ) && $item_type ) {
+			$categories_ids = $connwoo_pro->get_categories_ids( $item_type, $is_new_product );
 			if ( ! empty( $categories_ids ) ) {
 				$product_props['category_ids'] = $categories_ids;
 			}

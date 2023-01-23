@@ -324,6 +324,14 @@ class CONNWOOO_Admin {
 		}
 
 		add_settings_field(
+			'wcpimh_catnp',
+			__( 'Import category only in new products?', 'connect-woocommerce' ),
+			array( $this, 'catnp_callback' ),
+			'connect-woocommerce-admin',
+			'connect_woocommerce_setting_section'
+		);
+
+		add_settings_field(
 			'wcpimh_filter',
 			__( 'Filter products by tags? (separated by comma and no space)', 'connect-woocommerce' ),
 			array( $this, 'filter_callback' ),
@@ -352,15 +360,6 @@ class CONNWOOO_Admin {
 				'connect_woocommerce_setting_section'
 			);
 		}
-
-		$name_catnp = __( 'Import category only in new products?', 'connect-woocommerce' );
-		add_settings_field(
-			'wcpimh_catnp',
-			$name_catnp,
-			array( $this, 'catnp_callback' ),
-			'connect-woocommerce-admin',
-			'connect_woocommerce_setting_section'
-		);
 
 		if ( 'Holded' === $connwoo_plugin_options['name'] ) {
 			$name_docorder = __( 'Document to create after order completed?', 'connect-woocommerce' );
