@@ -98,4 +98,22 @@ function connwoo_process_activation_premium() {
 
 	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 	dbDelta( $sql );
+
+	// Migrates options.
+	$old_settings = get_option( 'imhset' );
+	if ( ! empty( $old_settings ) ) {
+		$new_settings = array();
+		foreach ( $old_settings as $key => $value ) {
+			$new_settings[ str_replace( 'wcpimh_', '', $key ) ] = $value;
+		}
+
+		update_option( CWLIB_SLUG, $new_settings );
+		delete_option( 'imhset' );
+	}
+
+	$old_settings_public = get_option( 'imhset_public' );
+	if ( ! empty( $old_settings_public ) ) {
+		update_option( CWLIB_SLUG . '_public', $old_settings_public );
+		delete_option( 'imhset_public' );
+	}
 }
