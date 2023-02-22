@@ -118,4 +118,14 @@ function connwoo_process_activation_premium() {
 	}
 
 	// Deactive old plugins.
+	add_action( 'activated_plugin', 'deactivate_some_plugin' );
+
+	function deactivate_some_plugin() {
+    if ( is_plugin_active('../class-api-holded.php') ) {
+        // Deactivation logic for some-inactive-plugin
+        deactivate_plugins( '../../import-holded-products-woocommerce/import-holded-products-woocommerce.php' );
+				deactivate_plugins( '../../import-holded-products-woocommerce-premium/import-holded-products-woocommerce-premium.php' );
+    }
+}
+
 }
