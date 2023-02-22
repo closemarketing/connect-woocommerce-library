@@ -116,4 +116,6 @@ function connwoo_process_activation_premium() {
 		update_option( CWLIB_SLUG . '_public', $old_settings_public );
 		delete_option( 'imhset_public' );
 	}
+
+	// Deactive old plugins.
 }
