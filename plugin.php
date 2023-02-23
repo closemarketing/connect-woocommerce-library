@@ -5,7 +5,7 @@
  * Description: Connects Holded with WooCommerce and syncs products, customers, orders and stock.
  * Author: Closetechnology
  * Author URI: https://close.technology/
- * Version: 2.1.0-rc.6
+ * Version: 2.1.0
  *
  * @package WordPress
  * Text Domain: connect-woocommerce-holded
@@ -16,11 +16,12 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WCPIMH_VERSION', '2.1.0-rc.6' );
-define( 'WCPIMH_FILE', __FILE__ );
+define( 'CWLIB_VERSION', '2.1.0' );
+define( 'CWLIB_FILE', __FILE__ );
 define( 'CONHOLD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'CONHOLD_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 
+require_once CONHOLD_PLUGIN_PATH . '/includes/helper-activation.php';
 
 // Loads translation.
 add_action( 'init', 'conhold_load_textdomain' );
@@ -41,7 +42,7 @@ define( 'CWLIB_SLUG', 'connwoo_holded' );
 $connwoo_plugin_options = array(
 	'name'                       => 'Holded',
 	'slug'                       => 'connwoo_holded',
-	'version'                    => WCPIMH_VERSION,
+	'version'                    => CWLIB_VERSION,
 	'plugin_name'                => 'Connect WooCommerce Holded',
 	'plugin_slug'                => 'connect-woocommerce-holded',
 	'api_url'                    => 'https://close.technology/',

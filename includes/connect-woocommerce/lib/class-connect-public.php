@@ -2,7 +2,7 @@
 /**
  * Class for loading functions
  */
-class CONNWOO_Public {
+class CWLIB_Public {
 	/**
 	 * Bootstrap
 	 */
@@ -226,4 +226,4 @@ class CONNWOO_Public {
 
 } //from class
 
-$connwoo_public = new CONNWOO_Public();
+$connwoo_public = new CWLIB_Public();

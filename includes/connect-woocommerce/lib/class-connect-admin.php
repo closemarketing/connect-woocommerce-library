@@ -60,7 +60,7 @@ class CONNWOOO_Admin {
 		add_action( 'admin_init', array( $this, 'page_init' ) );
 
 		// Creates license activation.
-		register_activation_hook( WCPIMH_FILE, array( $this, 'license_instance_activation' ) );
+		register_activation_hook( CWLIB_FILE, array( $this, 'license_instance_activation' ) );
 	}
 
 	/**
@@ -1443,7 +1443,7 @@ class CONNWOOO_Admin {
 		);
 
 		if ( $software_version ) {
-			$defaults['software_version'] = WCPIMH_VERSION;
+			$defaults['software_version'] = CWLIB_VERSION;
 		}
 
 		return $defaults;
@@ -1527,7 +1527,7 @@ class CONNWOOO_Admin {
 			'wc_am_action' => 'update',
 			'slug'         => $connwoo_plugin_options['plugin_slug'],
 			'plugin_name'  => $connwoo_plugin_options['plugin_name'],
-			'version'      => WCPIMH_VERSION,
+			'version'      => CWLIB_VERSION,
 			'product_id'   => get_option( $this->options_name . '_license_product_id' ),
 			'api_key'      => get_option( $this->options_name . '_license_apikey' ),
 			'instance'     => get_option( $this->options_name . '_license_instance' ),
@@ -1542,7 +1542,7 @@ class CONNWOOO_Admin {
 
 		if ( false !== $response && true === $response['success'] ) {
 			$new_version  = (string) $response['data']['package']['new_version'];
-			$curr_version = (string) WCPIMH_VERSION;
+			$curr_version = (string) CWLIB_VERSION;
 
 			$package = array(
 				'id'             => $response['data']['package']['id'],
@@ -1592,7 +1592,7 @@ class CONNWOOO_Admin {
 		$args = array(
 			'wc_am_action' => 'plugininformation',
 			'plugin_name'  => $connwoo_plugin_options['plugin_slug'],
-			'version'      => WCPIMH_VERSION,
+			'version'      => CWLIB_VERSION,
 			'product_id'   => get_option( $this->options_name . '_license_product_id' ),
 			'api_key'      => get_option( $this->options_name . '_license_apikey' ),
 			'instance'     => get_option( $this->options_name . '_license_instance' ),

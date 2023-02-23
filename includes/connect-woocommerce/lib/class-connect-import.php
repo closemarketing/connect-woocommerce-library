@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
  * @copyright  2019 Closemarketing
  * @version    0.1
  */
-class WCPIMH_Import {
+class CWLIB_Import {
 
 	/**
 	 * Ajax Message that shows while imports
@@ -832,4 +832,4 @@ class WCPIMH_Import {
 
 global $connwoo;
 
-$connwoo = new WCPIMH_Import();
+$connwoo = new CWLIB_Import();

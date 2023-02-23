@@ -75,7 +75,7 @@ define(
 
 
 // Creates table sync.
-register_activation_hook( WCPIMH_FILE, 'connwoo_process_activation_premium' );
+register_activation_hook( CWLIB_FILE, 'connwoo_process_activation_premium' );
 /**
  * Creates the database
  *
@@ -116,16 +116,4 @@ function connwoo_process_activation_premium() {
 		update_option( CWLIB_SLUG . '_public', $old_settings_public );
 		delete_option( 'imhset_public' );
 	}
-
-	// Deactive old plugins.
-	add_action( 'activated_plugin', 'deactivate_some_plugin' );
-
-	function deactivate_some_plugin() {
-    if ( is_plugin_active('../class-api-holded.php') ) {
-        // Deactivation logic for some-inactive-plugin
-        deactivate_plugins( '../../import-holded-products-woocommerce/import-holded-products-woocommerce.php' );
-				deactivate_plugins( '../../import-holded-products-woocommerce-premium/import-holded-products-woocommerce-premium.php' );
-    }
-}
-
 }
