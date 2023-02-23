@@ -20,6 +20,7 @@ define( 'CWLIB_VERSION', '2.1.0' );
 define( 'CWLIB_FILE', __FILE__ );
 define( 'CONHOLD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'CONHOLD_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
+define( 'CONHOLD_SHOP_URL', 'https://close.technology/' );
 
 require_once CONHOLD_PLUGIN_PATH . '/includes/helper-activation.php';
 
@@ -45,7 +46,7 @@ $connwoo_plugin_options = array(
 	'version'                    => CWLIB_VERSION,
 	'plugin_name'                => 'Connect WooCommerce Holded',
 	'plugin_slug'                => 'connect-woocommerce-holded',
-	'api_url'                    => 'https://close.technology/',
+	'api_url'                    => CONHOLD_SHOP_URL,
 	'product_price_tax_option'   => true,
 	'product_price_rate_option'  => true,
 	'product_option_stock'       => true,
