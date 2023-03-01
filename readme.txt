@@ -5,8 +5,6 @@ Donate link: https://close.marketing/go/donate/
 Requires at least: 4.0
 Requires PHP: 5.6
 Tested up to: 6.1
-Stable tag: 2.1.0
-Version: 2.1.0
 
 Syncs Products and data from Holded software to WooCommerce.
 
