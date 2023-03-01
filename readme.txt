@@ -40,18 +40,22 @@ WordPress installation and then activate the Plugin from Plugins page.
 [Official Repository GitHub](https://github.com/closemarketing/import-holded-products-woocommerce)
 
 == Changelog ==
+= 2.1.1 =
+*   Fix: Blank filter not working.
+*   Fix: Error importing products in database.
+
 = 2.1.0 =
-	*   New Admin design.
-	*   Protected folder invoice.
-	*   Order columns for API.
-	*   Added option for Categories as attribute.
-	*   Fix: error message order.
-	*   Fix: Shipping order cost fixed not implemented in order.
-	*   Fix: Fatal error no products in automation.
-	*   Fix: Faster manual sync.
-	*   Fix: Errors in PHP8.
-	*   Premium Fix: Shipping order info updated.
-	*   Premium Fix: Fix not importing variables products.
+*   New Admin design.
+*   Protected folder invoice.
+*   Order columns for API.
+*   Added option for Categories as attribute.
+*   Fix: error message order.
+*   Fix: Shipping order cost fixed not implemented in order.
+*   Fix: Fatal error no products in automation.
+*   Fix: Faster manual sync.
+*   Fix: Errors in PHP8.
+*   Premium Fix: Shipping order info updated.
+*   Premium Fix: Fix not importing variables products.
 
 = 2.0.1 =
 *   Fix: Filtered product if empty.
