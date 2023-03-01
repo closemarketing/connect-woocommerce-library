@@ -335,6 +335,9 @@ class CWLIB_Import {
 	 * @return boolean True to not get the product, false to get it.
 	 */
 	private function filter_product( $tag_product ) {
+		if ( empty( $this->settings['filter'] ) ) {
+			return false;
+		}
 		$tags_option = explode( ',', $this->settings['filter'] );
 
 		if ( empty( array_intersect( $tags_option, $tag_product ) ) ) {
