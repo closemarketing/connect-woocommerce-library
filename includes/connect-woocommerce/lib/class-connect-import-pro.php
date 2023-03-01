@@ -371,7 +371,7 @@ class Connect_WooCommerce_Import_PRO {
 		}
 		foreach ( $item['variants'] as $variant ) {
 			$variation_id = 0; // default value.
-			if ( ! $is_new_product ) {
+			if ( ! $is_new_product && is_array( $variations_array ) ) {
 				$variation_id = array_search( $variant['sku'], $variations_array );
 				unset( $variations_array[ $variation_id ] );
 			}
