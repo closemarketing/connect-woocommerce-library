@@ -605,6 +605,7 @@ class CONNWOOO_Admin {
 	 */
 	public function section_automate() {
 		global $wpdb, $connwoo_plugin_options;
+		connwoo_check_table_sync();
 		$count        = $wpdb->get_var( "SELECT COUNT(*) FROM $this->table_sync WHERE synced = 1" );
 		$total_count  = $wpdb->get_var( "SELECT COUNT(*) FROM $this->table_sync" );
 		$count_return = $count . ' / ' . $total_count;

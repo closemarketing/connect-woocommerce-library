@@ -84,20 +84,7 @@ register_activation_hook( CWLIB_FILE, 'connwoo_process_activation_premium' );
  * @return void
  */
 function connwoo_process_activation_premium() {
-	global $wpdb;
-	$charset_collate = $wpdb->get_charset_collate();
-
-	$table_name = $wpdb->prefix . 'sync_' . CWLIB_SLUG;
-
-	// DB Tasks.
-	$sql = "CREATE TABLE $table_name (
-	    prod_id varchar(255) NOT NULL,
-	    synced boolean,
-          UNIQUE KEY prod_id (prod_id)
-    	) $charset_collate;";
-
-	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-	dbDelta( $sql );
+	connwoo_create_table();
 
 	// Migrates options.
 	$old_settings = get_option( 'imhset' );
@@ -115,5 +102,44 @@ function connwoo_process_activation_premium() {
 	if ( ! empty( $old_settings_public ) ) {
 		update_option( CWLIB_SLUG . '_public', $old_settings_public );
 		delete_option( 'imhset_public' );
+	}
+}
+
+/**
+ * Creates the table
+ *
+ * @since  1.0
+ * @access private
+ * @return void
+ */
+function connwoo_create_table() {
+	global $wpdb;
+	$charset_collate = $wpdb->get_charset_collate();
+
+	$table_name = $wpdb->prefix . 'sync_' . CWLIB_SLUG;
+
+	// DB Tasks.
+	$sql = "CREATE TABLE $table_name (
+	    prod_id varchar(255) NOT NULL,
+	    synced boolean,
+          UNIQUE KEY prod_id (prod_id)
+    	) $charset_collate;";
+
+	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+	dbDelta( $sql );
+}
+
+/**
+ * Check if table sync exists
+ *
+ * @return void
+ */
+function connwoo_check_table_sync() {
+	global $wpdb;
+	$table_name  = $wpdb->prefix . 'sync_' . CWLIB_SLUG;
+	$check_table = $wpdb->get_var( "SHOW TABLES LIKE '$table_name'" );
+
+	if ( $check_table !== $table_name ) {
+		connwoo_create_table();
 	}
 }

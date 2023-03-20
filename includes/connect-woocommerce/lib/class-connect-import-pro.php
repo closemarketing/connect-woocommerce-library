@@ -534,12 +534,14 @@ class Connect_WooCommerce_Import_PRO {
 	}
 
 	/**
-	 * # Sync process
-	 * ---------------------------------------------------------------------------------------------------- */
+	 * ## Sync products
+	 * --------------------------- */
 
 	public function cron_sync_products() {
 		global $connapi_erp;
 		$products_sync = $this->get_products_sync();
+
+		connwoo_check_table_sync();
 
 		if ( false === $products_sync ) {
 			$this->send_sync_ended_products();
@@ -554,6 +556,7 @@ class Connect_WooCommerce_Import_PRO {
 			}
 		}
 	}
+
 	/**
 	 * Create Syncs product for automatic
 	 *
