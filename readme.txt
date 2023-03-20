@@ -38,6 +38,9 @@ WordPress installation and then activate the Plugin from Plugins page.
 [Official Repository GitHub](https://github.com/closemarketing/import-holded-products-woocommerce)
 
 == Changelog ==
+= 2.1.2 =
+*   Fix: Prevents table sync not created.
+
 = 2.1.1 =
 *   Fix: Blank filter not working.
 *   Fix: Error importing products in database.
