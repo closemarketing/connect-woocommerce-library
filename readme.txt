@@ -40,6 +40,7 @@ WordPress installation and then activate the Plugin from Plugins page.
 == Changelog ==
 = 2.1.2 =
 *   Fix: Prevents table sync not created.
+*   Fix: Some clients have less lenght in key products.
 
 = 2.1.1 =
 *   Fix: Blank filter not working.

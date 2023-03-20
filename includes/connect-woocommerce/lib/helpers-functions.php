@@ -120,7 +120,7 @@ function connwoo_create_table() {
 
 	// DB Tasks.
 	$sql = "CREATE TABLE $table_name (
-	    prod_id varchar(255) NOT NULL,
+	    prod_id varchar(100) NOT NULL,
 	    synced boolean,
           UNIQUE KEY prod_id (prod_id)
     	) $charset_collate;";
