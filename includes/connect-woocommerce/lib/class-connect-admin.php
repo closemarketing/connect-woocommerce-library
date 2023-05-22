@@ -362,6 +362,15 @@ class CONNWOOO_Admin {
 		}
 
 		if ( 'Holded' === $connwoo_plugin_options['name'] ) {
+			$label_filter = __( 'Serie number', 'connect-woocommerce' );
+			add_settings_field(
+				'wcpimh_serie_number',
+				$label_filter,
+				array( $this, 'serie_number_callback' ),
+				'connect-woocommerce-admin',
+				'connect_woocommerce_setting_section'
+			);
+
 			$name_docorder = __( 'Document to create after order completed?', 'connect-woocommerce' );
 				add_settings_field(
 					'wcpimh_doctype',
@@ -870,6 +879,33 @@ class CONNWOOO_Admin {
 			foreach ( $rates_options as $value => $label ) {
 				echo '<option value="' . esc_html( $value ) . '" ';
 				selected( $value, $this->settings['rates'] );
+				echo '>' . esc_html( $label ) . '</option>';
+			}
+			?>
+		</select>
+		<?php
+	}
+
+	/**
+	 * Rates option from API
+	 *
+	 * @return void
+	 */
+	public function serie_number_callback() {
+		global $connapi_erp;
+		$type = empty( $this->settings['doctype'] ) ? $this->settings['doctype'] : 'invoice';
+		$series_options = $connapi_erp->get_series_number( $type );
+		if ( empty( $series_options ) ) {
+			return;
+		}
+		?>
+		<select name="<?php echo esc_html( $this->options_name ); ?>[series]" id="wcpimh_series">
+			<?php
+			foreach ( $series_options as $value => $label ) {
+				echo '<option value="' . esc_html( $value ) . '" ';
+				if ( ! empty( $this->settings['series'] ) ) {
+					selected( $value, $this->settings['series'] );
+				}
 				echo '>' . esc_html( $label ) . '</option>';
 			}
 			?>

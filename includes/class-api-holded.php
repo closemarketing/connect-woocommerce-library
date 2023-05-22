@@ -127,6 +127,29 @@ class CONNAPI_HOLDED_ERP {
 	/**
 	 * Gets information from Holded CRM
 	 *
+	 * @param $type Type of serie.
+	 *
+	 * @return array
+	 */
+	public function get_series_number( $type = 'invoice' ) {
+		$response_rates = $this->api( 'numberingseries/' . $type, 'GET' );
+
+		$series_options = array(
+			'default' => __( 'Default serie', 'connect-woocommerce-holded' ),
+		);
+		if ( 'ok' === $response_rates['status'] && ! empty( $response_rates['data'] ) ) {
+			foreach ( $response_rates['data'] as $serie ) {
+				if ( isset( $serie['id'] ) && isset( $serie['name'] ) ) {
+					$series_options[ $serie['id'] ] = $serie['name'] . ' - ' . $serie['format'];
+				}
+			}
+		}
+		return $series_options;
+	}
+
+	/**
+	 * Gets information from Holded CRM
+	 *
 	 * @return array
 	 */
 	public function get_attributes() {
@@ -223,9 +246,10 @@ class CONNAPI_HOLDED_ERP {
 			);
 			return false;
 		}
-		$apikey    = isset( $this->settings['api'] ) ? $this->settings['api'] : '';
-		$doctype   = isset( $this->settings['doctype'] ) ? $this->settings['doctype'] : 'nosync';
-		$design_id = isset( $this->settings['design_id'] ) ? $this->settings['design_id'] : '';
+		$apikey        = isset( $this->settings['api'] ) ? $this->settings['api'] : '';
+		$doctype       = isset( $this->settings['doctype'] ) ? $this->settings['doctype'] : 'nosync';
+		$design_id     = isset( $this->settings['design_id'] ) ? $this->settings['design_id'] : '';
+		$series_number = isset( $this->settings['series'] ) ? $this->settings['series'] : '';
 		if ( 'nosync' === $doctype ) {
 			return false;
 		}
@@ -270,6 +294,7 @@ class CONNAPI_HOLDED_ERP {
 			'shippingProvince'       => $order->get_shipping_state(),
 			'shippingCountry'        => $order->get_shipping_country(),
 			'designId'               => $design_id,
+			'numSerieId'             => $series_number,
 			'woocommerceTaxes'       => wp_json_encode( $order->get_tax_totals() ),
 		);
 

@@ -39,6 +39,9 @@ WordPress installation and then activate the Plugin from Plugins page.
 
 == Changelog ==
 = 2.1.2 =
+*   Added Series number.
+
+= 2.1.2 =
 *   Fix: Prevents table sync not created.
 *   Fix: Some clients have less lenght in key products.
 
