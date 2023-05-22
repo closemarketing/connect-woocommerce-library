@@ -797,7 +797,6 @@ class Connect_WooCommerce_Import_PRO {
 					}
 					$body .= '<br/><strong>' . __( 'Product name: ', 'connect-woocommerce' ) . '</strong>' . $error['name'];
 					$body .= '<br/><strong>' . __( 'Product sku: ', 'connect-woocommerce' ) . '</strong>' . $error['sku'];
-					$body .= '<br/><strong>' . __( 'Product type: ', 'connect-woocommerce' ) . '</strong>' . $error['type'];
 					$body .= '<br/>';
 				}
 			}

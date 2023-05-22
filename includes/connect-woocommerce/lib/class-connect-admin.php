@@ -651,6 +651,8 @@ class CONNWOOO_Admin {
 			color: white;
 			margin: 0;
 			font-size: 18px;
+			position: absolute;
+			right: 18px;
 			}
 		</style>
 		<div class="progress-bar blue">
