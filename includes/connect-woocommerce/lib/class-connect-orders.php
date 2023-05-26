@@ -125,9 +125,6 @@ class Connect_WooCommerce_Orders {
 			);
 		}
 	}
-	/**
-	 * # Sync orders manually
-	 * ---------------------------------------------------------------------------------------------------- */
 
 	/**
 	 * Import products from API
