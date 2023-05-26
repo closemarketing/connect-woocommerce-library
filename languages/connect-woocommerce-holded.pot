@@ -2,15 +2,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Connect WooCommerce Holded PRO\n"
-"POT-Creation-Date: 2023-01-20 21:05+0100\n"
-"PO-Revision-Date: 2022-12-24 12:37+0100\n"
-"Last-Translator: David <david@closemarketing.es>\n"
-"Language-Team: David <david@closemarketing.es>\n"
+"POT-Creation-Date: 2023-05-26 16:42+0200\n"
+"PO-Revision-Date: 2023-05-26 16:42+0200\n"
+"Last-Translator: David Pérez <david@close.marketing>\n"
+"Language-Team: David Pérez <david@close.marketing>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
-"X-Generator: Poedit 3.2.2\n"
+"X-Generator: Poedit 3.3.1\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-Flags-xgettext: --add-comments=translators:\n"
 "X-Poedit-WPHeader: plugin.php\n"
@@ -20,6 +20,7 @@ msgstr ""
 "_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: *.min.js\n"
+"X-Poedit-SearchPathExcluded-1: vendor\n"
 
 #: includes/class-api-holded.php:63
 msgid "No API Key"
@@ -29,42 +30,47 @@ msgstr ""
 msgid "Default price"
 msgstr ""
 
-#: includes/class-api-holded.php:137
+#: includes/class-api-holded.php:138
+msgid "Default serie"
+msgstr ""
+
+#: includes/class-api-holded.php:160
 msgid "None"
 msgstr ""
 
-#: includes/class-api-holded.php:220 includes/class-api-holded.php:459
+#. translators: %s URL for admin settings.
+#: includes/class-api-holded.php:243 includes/class-api-holded.php:484
 #, php-format
 msgid ""
 "WooCommerce Holded: Plugin is enabled but no api key or secret provided. "
 "Please enter your api key and secret <a href=\"%s\">here</a>."
 msgstr ""
 
-#: includes/class-api-holded.php:283
+#: includes/class-api-holded.php:308
 msgid "Paid by cash"
 msgstr ""
 
-#: includes/class-api-holded.php:286
+#: includes/class-api-holded.php:311
 msgid "Paid by check"
 msgstr ""
 
-#: includes/class-api-holded.php:289
+#: includes/class-api-holded.php:314
 msgid "Paid by paypal"
 msgstr ""
 
-#: includes/class-api-holded.php:292
+#: includes/class-api-holded.php:317
 msgid "Paid by bank transfer"
 msgstr ""
 
-#: includes/class-api-holded.php:295
+#: includes/class-api-holded.php:320
 msgid "Paid by"
 msgstr ""
 
-#: includes/class-api-holded.php:360
+#: includes/class-api-holded.php:385
 msgid "Order synced correctly with Holded, ID: "
 msgstr ""
 
-#: includes/class-api-holded.php:365
+#: includes/class-api-holded.php:390
 #: includes/connect-woocommerce/lib/class-connect-orders.php:124
 msgid "num: "
 msgstr ""
@@ -90,7 +96,7 @@ msgid "Sync Orders"
 msgstr ""
 
 #: includes/connect-woocommerce/lib/class-connect-admin.php:119
-#: includes/connect-woocommerce/lib/class-connect-admin.php:409
+#: includes/connect-woocommerce/lib/class-connect-admin.php:417
 msgid "Automate"
 msgstr ""
 
@@ -126,6 +132,7 @@ msgstr ""
 msgid "What is the license for?"
 msgstr ""
 
+#. translators: %1$s Plugin URL %2$s Name of plugin.
 #: includes/connect-woocommerce/lib/class-connect-admin.php:195
 #, php-format
 msgid ""
@@ -138,6 +145,7 @@ msgstr ""
 msgid "How do I get a license?"
 msgstr ""
 
+#. translators: %1$s Plugin URL %2$s Name of plugin.
 #: includes/connect-woocommerce/lib/class-connect-admin.php:205
 #, php-format
 msgid ""
@@ -195,425 +203,426 @@ msgid "Attribute to use as category"
 msgstr ""
 
 #: includes/connect-woocommerce/lib/class-connect-admin.php:328
-msgid "Filter products by tags? (separated by comma and no space)"
-msgstr ""
-
-#: includes/connect-woocommerce/lib/class-connect-admin.php:337
-msgid "Get prices with Tax?"
-msgstr ""
-
-#: includes/connect-woocommerce/lib/class-connect-admin.php:345
-msgid "Product price rate for this eCommerce"
-msgstr ""
-
-#: includes/connect-woocommerce/lib/class-connect-admin.php:346
-msgid "Copy and paste the ID of the rates for publishing in the web"
-msgstr ""
-
-#: includes/connect-woocommerce/lib/class-connect-admin.php:356
 msgid "Import category only in new products?"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:366
+#: includes/connect-woocommerce/lib/class-connect-admin.php:336
+msgid "Filter products by tags? (separated by comma and no space)"
+msgstr ""
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:345
+msgid "Get prices with Tax?"
+msgstr ""
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:353
+msgid "Product price rate for this eCommerce"
+msgstr ""
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:354
+msgid "Copy and paste the ID of the rates for publishing in the web"
+msgstr ""
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:365
 msgid "Document to create after order completed?"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:375
+#: includes/connect-woocommerce/lib/class-connect-admin.php:374
+msgid "Serie number"
+msgstr ""
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:383
 msgid "Create document for free Orders?"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:384
+#: includes/connect-woocommerce/lib/class-connect-admin.php:392
 msgid "Status to sync Orders?"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:393
+#: includes/connect-woocommerce/lib/class-connect-admin.php:401
 msgid "ID Holded design for document"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:413
+#: includes/connect-woocommerce/lib/class-connect-admin.php:421
 msgid "When do you want to sync?"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:422
+#: includes/connect-woocommerce/lib/class-connect-admin.php:430
 msgid "How many products do you want to sync each time?"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:433
+#: includes/connect-woocommerce/lib/class-connect-admin.php:441
 msgid "Do you want to receive an email when all products are synced?"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:454
+#: includes/connect-woocommerce/lib/class-connect-admin.php:462
 msgid "Settings for Woocommerce Shop"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:461
+#: includes/connect-woocommerce/lib/class-connect-admin.php:469
 msgid "Ask for VAT in Checkout?"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:468
+#: includes/connect-woocommerce/lib/class-connect-admin.php:476
 msgid "VAT info mandatory?"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:476
+#: includes/connect-woocommerce/lib/class-connect-admin.php:484
 msgid "Show Company field?"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:484
+#: includes/connect-woocommerce/lib/class-connect-admin.php:492
 msgid "Remove other shipping methods when free is possible?"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:492
+#: includes/connect-woocommerce/lib/class-connect-admin.php:500
 msgid "Adds terms and conditions in registration page?"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:515
+#: includes/connect-woocommerce/lib/class-connect-admin.php:523
 msgid "License API Key"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:523
+#: includes/connect-woocommerce/lib/class-connect-admin.php:531
 msgid "License Product ID"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:531
+#: includes/connect-woocommerce/lib/class-connect-admin.php:539
 msgid "License Status"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:539
+#: includes/connect-woocommerce/lib/class-connect-admin.php:547
 msgid "Deactivate License"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:615
-#: includes/connect-woocommerce/lib/class-connect-import-pro.php:772
+#: includes/connect-woocommerce/lib/class-connect-admin.php:625
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:773
 msgid "filtered"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:616
-#: includes/connect-woocommerce/lib/class-connect-import-pro.php:773
+#: includes/connect-woocommerce/lib/class-connect-admin.php:626
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:774
 msgid "total"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:619
+#: includes/connect-woocommerce/lib/class-connect-admin.php:629
 msgid "Make your settings to automate the sync."
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:622
+#: includes/connect-woocommerce/lib/class-connect-admin.php:632
 msgid "Actual Automate status:"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:624
+#: includes/connect-woocommerce/lib/class-connect-admin.php:634
 msgid "products synced with "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:736
-#: includes/connect-woocommerce/lib/class-connect-admin.php:769
-#: includes/connect-woocommerce/lib/class-connect-admin.php:784
-#: includes/connect-woocommerce/lib/class-connect-admin.php:887
-#: includes/connect-woocommerce/lib/class-connect-admin.php:927
-#: includes/connect-woocommerce/lib/class-connect-admin.php:1005
-#: includes/connect-woocommerce/lib/class-connect-admin.php:1072
-#: includes/connect-woocommerce/lib/class-connect-admin.php:1088
-#: includes/connect-woocommerce/lib/class-connect-admin.php:1104
-#: includes/connect-woocommerce/lib/class-connect-admin.php:1120
-#: includes/connect-woocommerce/lib/class-connect-admin.php:1136
+#: includes/connect-woocommerce/lib/class-connect-admin.php:748
+#: includes/connect-woocommerce/lib/class-connect-admin.php:781
+#: includes/connect-woocommerce/lib/class-connect-admin.php:796
+#: includes/connect-woocommerce/lib/class-connect-admin.php:926
+#: includes/connect-woocommerce/lib/class-connect-admin.php:966
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1044
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1111
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1127
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1143
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1159
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1175
 msgid "Yes"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:737
-#: includes/connect-woocommerce/lib/class-connect-admin.php:768
-#: includes/connect-woocommerce/lib/class-connect-admin.php:783
-#: includes/connect-woocommerce/lib/class-connect-admin.php:889
-#: includes/connect-woocommerce/lib/class-connect-admin.php:925
-#: includes/connect-woocommerce/lib/class-connect-admin.php:970
-#: includes/connect-woocommerce/lib/class-connect-admin.php:1007
-#: includes/connect-woocommerce/lib/class-connect-admin.php:1070
-#: includes/connect-woocommerce/lib/class-connect-admin.php:1086
-#: includes/connect-woocommerce/lib/class-connect-admin.php:1102
-#: includes/connect-woocommerce/lib/class-connect-admin.php:1118
-#: includes/connect-woocommerce/lib/class-connect-admin.php:1134
+#: includes/connect-woocommerce/lib/class-connect-admin.php:749
+#: includes/connect-woocommerce/lib/class-connect-admin.php:780
+#: includes/connect-woocommerce/lib/class-connect-admin.php:795
+#: includes/connect-woocommerce/lib/class-connect-admin.php:928
+#: includes/connect-woocommerce/lib/class-connect-admin.php:964
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1009
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1046
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1109
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1125
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1141
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1157
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1173
 msgid "No"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:751
+#: includes/connect-woocommerce/lib/class-connect-admin.php:763
 msgid "Draft"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:752
+#: includes/connect-woocommerce/lib/class-connect-admin.php:764
 msgid "Publish"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:753
+#: includes/connect-woocommerce/lib/class-connect-admin.php:765
 msgid "Pending"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:754
+#: includes/connect-woocommerce/lib/class-connect-admin.php:766
 msgid "Private"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:785
+#: includes/connect-woocommerce/lib/class-connect-admin.php:797
 msgid "Notify"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:848
+#: includes/connect-woocommerce/lib/class-connect-admin.php:860
 msgid "Yes, tax included"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:849
+#: includes/connect-woocommerce/lib/class-connect-admin.php:861
 msgid "No, tax not included"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:903
+#: includes/connect-woocommerce/lib/class-connect-admin.php:942
 msgid "Not sync"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:905
+#: includes/connect-woocommerce/lib/class-connect-admin.php:944
 msgid "Invoice"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:907
+#: includes/connect-woocommerce/lib/class-connect-admin.php:946
 msgid "Sales receipt"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:909
+#: includes/connect-woocommerce/lib/class-connect-admin.php:948
 msgid "Sales order"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:911
+#: includes/connect-woocommerce/lib/class-connect-admin.php:950
 msgid "Waybill"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:942
+#: includes/connect-woocommerce/lib/class-connect-admin.php:981
 msgid "All status orders"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:944
+#: includes/connect-woocommerce/lib/class-connect-admin.php:983
 msgid "Only Completed"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:1058
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1097
 msgid ""
 "Please select the following settings in order customize your eCommerce. "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:1189
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1228
 msgid "Activated"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:1193
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1232
 msgid "Deactivated"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:1209
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1248
 msgid "Deactivates License so it can be used on another site."
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:1247
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1286
 msgid "License Connect WooCommerce deactivated. "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:1281
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1320
 msgid "Connect WooCommerce activated. "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:1289
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1328
 msgid ""
 "Connection failed to the License Key API server. Try again later. There may "
 "be a problem on your server preventing outgoing requests, or the store is "
 "blocking your request to activate the plugin/theme."
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:1298
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1337
 msgid ""
 "The API Key activation could not be commpleted due to an unknown error "
 "possibly on the store server The activation results were empty."
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:1311
-#: includes/connect-woocommerce/lib/class-connect-admin.php:1338
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1350
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1377
 msgid "The API Key is missing from the deactivation request."
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-admin.php:1629
+#. translators: %1$s Name of library %2$s host %3$s Accesible hosts.
+#: includes/connect-woocommerce/lib/class-connect-admin.php:1668
 #, php-format
 msgid ""
 "<b>Warning!</b> You're blocking external requests which means you won't be "
 "able to get %1$s updates. Please add %2$s to %3$s."
 msgstr ""
 
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:384
 #: includes/connect-woocommerce/lib/class-connect-import-pro.php:386
-#: includes/connect-woocommerce/lib/class-connect-import-pro.php:388
 msgid "Variation error: "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import-pro.php:607
-#: includes/connect-woocommerce/lib/class-connect-import.php:495
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:608
+#: includes/connect-woocommerce/lib/class-connect-import.php:498
 msgid "Product not imported becouse any variant has got SKU: "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import-pro.php:614
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:615
 msgid "SKU not finded in Simple product. Product not imported "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import-pro.php:617
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:618
 msgid "Product type not supported. Product not imported "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import-pro.php:764
-#: includes/connect-woocommerce/lib/class-connect-import-pro.php:766
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:765
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:767
 msgid "All products synced with "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import-pro.php:767
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:768
 msgid "Total products:"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import-pro.php:776
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:777
 msgid "Time:"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import-pro.php:781
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:782
 msgid "Total Time:"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import-pro.php:788
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:789
 msgid "Errors founded"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import-pro.php:792
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:793
 msgid "Product id: "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import-pro.php:795
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:796
 msgid "View in Holded"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import-pro.php:797
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:798
 msgid "Product name: "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import-pro.php:798
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:799
 msgid "Product sku: "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import-pro.php:799
-msgid "Product type: "
-msgstr ""
-
-#: includes/connect-woocommerce/lib/class-connect-import.php:394
+#: includes/connect-woocommerce/lib/class-connect-import.php:397
 msgid "Subproduct created: "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:396
+#: includes/connect-woocommerce/lib/class-connect-import.php:399
 msgid "Subproduct synced: "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:400
-#: includes/connect-woocommerce/lib/class-connect-import.php:429
+#: includes/connect-woocommerce/lib/class-connect-import.php:403
+#: includes/connect-woocommerce/lib/class-connect-import.php:432
 msgid "Product created: "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:402
-#: includes/connect-woocommerce/lib/class-connect-import.php:430
+#: includes/connect-woocommerce/lib/class-connect-import.php:405
+#: includes/connect-woocommerce/lib/class-connect-import.php:433
 msgid "Product synced: "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:463
-#: includes/connect-woocommerce/lib/class-connect-import.php:467
-#: includes/connect-woocommerce/lib/class-connect-import.php:621
-#: includes/connect-woocommerce/lib/class-connect-import.php:623
+#: includes/connect-woocommerce/lib/class-connect-import.php:466
+#: includes/connect-woocommerce/lib/class-connect-import.php:470
+#: includes/connect-woocommerce/lib/class-connect-import.php:624
+#: includes/connect-woocommerce/lib/class-connect-import.php:626
 msgid "No products to import"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:534
-#: includes/connect-woocommerce/lib/class-connect-import.php:538
+#: includes/connect-woocommerce/lib/class-connect-import.php:537
+#: includes/connect-woocommerce/lib/class-connect-import.php:541
 msgid "There was an error while inserting new product!"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:548
+#: includes/connect-woocommerce/lib/class-connect-import.php:551
 msgid "Product needs Plugin to import: "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:553
+#: includes/connect-woocommerce/lib/class-connect-import.php:556
 msgid "Product filtered to not import: "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:556
+#: includes/connect-woocommerce/lib/class-connect-import.php:559
 msgid "SKU not finded in Simple product. Product not imported: "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:562
+#: includes/connect-woocommerce/lib/class-connect-import.php:565
 msgid "SKU not finded in Simple product. Product not imported. "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:566
-#: includes/connect-woocommerce/lib/class-connect-import.php:572
+#: includes/connect-woocommerce/lib/class-connect-import.php:569
+#: includes/connect-woocommerce/lib/class-connect-import.php:575
 msgid "Product type not supported. Product not imported: "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:581
+#: includes/connect-woocommerce/lib/class-connect-import.php:584
 msgid "products. "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:586
+#: includes/connect-woocommerce/lib/class-connect-import.php:589
 msgid "Categories: "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:591
-#: includes/connect-woocommerce/lib/class-connect-orders.php:221
+#: includes/connect-woocommerce/lib/class-connect-import.php:594
+#: includes/connect-woocommerce/lib/class-connect-orders.php:218
 msgid "View"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:594
-#: includes/connect-woocommerce/lib/class-connect-orders.php:224
+#: includes/connect-woocommerce/lib/class-connect-import.php:597
+#: includes/connect-woocommerce/lib/class-connect-orders.php:221
 msgid "All caught up!"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:649
+#: includes/connect-woocommerce/lib/class-connect-import.php:652
 msgid "Error:"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:650
+#: includes/connect-woocommerce/lib/class-connect-import.php:653
 msgid "SKU:"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:651
+#: includes/connect-woocommerce/lib/class-connect-import.php:654
 msgid "Name:"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:655
+#: includes/connect-woocommerce/lib/class-connect-import.php:658
 msgid "Edit:"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:657
+#: includes/connect-woocommerce/lib/class-connect-import.php:660
 msgid "Prod ID:"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:670
+#: includes/connect-woocommerce/lib/class-connect-import.php:673
 msgid "Error in Products Synced in"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:765
+#: includes/connect-woocommerce/lib/class-connect-import.php:768
 #, php-format
 msgid "Import Products from %s"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:765
+#: includes/connect-woocommerce/lib/class-connect-import.php:768
 msgid ""
 "After you fillup the API settings, use the button below to import the "
 "products. The importing process may take a while and you need to keep this "
 "page open to complete it."
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:765
-#: includes/connect-woocommerce/lib/class-connect-orders.php:290
+#: includes/connect-woocommerce/lib/class-connect-import.php:768
+#: includes/connect-woocommerce/lib/class-connect-orders.php:287
 msgid "Start Import"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:765
-#: includes/connect-woocommerce/lib/class-connect-orders.php:290
+#: includes/connect-woocommerce/lib/class-connect-import.php:768
+#: includes/connect-woocommerce/lib/class-connect-orders.php:287
 msgid "Log"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-import.php:770
+#: includes/connect-woocommerce/lib/class-connect-import.php:773
 msgid "Connecting with API and syncing Products ..."
 msgstr ""
 
@@ -622,49 +631,49 @@ msgstr ""
 msgid "Free order not created in "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-orders.php:191
-#: includes/connect-woocommerce/lib/class-connect-orders.php:195
-#: includes/connect-woocommerce/lib/class-connect-orders.php:251
-#: includes/connect-woocommerce/lib/class-connect-orders.php:253
+#: includes/connect-woocommerce/lib/class-connect-orders.php:188
+#: includes/connect-woocommerce/lib/class-connect-orders.php:192
+#: includes/connect-woocommerce/lib/class-connect-orders.php:248
+#: includes/connect-woocommerce/lib/class-connect-orders.php:250
 msgid "No orders to import"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-orders.php:201
+#: includes/connect-woocommerce/lib/class-connect-orders.php:198
 msgid "Order already exported to API ID:"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-orders.php:203
+#: includes/connect-woocommerce/lib/class-connect-orders.php:200
 msgid "Free order not exported"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-orders.php:207
+#: includes/connect-woocommerce/lib/class-connect-orders.php:204
 msgid "Order Created."
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-orders.php:207
+#: includes/connect-woocommerce/lib/class-connect-orders.php:204
 msgid "Order not created."
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-orders.php:218
+#: includes/connect-woocommerce/lib/class-connect-orders.php:215
 msgid "orders. "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-orders.php:218
+#: includes/connect-woocommerce/lib/class-connect-orders.php:215
 msgid "Created:"
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-orders.php:290
+#: includes/connect-woocommerce/lib/class-connect-orders.php:287
 msgid "Sync Completed Orders to "
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-orders.php:290
+#: includes/connect-woocommerce/lib/class-connect-orders.php:287
 msgid ""
 "After you fillup the API settings, use the button below to import the "
 "products. The importing process may take a while and you need to keep this "
 "page open to complete it. Only COMPLETED Orders will be synced."
 msgstr ""
 
-#: includes/connect-woocommerce/lib/class-connect-orders.php:295
+#: includes/connect-woocommerce/lib/class-connect-orders.php:292
 msgid "Connecting and syncing orders ..."
 msgstr ""
 
@@ -718,7 +727,8 @@ msgstr ""
 msgid "Every 12 Hours"
 msgstr ""
 
-#: plugin.php:58
+#. translators: %s url of contact.
+#: plugin.php:60
 #, php-format
 msgid ""
 "Put the connection API key settings in order to connect and sync products. "
@@ -734,7 +744,9 @@ msgid "https://close.technology/wordpress-plugins/connect-woocommerce-holded/"
 msgstr ""
 
 #. Description of the plugin/theme
-msgid "Imports Products and data from Holded to WooCommerce."
+msgid ""
+"Connects Holded with WooCommerce and syncs products, customers, orders and "
+"stock."
 msgstr ""
 
 #. Author of the plugin/theme
