@@ -38,8 +38,9 @@ WordPress installation and then activate the Plugin from Plugins page.
 [Official Repository GitHub](https://github.com/closemarketing/import-holded-products-woocommerce)
 
 == Changelog ==
-= 2.1.2 =
+= 2.1.3 =
 *   Added Series number.
+*   Column in orders for Holded document.
 
 = 2.1.2 =
 *   Fix: Prevents table sync not created.
