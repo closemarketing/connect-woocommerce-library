@@ -362,6 +362,15 @@ class CONNWOOO_Admin {
 		}
 
 		if ( 'Holded' === $connwoo_plugin_options['name'] ) {
+			$name_docorder = __( 'Document to create after order completed?', 'connect-woocommerce' );
+			add_settings_field(
+				'wcpimh_doctype',
+				$name_docorder,
+				array( $this, 'doctype_callback' ),
+				'connect-woocommerce-admin',
+				'connect_woocommerce_setting_section'
+			);
+
 			$label_filter = __( 'Serie number', 'connect-woocommerce' );
 			add_settings_field(
 				'wcpimh_serie_number',
@@ -370,15 +379,6 @@ class CONNWOOO_Admin {
 				'connect-woocommerce-admin',
 				'connect_woocommerce_setting_section'
 			);
-
-			$name_docorder = __( 'Document to create after order completed?', 'connect-woocommerce' );
-				add_settings_field(
-					'wcpimh_doctype',
-					$name_docorder,
-					array( $this, 'doctype_callback' ),
-					'connect-woocommerce-admin',
-					'connect_woocommerce_setting_section'
-				);
 
 			$name_docorder = __( 'Create document for free Orders?', 'connect-woocommerce' );
 			add_settings_field(
@@ -586,6 +586,7 @@ class CONNWOOO_Admin {
 			'rates'      => 'default',
 			'catnp'      => 'yes',
 			'doctype'    => 'invoice',
+			'series'     => '',
 			'freeorder'  => 'no',
 			'ecstatus'   => 'all',
 			'design_id'  => '',
@@ -893,7 +894,7 @@ class CONNWOOO_Admin {
 	 */
 	public function serie_number_callback() {
 		global $connapi_erp;
-		$type = empty( $this->settings['doctype'] ) ? $this->settings['doctype'] : 'invoice';
+		$type = ! empty( $this->settings['doctype'] ) ? $this->settings['doctype'] : 'invoice';
 		$series_options = $connapi_erp->get_series_number( $type );
 		if ( empty( $series_options ) ) {
 			return;
