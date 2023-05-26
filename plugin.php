@@ -5,7 +5,7 @@
  * Description: Connects Holded with WooCommerce and syncs products, customers, orders and stock.
  * Author: Closetechnology
  * Author URI: https://close.technology/
- * Version: 2.1.2
+ * Version: 2.1.3-rc.1
  *
  * @package WordPress
  * Text Domain: connect-woocommerce-holded
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'CWLIB_VERSION', '2.1.2' );
+define( 'CWLIB_VERSION', '2.1.3-rc.1' );
 define( 'CWLIB_FILE', __FILE__ );
 define( 'CONHOLD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'CONHOLD_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
