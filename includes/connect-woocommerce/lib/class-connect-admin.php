@@ -131,7 +131,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				</h2>
 	
 				<?php	if ( 'sync' === $active_tab ) { ?>
-					<div id="connect-woocommerce-engine"></div>
+					<div id="<?php echo esc_html( $this->options['slug'] ); ?>-engine"></div>
 				<?php } ?>
 				<?php	if ( 'settings' === $active_tab ) { ?>
 					<form method="post" action="options.php">
@@ -563,7 +563,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 * @return void
 		 */
 		public function page_sync_orders() {
-			echo '<div id="connect-woocommerce-engine-orders"></div>';
+			echo '<div id="' . $this->options['slug'] . '-engine-orders"></div>';
 		}
 	
 		/**
