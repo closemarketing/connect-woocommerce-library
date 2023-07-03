@@ -19,7 +19,7 @@ define( 'MAX_LIMIT_HOLDED_API', 500 );
  *
  * @since 1.0
  */
-class CONNAPI_HOLDED_ERP {
+class Connect_WooCommerce_Holded {
 
 	/**
 	 * Settings options
@@ -29,10 +29,21 @@ class CONNAPI_HOLDED_ERP {
 	private $settings;
 
 	/**
-	 * Construct of Class
+	 * Settings options
+	 *
+	 * @var array
 	 */
-	public function __construct() {
-		$this->settings = get_option( CWLIB_SLUG );
+	private $options;
+
+	/**
+	 * Construct of Class
+	 *
+	 * @param array $options Options of plugin.
+	 * @return void
+	 */
+	public function __construct( $options ) {
+		$this->options  = $options;
+		$this->settings = get_option( $this->options['slug'] );
 	}
 
 	/**
@@ -234,7 +245,6 @@ class CONNAPI_HOLDED_ERP {
 	 * @return array Array of products imported via API.
 	 */
 	public function create_order( $order, $meta_key_order ) {
-		global $connwoo_plugin_options;
 		if ( ! isset( $this->settings['api'] ) ) {
 			error_admin_message(
 				'ERROR',
@@ -378,8 +388,8 @@ class CONNAPI_HOLDED_ERP {
 		if ( isset( $result['invoiceNum'] ) ) {
 			// HPOS Update.
 			$order->update_meta_data( $meta_key_order, $result['invoiceNum'] );
-			$order->update_meta_data( '_' . $connwoo_plugin_options['slug'] . '_doc_id', $result['id'] );
-			$order->update_meta_data( '_' . $connwoo_plugin_options['slug'] . '_doc_type', $doctype );
+			$order->update_meta_data( '_' . $this->options['slug'] . '_doc_id', $result['id'] );
+			$order->update_meta_data( '_' . $this->options['slug'] . '_doc_type', $doctype );
 			$order->save();
 
 			$order_msg = __( 'Order synced correctly with Holded, ID: ', 'connect-woocommerce-holded' ) . $result['invoiceNum'];
@@ -400,7 +410,6 @@ class CONNAPI_HOLDED_ERP {
 	 * @return object
 	 */
 	private function review_items( $ordered_items ) {
-		global $connwoo_plugin_options;
 		$subproducts  = 0;
 		$fields_items = array();
 		$index        = 0;
@@ -429,7 +438,7 @@ class CONNAPI_HOLDED_ERP {
 				);
 
 				// Use Source product ID instead of SKU.
-				$prod_key         = '_' . $connwoo_plugin_options['slug'] . '_productid';
+				$prod_key         = '_' . $this->options['slug'] . '_productid';
 				$source_productid = get_post_meta( $order_item['product_id'], $prod_key, true );
 				if ( $source_productid ) {
 					$fields_items[ $index ]['productId'] = $source_productid;
@@ -479,7 +488,6 @@ class CONNAPI_HOLDED_ERP {
 	 * @return string
 	 */
 	public function get_order_pdf( $apikey, $doctype, $document_id ) {
-		global $connwoo_plugin_options;
 		if ( empty( $apikey ) ) {
 			error_log( sprintf( __( 'WooCommerce Holded: Plugin is enabled but no api key or secret provided. Please enter your api key and secret <a href="%s">here</a>.', 'import-holded-products-woocommerce' ), '/wp-admin/admin.php?page=import_holded&tab=settings' ) ); // phpcs:ignore.
 			return false;
@@ -500,7 +508,7 @@ class CONNAPI_HOLDED_ERP {
 		}
 
 		$upload_dir = wp_upload_dir();
-		$dirname    = $upload_dir['basedir'] . '/' . $connwoo_plugin_options['plugin_slug'] . '/';
+		$dirname    = $upload_dir['basedir'] . '/' . $this->options['plugin_slug'] . '/';
 
 		if ( ! file_exists( $dirname ) ) {
 			wp_mkdir_p( $dirname );
@@ -570,11 +578,9 @@ class CONNAPI_HOLDED_ERP {
 	 * @return string
 	 */
 	public function get_url_link_api( $order ) {
-		global $connwoo_plugin_options;
-		$api_doc_id   = $order->get_meta( '_' . $connwoo_plugin_options['slug'] . '_doc_id' );
-		$api_doc_type = $order->get_meta( '_' . $connwoo_plugin_options['slug'] . '_doc_type' );
+		$api_doc_id   = $order->get_meta( '_' . $this->options['slug'] . '_doc_id' );
+		$api_doc_type = $order->get_meta( '_' . $this->options['slug'] . '_doc_type' );
 		return 'https://app.holded.com/sales/revenue#open:' . $api_doc_type . '-' . $api_doc_id;
 	}
 }
 
-$connapi_erp = new CONNAPI_HOLDED_ERP();

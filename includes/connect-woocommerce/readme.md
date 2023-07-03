@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 1.3
+
+* Refactored for combined plugins.
+
 ### 1.2
 
 * Added License.

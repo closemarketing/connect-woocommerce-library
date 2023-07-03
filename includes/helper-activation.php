@@ -1,6 +1,6 @@
 <?php
 
-register_activation_hook( CWLIB_FILE, 'conhold_activation' );
+register_activation_hook( CONHOLD_FILE, 'conhold_activation' );
 
 function conhold_activation() {
 
