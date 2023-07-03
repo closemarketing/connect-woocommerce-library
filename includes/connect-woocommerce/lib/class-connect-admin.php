@@ -1682,7 +1682,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 * @return void
 		 */
 		function process_activation_premium() {
-			connwoo_create_table();
+			connwoo_create_table( $this->options['table_sync'] );
 	
 			// Migrates options.
 			$old_settings = get_option( 'imhset' );
