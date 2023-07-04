@@ -265,6 +265,9 @@ class Connect_WooCommerce_Holded {
 		}
 
 		$order_id = $order->get_id();
+		if ( is_a( $order, 'WC_Order_Refund' ) ) {
+			return false;
+		}
 		$doclang  = $order->get_billing_country() !== 'ES' ? 'en' : 'es';
 		$url_test = wc_get_endpoint_url( 'shop' );
 
