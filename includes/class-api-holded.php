@@ -418,7 +418,7 @@ class Connect_WooCommerce_Holded {
 
 			$product = wc_get_product( $order_item['product_id'] );
 
-			if ( $product->is_type( 'woosb' ) ) {
+			if ( ! empty( $product ) && $product->is_type( 'woosb' ) ) {
 				$woosb_ids   = get_post_meta( $order_item['product_id'], 'woosb_ids', true );
 				$woosb_prods = explode( ',', $woosb_ids );
 
@@ -470,8 +470,8 @@ class Connect_WooCommerce_Holded {
 					'units'    => floatval( $order_item['qty'] ),
 					'subtotal' => floatval( $product_cost ),
 					'tax'      => floatval( $vat_per ),
-					'sku'      => $product->get_sku(),
-					'stock'    => $product->get_stock_quantity(),
+					'sku'      => ! empty( $product ) ? $product->get_sku() : '',
+					'stock'    => ! empty( $product ) ? $product->get_stock_quantity() : '',
 				);
 				$index++;
 			}
