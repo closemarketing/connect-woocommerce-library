@@ -1,9 +1,0 @@
-{
-    "require": {
-        "yoast/phpunit-polyfills": "^1.0"
-    },
-	 
-	"config": {
-		"platform-check": false
-  }
-}
