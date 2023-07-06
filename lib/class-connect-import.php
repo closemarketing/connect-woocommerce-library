@@ -456,7 +456,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 			if ( ! session_id() ) {
 				session_start();
 			}
-			if ( 0 === $sync_loop ) {
+			if ( 0 === $sync_loop || empty( $_SESSION['api_products'] ) ) {
 				$api_products             = $this->connapi_erp->get_products();
 				$_SESSION['api_products'] = $api_products;
 			} else {
