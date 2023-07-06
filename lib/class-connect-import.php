@@ -463,7 +463,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 				$api_products = $_SESSION['api_products'];
 			}
 
-			if ( false === $api_products ) {
+			if ( empty( $api_products ) ) {
 				if ( $doing_ajax ) {
 					wp_send_json_error( array( 'msg' => 'Error' ) );
 				} else {
