@@ -571,7 +571,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 * @return void
 		 */
 		public function page_sync_orders() {
-			echo '<div id="connect-woocommerce-engine-orders"></div>';
+			echo '<div id="' . $this->options['slug'] . '-engine-orders"></div>';
 		}
 	
 		/**

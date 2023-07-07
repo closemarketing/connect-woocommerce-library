@@ -288,10 +288,11 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 		 * @return void
 		 */
 		public function admin_print_footer_scripts() {
-			$screen  = get_current_screen();
-			$get_tab = isset( $_GET['tab'] ) ? (string) $_GET['tab'] : 'orders'; //phpcs:ignore
+			$screen      = get_current_screen();
+			$get_tab     = isset( $_GET['tab'] ) ? (string) $_GET['tab'] : 'orders'; //phpcs:ignore
+			$plugin_slug = $this->options['slug'];
 
-			if ( 'woocommerce_page_connect_woocommerce' === $screen->base && 'orders' === $get_tab ) {
+			if ( 'woocommerce_page_' . $plugin_slug === $screen->base && 'orders' === $get_tab ) {
 			?>
 			<style>
 				.spinner{ float: none; }
@@ -299,7 +300,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 			<script type="text/javascript">
 				var loop=0;
 				jQuery(function($){
-					$(document).find('#connect-woocommerce-engine-orders').after('<div class="sync-wrapper"><h2><?php esc_html_e( 'Sync Completed Orders to ', 'connect-woocommerce' ); echo esc_html( $this->options['name'] ); ?></h2><p><?php esc_html_e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it. Only COMPLETED Orders will be synced.', 'connect-woocommerce' ); ?><br/></p><button id="start-sync-orders" class="button button-primary"<?php if ( false === $this->connapi_erp->check_can_sync() ) { echo ' disabled'; } ?>><?php esc_html_e( 'Start Import', 'connect-woocommerce' ); ?></button></div><fieldset id="logwrapper"><legend><?php esc_html_e( 'Log', 'connect-woocommerce' ); ?></legend><div id="loglist"></div></fieldset>');
+					$(document).find('#<?php echo esc_html( $plugin_slug ); ?>-engine-orders').after('<div class="sync-wrapper"><h2><?php esc_html_e( 'Sync Completed Orders to ', 'connect-woocommerce' ); echo esc_html( $this->options['name'] ); ?></h2><p><?php esc_html_e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it. Only COMPLETED Orders will be synced.', 'connect-woocommerce' ); ?><br/></p><button id="start-sync-orders" class="button button-primary"<?php if ( false === $this->connapi_erp->check_can_sync() ) { echo ' disabled'; } ?>><?php esc_html_e( 'Start Import', 'connect-woocommerce' ); ?></button></div><fieldset id="logwrapper"><legend><?php esc_html_e( 'Log', 'connect-woocommerce' ); ?></legend><div id="loglist"></div></fieldset>');
 					$(document).find('#start-sync-orders').on('click', function(){
 						$(this).attr('disabled','disabled');
 						$(this).after('<span class="spinner is-active"></span>');

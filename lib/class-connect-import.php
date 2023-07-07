@@ -767,18 +767,19 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 		 * @return void
 		 */
 		public function admin_print_footer_scripts() {
-			$screen  = get_current_screen();
-			$get_tab = isset( $_GET['tab'] ) ? $_GET['tab'] : 'sync';
+			$screen       = get_current_screen();
+			$get_tab     = isset( $_GET['tab'] ) ? $_GET['tab'] : 'sync';
+			$plugin_slug = $this->options['slug'];
 
-			if ( 'woocommerce_page_connect_woocommerce' === $screen->base && 'sync' === $get_tab ) {
-			?>
+			if ( 'woocommerce_page_' . $plugin_slug === $screen->base && 'sync' === $get_tab ) {
+				?>
 			<style>
 				.spinner{ float: none; }
 			</style>
 			<script type="text/javascript">
 				var loop=0;
 				jQuery(function($){
-					$(document).find('#connect-woocommerce-engine').after('<div class="sync-wrapper"><h2><?php sprintf( esc_html__( 'Import Products from %s', 'connect-woocommerce' ), esc_html( $this->options['name'] ) ); ?></h2><p><?php esc_html_e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', 'connect-woocommerce' ); ?><br/></p><button id="start-sync" class="button button-primary"<?php if ( false === $this->connapi_erp->check_can_sync() ) { echo ' disabled'; } ?>><?php esc_html_e( 'Start Import', 'connect-woocommerce' ); ?></button></div><fieldset id="logwrapper"><legend><?php esc_html_e( 'Log', 'connect-woocommerce' ); ?></legend><div id="loglist"></div></fieldset>');
+					$(document).find('#<?php echo esc_html( $plugin_slug ); ?>-engine').after('<div class="sync-wrapper"><h2><?php sprintf( esc_html__( 'Import Products from %s', 'connect-woocommerce' ), esc_html( $this->options['name'] ) ); ?></h2><p><?php esc_html_e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', 'connect-woocommerce' ); ?><br/></p><button id="start-sync" class="button button-primary"<?php if ( false === $this->connapi_erp->check_can_sync() ) { echo ' disabled'; } ?>><?php esc_html_e( 'Start Import', 'connect-woocommerce' ); ?></button></div><fieldset id="logwrapper"><legend><?php esc_html_e( 'Log', 'connect-woocommerce' ); ?></legend><div id="loglist"></div></fieldset>');
 					$(document).find('#start-sync').on('click', function(){
 						$(this).attr('disabled','disabled');
 						$(this).after('<span class="spinner is-active"></span>');
