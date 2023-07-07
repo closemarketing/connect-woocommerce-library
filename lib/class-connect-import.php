@@ -452,15 +452,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 			$msg_product_created = __( 'Product created: ', 'connect-woocommerce' );
 			$msg_product_synced  = __( 'Product synced: ', 'connect-woocommerce' );
 
-			// Start.
-			if ( ! session_id() ) {
-				session_start();
-			}
-			if ( 0 === $sync_loop || empty( $_SESSION['api_products'] ) ) {
-				$api_products             = $this->connapi_erp->get_products();
-				$_SESSION['api_products'] = $api_products;
-			} else {
-				$api_products = $_SESSION['api_products'];
+			$api_products = get_transient( $this->options['slug'] . '_query_api_products' );
+			if ( ! $api_products || 0 === $sync_loop ) {
+				$api_products = $this->connapi_erp->get_products();
+				set_transient( $this->options['slug'] . '_query_api_products', $api_products, HOUR_IN_SECONDS );
 			}
 
 			if ( empty( $api_products ) ) {
