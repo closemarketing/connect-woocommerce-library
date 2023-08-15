@@ -272,7 +272,18 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					'connect_woocommerce_setting_section'
 				);
 			}
-	
+
+			// DB Name.
+			if ( in_array( 'dbname', $settings_fields, true ) ) {
+				add_settings_field(
+					'wcpimh_dbname',
+					__( 'DB Name', 'connect-woocommerce' ),
+					array( $this, 'dbname_callback' ),
+					$this->options['slug'] . '_admin',
+					'connect_woocommerce_setting_section'
+				);
+			}
+			
 			// Username.
 			if ( in_array( 'username', $settings_fields, true ) ) {
 				add_settings_field(
@@ -305,7 +316,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					'connect_woocommerce_setting_section'
 				);
 			}
-	
+
 			if ( $this->options['product_option_stock'] ) {
 				add_settings_field(
 					'wcpimh_stock',
@@ -611,6 +622,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'url'        => '',
 				'username'   => '',
 				'password'   => '',
+				'dbname'     => '',
 				'stock'      => 'no',
 				'prodst'     => 'draft',
 				'virtual'    => 'no',
@@ -755,6 +767,18 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			printf(
 				'<input class="regular-text" type="text" name="' . $this->options['slug'] . '[username]" id="wcpimh_username" value="%s">',
 				isset( $this->settings['username'] ) ? esc_attr( $this->settings['username'] ) : ''
+			);
+		}
+	
+		/**
+		 * DB Name input
+		 *
+		 * @return void
+		 */
+		public function dbname_callback() {
+			printf(
+				'<input class="regular-text" type="text" name="' . $this->options['slug'] . '[dbname]" id="wcpimh_dbname" value="%s">',
+				isset( $this->settings['dbname'] ) ? esc_attr( $this->settings['dbname'] ) : ''
 			);
 		}
 	
