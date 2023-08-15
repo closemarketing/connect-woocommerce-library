@@ -237,6 +237,8 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 * @return void
 		 */
 		public function page_init() {
+			$settings_fields = ! empty( $this->options['settings_fields'] ) ? $this->options['settings_fields'] : array();
+
 			register_setting(
 				$this->settings_slug,
 				$this->options['slug'],
@@ -260,7 +262,19 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				);
 			}
 	
-			if ( 'connwoo_a3' === $this->options['slug'] ) {
+			// URL.
+			if ( in_array( 'url', $settings_fields, true ) ) {
+				add_settings_field(
+					'wcpimh_url',
+					__( 'URL', 'connect-woocommerce' ),
+					array( $this, 'url_callback' ),
+					$this->options['slug'] . '_admin',
+					'connect_woocommerce_setting_section'
+				);
+			}
+	
+			// Username.
+			if ( in_array( 'username', $settings_fields, true ) ) {
 				add_settings_field(
 					'wcpimh_username',
 					__( 'Username', 'connect-woocommerce' ),
@@ -268,6 +282,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					$this->options['slug'] . '_admin',
 					'connect_woocommerce_setting_section'
 				);
+			}
+
+			// Password.
+			if ( in_array( 'password', $settings_fields, true ) ) {
 				add_settings_field(
 					'wcpimh_password',
 					__( 'Password', 'connect-woocommerce' ),
@@ -275,7 +293,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					$this->options['slug'] . '_admin',
 					'connect_woocommerce_setting_section'
 				);
-			} else {
+			}
+
+			// API Password.
+			if ( in_array( 'apipassword', $settings_fields, true ) ) {
 				add_settings_field(
 					'wcpimh_api',
 					__( 'API Key', 'connect-woocommerce' ),
@@ -587,6 +608,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			$admin_settings = array(
 				'api'        => '',
 				'idcentre'   => '',
+				'url'        => '',
 				'username'   => '',
 				'password'   => '',
 				'stock'      => 'no',
@@ -709,6 +731,18 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			printf(
 				'<input class="regular-text" type="text" name="' . esc_html( $this->options['slug'] ) . '[idcentre]" id="wcpimh_idcentre" value="%s">',
 				isset( $this->settings['idcentre'] ) ? esc_attr( $this->settings['idcentre'] ) : ''
+			);
+		}
+	
+		/**
+		 * URL input
+		 *
+		 * @return void
+		 */
+		public function url_callback() {
+			printf(
+				'<input class="regular-text" type="url" name="' . $this->options['slug'] . '[url]" id="wcpimh_url" value="%s">',
+				isset( $this->settings['url'] ) ? esc_attr( $this->settings['url'] ) : ''
 			);
 		}
 	
