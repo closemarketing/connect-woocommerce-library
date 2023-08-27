@@ -241,7 +241,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 				'stock_status'  => 'instock',
 				'backorders'    => $allow_backorders,
 				'regular_price' => isset( $item['price'] ) ? $item['price'] : null,
-			);
+			);		
 			$product_props_new = array();
 			if ( $is_new_product ) {
 				$product_props_new = array(
@@ -440,23 +440,20 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 		 */
 		public function import_products() {
 			$not_sapi_cli = substr( php_sapi_name(), 0, 3 ) != 'cli' ? true : false;
-			$doing_ajax   = defined( 'DOING_AJAX' ) && DOING_AJAX;			
-
+			$doing_ajax   = defined( 'DOING_AJAX' ) && DOING_AJAX;
 			if ( in_array( 'woo-product-bundle/wpc-product-bundles.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
 				$plugin_grouped_prod_active = true;
 			} else {
 				$plugin_grouped_prod_active = false;
 			}
 			$sync_loop = isset( $_POST['syncLoop'] ) ? (int) sanitize_text_field( $_POST['syncLoop'] ) : 0;
-
 			// Translations.
 			$msg_product_created = __( 'Product created: ', 'connect-woocommerce' );
 			$msg_product_synced  = __( 'Product synced: ', 'connect-woocommerce' );
 
-			$api_products = get_transient( $this->options['slug'] . '_query_api_products' );
+			$api_products = get_transient( $this->options['slug'] . '_query_api_products' );			
 			if ( ! $api_products || 0 === $sync_loop ) {
-				$api_products = $this->connapi_erp->get_products();				
-				$api_products= array_reverse( $api_products);
+				$api_products = $this->connapi_erp->get_products();
 				set_transient( $this->options['slug'] . '_query_api_products', $api_products, HOUR_IN_SECONDS );
 			}
 
@@ -472,7 +469,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 				$this->msg_error_products = array();
 				if ( $products_count ) {
 					if ( ( $doing_ajax ) || $not_sapi_cli ) {
-						$limit = 10;					
+						$limit = 10;
 						$count = $sync_loop + 1;
 					}
 					if ( $sync_loop > $products_count ) {
@@ -485,84 +482,110 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 						} else {
 							die( esc_html( __( 'No products to import', 'connect-woocommerce' ) ) );
 						}
-					} else {
+					} else {						
 						$post_id             = 0;
-						$is_filtered_product = empty( $item['default_code'] ) ? false : $this->filter_product( $item['default_code'] );
-
-						if ( ! $is_filtered_product && $item['default_code'] && 1 == $item['product_variant_count'] ) {							
+						$is_filtered_product = empty( $item['tags'] ) ? false : $this->filter_product( $item['tags'] );
+						if ( ! $is_filtered_product && $item['sku'] && 'simple' === $item['kind'] ) {
 							$post_id = $this->sync_product_simple( $item );
-						}elseif( ! $is_filtered_product  && 1 < $item['product_variant_count']  ) {									
-
-
-							//get attributes names and ids
-							$product_attributes = $this->connapi_erp->get_variant_attributes( $item['id'] );
-							//print_r( $product_attributes);
-							//die();
-							//get parent product and sync it as variable, variant_id array are ids from product.product		
-							$product_variants = $this->connapi_erp->get_products_by_id( $item['product_variant_ids'] );											
-							//print_r( $product_variants);
-							//die();
-
-							//sync each one of the variant of parent product
-							foreach ( $product_variants as $variant ) {																
-								$attributes_ids_array = [];
-								foreach( $variant['attribute_line_ids'] as $attributes_ids ){
-									$attributes_ids_array[] = $attributes_ids;
-									
-								}
-								//get variant attributes								
-								$variant_attributes = $this->connapi_erp->get_products_attributes_values( $attributes_ids_array);
-								print_r($variant_attributes);								
-								die();
-								$any_variant_sku = true;
-								//$post_parent = $this->sync_variant_product( $variant_id );								
-								$post_parent = $this->find_parent_product( $variant['sku'] );
+						} elseif ( ! $is_filtered_product && 'variants' === $item['kind'] && class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
+							
+							// Variable product.
+							// Check if any variants exists.
+							$post_parent = 0;
+							// Activar para buscar un archivo.
+							$any_variant_sku = false;
+							foreach ( $item['variants'] as $variant ) {
 								
+								if ( ! $variant['sku'] ) {
+									break;
+								} else {
+									$any_variant_sku = true;
+								}
+								$post_parent = $this->find_parent_product( $variant['sku'] );
+								if ( $post_parent ) {
+									// Do not iterate if it's find it.
+									break;
+								}
 							}
-
-							die();
 							if ( false === $any_variant_sku ) {
 								$this->ajax_msg .= __( 'Product not imported becouse any variant has got SKU: ', 'connect-woocommerce' ) . $item['name'] . '(' . $item['kind'] . ') <br/>';
-							} else {
-								// Update meta for product.
-								$post_id = $this->sync_product( $item, $post_parent, 'variable' );
-								if ( 0 === $post_parent || false === $post_parent ) {
-									$this->ajax_msg .= $msg_product_created;
-								} else {
-									$this->ajax_msg .= $msg_product_synced;
-								}
-								$this->ajax_msg .= $item['name'] . '. SKU: ' . $item['sku'] . '(' . $item['kind'] . ') <br/>';
+							} else {								
+									$post_id = $this->sync_product( $item, $post_parent, 'variable' );
+									if ( 0 === $post_parent || false === $post_parent ) {
+										$this->ajax_msg .= $msg_product_created;
+									} else {
+										$this->ajax_msg .= $msg_product_synced;
+									}
+									$this->ajax_msg .= $item['name'] . '. SKU: ' . $item['sku'] . '(' . $item['kind'] . ') <br/>';
 							}
+							
+						} elseif ( ! $is_filtered_product && 'pack' === $item['kind'] && class_exists( 'Connect_WooCommerce_Import_PRO' ) && $plugin_grouped_prod_active ) {
+							$post_id = $this->find_product( $item['sku'] );
+							if ( ! $post_id ) {
+								$post_id = $this->create_product_post( $item );
+								wp_set_object_terms( $post_id, 'woosb', 'product_type' );
+							}
+							if ( $post_id && $item['sku'] && 'pack' == $item['kind'] ) {
+								// Create subproducts before.
+								$pack_items = '';
+								if ( isset( $item['packItems'] ) && ! empty( $item['packItems'] ) ) {
+									foreach ( $item['packItems'] as $pack_item ) {
+										$item_simple     = $this->connapi_erp->get_products( $pack_item['pid'] );
+										$product_pack_id = $this->sync_product_simple( $item_simple, true );
+										$pack_items     .= $product_pack_id . '/' . $pack_item['u'] . ',';
+										$this->ajax_msg .= ' x ' . $pack_item['u'];
+									}
+									$this->ajax_msg .= '<br/>';
+									$pack_items      = substr( $pack_items, 0, -1 );
+								}
+								// Update meta for product.
+								$post_id = $this->sync_product( $item, $post_id, 'pack', $pack_items );
+							} else {
+								if ( $doing_ajax ) {
+									wp_send_json_error(
+										array(
+											'msg' => __( 'There was an error while inserting new product!', 'connect-woocommerce' ) . ' ' . $item['name'],
+										)
+									);
+								} else {
+									die( esc_html( __( 'There was an error while inserting new product!', 'connect-woocommerce' ) ) );
+								}
+							}
+							if ( ! $post_id ) {
+								$this->ajax_msg .= $msg_product_created;
+							} else {
+								$this->ajax_msg .= $msg_product_synced;
+							}
+							$this->ajax_msg .= $item['name'] . '. SKU: ' . $item['sku'] . ' (' . $item['kind'] . ')';
+						} elseif ( ! $is_filtered_product && 'pack' === $item['kind'] && class_exists( 'Connect_WooCommerce_Import_PRO' ) && ! $plugin_grouped_prod_active ) {
+							$this->ajax_msg .= '<span class="warning">' . __( 'Product needs Plugin to import: ', 'connect-woocommerce' );
+							$this->ajax_msg .= '<a href="https://wordpress.org/plugins/woo-product-bundle/" target="_blank">WPC Product Bundles for WooCommerce</a> ';
+							$this->ajax_msg .= '(' . $item['kind'] . ') </span></br>';
 						} elseif ( $is_filtered_product ) {
 							// Product not synced without SKU.
 							$this->ajax_msg .= '<span class="warning">' . __( 'Product filtered to not import: ', 'connect-woocommerce' ) . $item['name'] . '(' . $item['kind'] . ') </span></br>';
-						}elseif ( empty( $item['default_code']) ) {
+						} elseif ( '' === $item['sku'] && 'simple' === $item['kind'] ) {
 							// Product not synced without SKU.
-							$this->ajax_msg .= __( 'SKU not finded in product. Product not imported: ', 'connect-woocommerce' ) . $item['name'] . '(' . $item['kind'] . ')</br>';
-
+							$this->ajax_msg .= __( 'SKU not finded in Simple product. Product not imported: ', 'connect-woocommerce' ) . $item['name'] . '(' . $item['kind'] . ')</br>';
 							$this->error_product_import[] = array(
 								'prod_id' => $item['id'],
 								'name'    => $item['name'],
 								'sku'     => $item['sku'],
-								'error'   => __( 'SKU not finded in product. Product not imported. ', 'connect-woocommerce' ),
+								'error'   => __( 'SKU not finded in Simple product. Product not imported. ', 'connect-woocommerce' ),
 							);
-						} /*elseif ( 'simple' !== $item['kind'] ) {
+						} elseif ( 'simple' !== $item['kind'] ) {
 							// Product not synced without SKU.
 							$this->ajax_msg .= __( 'Product type not supported. Product not imported: ', 'connect-woocommerce' ) . $item['name'] . '(' . $item['kind'] . ')</br>';
-
 							$this->error_product_import[] = array(
 								'prod_id' => $item['id'],
 								'name'    => $item['name'],
 								'sku'     => $item['sku'],
 								'error'   => __( 'Product type not supported. Product not imported: ', 'connect-woocommerce' ),
 							);
-						}*/
-
+						}
 					}
-
 					if ( $doing_ajax || $not_sapi_cli ) {
 						$products_synced = $sync_loop + 1;
-
 						if ( $products_synced <= $products_count ) {
 							$this->ajax_msg = '[' . date_i18n( 'H:i:s' ) . '] ' . $products_synced . '/' . $products_count . ' ' . __( 'products. ', 'connect-woocommerce' ) . $this->ajax_msg;
 							if ( $post_id ) {
@@ -572,14 +595,12 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 									$this->ajax_msg .= ' <span class="taxonomies">' . __( 'Categories: ', 'connect-woocommerce' );
 									$this->ajax_msg .= implode( ', ', $term_list ) . '</span>';
 								}
-
 								// Get link to product.
 								$this->ajax_msg .= ' <a href="' . get_edit_post_link( $post_id ) . '" target="_blank">' . __( 'View', 'connect-woocommerce' ) . '</a>';
 							}
 							if ( $products_synced == $products_count ) {
 								$this->ajax_msg .= '<p class="finish">' . __( 'All caught up!', 'connect-woocommerce' ) . '</p>';
 							}
-
 							$args = array(
 								'msg'           => $this->ajax_msg,
 								'product_count' => $products_count,

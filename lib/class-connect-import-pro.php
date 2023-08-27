@@ -330,7 +330,6 @@ if ( ! class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
 					$variations_array[ $child_id ] = $variation_children->get_sku();
 				}
 			}
-
 			// Remove variations without SKU blank.
 			if ( ! empty( $variations_array ) ) {
 				foreach ( $variations_array as $variation_id => $variation_sku ) {
@@ -360,6 +359,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
 					continue;
 				}
 				// Get all Attributes for the product.
+				
 				foreach ( $variant['categoryFields'] as $category_fields ) {
 					if ( ! empty( $category_fields['field'] ) ) {
 						if ( ! isset( $attributes[ $category_fields['name'] ] ) || ! in_array( $category_fields['field'], $attributes[ $category_fields['name'] ], true ) ) {
@@ -370,6 +370,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
 						$attributes_prod[ 'attribute_pa_' . $attribute_name ] = wc_sanitize_taxonomy_name( $category_fields['field'] );
 					}
 				}
+				
 				// Make Variations.
 				if ( 'default' === $rate_id || '' === $rate_id ) {
 					if ( isset( $variant['price'] ) && $variant['price'] ) {
@@ -435,7 +436,6 @@ if ( ! class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
 			$attributes      = array();
 			$attributes_prod = array();
 			$att_props       = array();
-
 			if ( ! empty( $item['attributes'] ) ) {
 				foreach ( $item['attributes'] as $attribute ) {
 					if ( ! isset( $attributes[ $attribute['name'] ] ) || ! in_array( $attribute['value'], $attributes[ $attribute['name'] ], true ) ) {
@@ -453,7 +453,6 @@ if ( ! class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
 			} else {
 				$product_props['attributes'] = $var_prop;
 			}
-
 			return $product_props;
 		}
 
