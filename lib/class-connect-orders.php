@@ -181,7 +181,9 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 				$sync_orders = $_SESSION['sync_orders'];
 			}
 
-
+			print_r("orders");
+			print_r($sync_orders);
+			die();
 			if ( false === $sync_orders ) {
 				if ( $doing_ajax ) {
 					wp_send_json_error( array( 'msg' => 'Error' ) );
