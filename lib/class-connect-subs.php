@@ -167,6 +167,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 					'monthly_fee'  => $single_sub['recurring_amount_total'] ?? 0,
 					'odoo_user'	   => mb_convert_encoding( $single_sub['partner_id'][1], "UTF-8" ) ?? 0
 				];
+				( !$single_sub['date']) ? $single_sub['date'] = $date_now : '';
 				if( strtotime($single_sub['date']) >= strtotime($date_now) ){					
 					$odoo_subs['active'][] = $sub_data;
 				}else{
@@ -318,7 +319,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 														item.created_date +
 													'</div>' +
 													'<div class="subs-item">' +
-														item.expire_date +
+														( ( !item.expire_date) ? 'No definida' : item.expire_date)+
 													'</div>' +
 													'<div class="subs-item">' +
 														item.monthly_fee +
