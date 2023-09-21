@@ -300,12 +300,11 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 										'</div>';
 									subsDiv += data;		
 
-									const { active,noactive} = results;
+									const { active = [],noactive=[]} = results;
 
 									let result = [];
 									result.push(active);
 									result.push(noactive);
-									console.log( result);
 									result.forEach( (subs)=> {
 										console.log( subs);
 										subs.forEach( (item)=>{
