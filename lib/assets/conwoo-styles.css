@@ -13,7 +13,13 @@
     background-color: #f0f0f0; /* Add styling to your items as needed */
     padding: 10px;
     border: 1px solid #ccc;
-    grid-column: span 5;
+    grid-column: span 3;
+  }
+  .subs-item-name {
+    background-color: #f0f0f0; /* Add styling to your items as needed */
+    padding: 10px;
+    border: 1px solid #ccc;
+    grid-column: span 2;
   }
   .subs-item-active {
     background-color: #96ff93; /* Add styling to your items as needed */

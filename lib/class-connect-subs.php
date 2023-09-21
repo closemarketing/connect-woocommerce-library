@@ -162,14 +162,15 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 					'products'     => $productsArray ?? [],
 					'expire_date'  => $single_sub['date'] ?? 0,
 					'created_date' => $single_sub['create_date'] ?? 0,
+					'expired'      => false,
 					'state'        => $single_sub['state'] ?? 0,					
 					'monthly_fee'  => $single_sub['recurring_amount_total'] ?? 0,
 					'odoo_user'	   => mb_convert_encoding( $single_sub['partner_id'][1], "UTF-8" ) ?? 0
 				];
-
-				if( $single_sub['date'] >= $date_now ){
+				if( strtotime($single_sub['date']) >= strtotime($date_now) ){					
 					$odoo_subs['active'][] = $sub_data;
 				}else{
+					$sub_data['expired'] = true;
 					$odoo_subs['noactive'][] = $sub_data;
 				}
 			}
@@ -334,10 +335,13 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 												item.products.forEach(( product )=>{
 													products += 
 														'<div class="div-sub-container">' +
-															'<div class="subs-item subs-item-product ' + ( ( item.state == "open" ) ? 'subs-item-active' : 'subs-item-noactive' ) + '">' +
+															'<div class="subs-item subs-item-product ' + ( ( item.expired ) ? 'subs-item-noactive' : 'subs-item-active' ) + '">' +
 																( (product.default_code) ? product.default_code : 'sin sku' ) +
 															'</div>' +
-															'<div class="subs-item subs-item-description ' + ( ( item.state == "open" ) ? 'subs-item-active' : 'subs-item-noactive' ) + '">' +
+															'<div class="subs-item subs-item-name ' + ( ( item.expired ) ? 'subs-item-noactive' : 'subs-item-active' ) + '">' +
+																( (product.name) ? product.name : 'sin sku' ) +
+															'</div>' +
+															'<div class="subs-item subs-item-description ' + ( ( item.expired ) ? 'subs-item-noactive' : 'subs-item-active' ) + '">' +
 																product.description +
 															'</div>' +			
 														'</div>';													
