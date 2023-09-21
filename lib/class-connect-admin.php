@@ -132,6 +132,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				<h2 class="nav-tab-wrapper">
 					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=sync" class="nav-tab <?php echo 'sync' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sync products', 'connect-woocommerce' ); ?></a>
 					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=orders" class="nav-tab <?php echo 'orders' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sync Orders', 'connect-woocommerce' ); ?></a>
+					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=subscriptions" class="nav-tab <?php echo 'subscriptions' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Subscriptions', 'connect-woocommerce' ); ?></a>
 					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=automate" class="nav-tab <?php echo 'automate' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Automate', 'connect-woocommerce' ); ?></a>
 					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=settings" class="nav-tab <?php echo 'settings' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Settings', 'connect-woocommerce' ); ?></a>
 					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=public" class="nav-tab <?php echo 'public' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Frontend Settings', 'connect-woocommerce' ); ?></a>
@@ -180,6 +181,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 						?>
 					</form>
 					<?php
+				}
+
+				if ( 'subscriptions' === $active_tab ) {
+					$this->page_get_subscriptions();
 				}
 
 				if ( 'orders' === $active_tab ) {
@@ -597,6 +602,27 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			);
 		}
 	
+		/**
+		 * Page get subscriptions
+		 *
+		 * @return void
+		 */
+		public function page_get_subscriptions() {
+			echo 	'<div id="' . $this->options['slug'] . '-engine-subscriptions">'.
+						'<input type="text" id="conwoo-wp-email">'.						
+						'<button id="wp-get-user-data" class="button button-primary">'.
+						'get wordpress user by email'.
+						'</button>'.
+						'<div id="wp-user-data">'.
+						'</div>'.
+						'<input type="text" id="conwoo-sub-id">'.						
+						'<button id="conwoo-get-subs" class="button button-primary">'.
+						'get subs'.
+						'</button>'.
+						'<div id="odoo-user-subs">'.
+						'</div>'.
+					'</div>';
+		}
 		/**
 		 * Page Sync Orders
 		 *
