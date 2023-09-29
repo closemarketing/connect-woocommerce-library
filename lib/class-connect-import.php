@@ -241,7 +241,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 				'stock_status'  => 'instock',
 				'backorders'    => $allow_backorders,
 				'regular_price' => isset( $item['price'] ) ? $item['price'] : null,
-			);		
+			);
 			$product_props_new = array();
 			if ( $is_new_product ) {
 				$product_props_new = array(
@@ -385,8 +385,8 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 				'post_status'  => $prod_status,
 				'post_type'    => $post_type,
 			);
-			
-			$post_id   = wp_insert_post( $post_arg );
+
+			$post_id = wp_insert_post( $post_arg );
 			if ( $post_id ) {
 				update_post_meta( $post_id, $sku_key, $item['code'] );
 			}
@@ -446,7 +446,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 			} else {
 				$plugin_grouped_prod_active = false;
 			}
-			$sync_loop = isset( $_POST['syncLoop'] ) ? (int) sanitize_text_field( $_POST['syncLoop'] ) : 0;
+			$sync_loop = isset( $_POST['syncLoop'] ) ? (int) $_POST['syncLoop'] : 0;
 			// Translations.
 			$msg_product_created = __( 'Product created: ', 'connect-woocommerce' );
 			$msg_product_synced  = __( 'Product synced: ', 'connect-woocommerce' );
