@@ -9,7 +9,8 @@
 ## Usage
 You will need to use this code in order to import the library.
 
-´/**
+```
+/**
  * Default values
  */
 global $wpdb;
@@ -95,4 +96,4 @@ new Connect_WooCommerce_Import( $connwoo_options_erp );
 $connwoo_pro = new Connect_WooCommerce_Import_PRO( $connwoo_options_erp );
 new Connect_WooCommerce_Public( $connwoo_options_erp );
 $coonnwoo_subs = new Connect_WooCommerce_Subs( $connwoo_options_erp );
-`
+```
