@@ -1,0 +1,30 @@
+{
+	"name": "closemarketing/connect-woocommerce-library",
+	"type": "library",
+	"description": "Functions to connect to WooCommerce",
+	"keywords": ["connect","woocommerce"],
+	"homepage": "https://github.com/closemarketing/connect-woocommerce-library",
+	"license": "MIT",
+	"authors": [
+			{
+					"name": "David Perez",
+					"email": "david@close.technology",
+					"homepage": "https://davidperezgar.com",
+					"role": "Developer"
+			},
+			{
+					"name": "Alberto Sosa",
+					"email": "alberto@close.technology",
+					"homepage": "https://close.technology",
+					"role": "Developer"
+			}
+	],
+	"require": {
+			"php": ">=7.4.0"
+	},
+	"autoload": {
+			"psr-0": {
+					"Monolog": "src"
+			}
+	}
+}
