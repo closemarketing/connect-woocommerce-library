@@ -4,12 +4,33 @@
  */
 
 if ( ! class_exists( 'Connect_WooCommerce_Public' ) ) {
+	/**
+	 * Public class
+	 */
 	class Connect_WooCommerce_Public {
+
 		/**
-		 * Bootstrap
+		 * Options
+		 *
+		 * @var array
 		 */
-		public function __construct() {
-			$imhset_public = get_option( 'imhset_public' );
+		public $options = array();
+
+		/**
+		 * Settings public
+		 *
+		 * @var array
+		 */
+		public $setttings_public = array();
+
+		/**
+		 * Construct method
+		 *
+		 * @param array $options
+		 */
+		public function __construct( $options = array() ) {
+			$this->options          = $options;
+			$this->setttings_public = get_option( $this->options['slug'] . '_public' );
 
 			// EU VAT.
 			add_filter( 'woocommerce_billing_fields', array( $this, 'add_billing_fields' ) );
@@ -22,7 +43,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Public' ) ) {
 			/* Options for the plugin */
 			add_filter( 'woocommerce_checkout_fields', array( $this, 'custom_override_checkout_fields' ) );
 
-			$remove_free = isset( $imhset_public['remove_free'] ) ? $imhset_public['remove_free'] : 'no';
+			$remove_free = isset( $this->setttings_public['remove_free'] ) ? $this->setttings_public['remove_free'] : 'no';
 			if ( 'yes' === $remove_free ) {
 				// Hide shipping rates when free shipping is available.
 				add_filter( 'woocommerce_package_rates', array( $this, 'shipping_when_free_is_available' ), 100 );
@@ -30,7 +51,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Public' ) ) {
 
 			add_action( 'woocommerce_before_checkout_form', array( $this, 'style' ), 5 );
 
-			$terms_registration = isset( $imhset_public['terms_registration'] ) ? $imhset_public['terms_registration'] : 'no';
+			$terms_registration = isset( $this->setttings_public['terms_registration'] ) ? $this->setttings_public['terms_registration'] : 'no';
 			if ( 'yes' === $terms_registration ) {
 				add_action( 'woocommerce_register_form', array( $this, 'add_terms_and_conditions_to_registration' ), 20 );
 				add_action( 'woocommerce_register_post', array( $this, 'terms_and_conditions_validation' ), 20, 3 );
@@ -67,9 +88,8 @@ if ( ! class_exists( 'Connect_WooCommerce_Public' ) ) {
 			$fields['billing_company']['class'] = array( 'form-row-first' );
 			$fields['billing_company']['clear'] = false;
 
-			$imhset_public     = get_option( 'imhset_public' );
-			$vatinfo_mandatory = isset( $imhset_public['vat_mandatory'] ) ? $imhset_public['vat_mandatory'] : 'no';
-			$vatinfo_show      = isset( $imhset_public['vat_show'] ) ? $imhset_public['vat_show'] : 'no';
+			$vatinfo_mandatory = isset( $this->setttings_public['vat_mandatory'] ) ? $this->setttings_public['vat_mandatory'] : 'no';
+			$vatinfo_show      = isset( $this->setttings_public['vat_show'] ) ? $this->setttings_public['vat_show'] : 'no';
 
 			if ( $vatinfo_show != 'yes' ) {
 				return $fields;
@@ -96,11 +116,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Public' ) ) {
 		}
 
 		// Our hooked in function - $fields is passed via the filter!
-		function custom_override_checkout_fields( $fields ) {
-			$imhset_public = get_option( 'imhset_public' );
-			$company_field = isset( $imhset_public['company_field'] ) ? $imhset_public['company_field'] : 'no';
+		public function custom_override_checkout_fields( $fields ) {
+			$company_field = isset( $this->setttings_public['company_field'] ) ? $this->setttings_public['company_field'] : 'no';
 
-			if ( $company_field != 'yes' ) {
+			if ( 'yes' !== $company_field ) {
 				unset( $fields['billing']['billing_company'] );
 			}
 

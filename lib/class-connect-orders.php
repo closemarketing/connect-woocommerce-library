@@ -45,16 +45,26 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 		private $connapi_erp;
 
 		/**
+		 * Settings
+		 *
+		 * @var array
+		 */
+		private $settings;
+
+		/**
 		 * Init and hook in the integration.
 		 */
 		public function __construct( $options ) {
 			$this->options        = $options;
+			$this->settings       = get_option( $this->options['slug'] );
 			$apiname              = 'Connect_WooCommerce_' . $this->options['name'];
 			$this->connapi_erp    = new $apiname( $options );
 			$this->sync_settings  = get_option( $this->options['slug'] );
 			$ecstatus             = isset( $this->sync_settings['ecstatus'] ) ? $this->sync_settings['ecstatus'] : $this->options['order_only_order_completed'];
 			$this->meta_key_order = '_' . $this->options['slug'] . '_invoice_id';
 
+
+			add_action( 'admin_enqueue_scripts', array( $this, 'scripts_orders' ) );
 			add_action( 'admin_print_footer_scripts', array( $this, 'admin_print_footer_scripts' ), 11, 1 );
 			add_action( 'wp_ajax_wcpimh_import_orders', array( $this, 'wcpimh_import_orders' ) );
 
@@ -79,6 +89,37 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 			// Order Columns CPT.
 			add_filter( 'manage_edit-shop_order_columns', array( $this, 'custom_shop_order_column' ), 20 );
 			add_action( 'manage_shop_order_posts_custom_column', array( $this, 'custom_orders_list_column_content' ), 20, 2 );
+
+			// Ajax.
+			add_action( 'wp_ajax_sync_erp_order', array( $this, 'sync_erp_order' ) );
+			add_action( 'wp_ajax_nopriv_sync_erp_order', array( $this, 'sync_erp_order' ) );
+		}
+
+		/**
+		 * Load scripts
+		 *
+		 * @return void
+		 */
+		public function scripts_orders() {
+			// AJAX Pedidos.
+			wp_enqueue_script(
+				'cw-sync-order-widget',
+				plugin_dir_url( __FILE__ ) . 'assets/sync-order-widget.js',
+				array(),
+				CONNECT_WOOCOMMERCE_VERSION,
+				true
+			);
+
+			wp_localize_script(
+				'cw-sync-order-widget',
+				'ajaxActionOrder',
+				array(
+					'url'           => admin_url( 'admin-ajax.php' ),
+					'label_syncing' => __( 'Syncing', 'connect-woocommerce' ),
+					'label_synced'  => __( 'Synced', 'connect-woocommerce' ),
+					'nonce'         => wp_create_nonce( 'sync_erp_order_nonce' ),
+				)
+			);
 		}
 
 		/**
@@ -95,7 +136,8 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 		 * Creates invoice data to API
 		 *
 		 * @param string $order_id Order id to api.
-		 * @param date   $completed_date Completed data.
+		 * @param bool   $force    Force create.
+		 *
 		 * @return array
 		 */
 		public function create_invoice( $order_id, $force = false ) {
@@ -107,7 +149,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 			$order_free_msg = __( 'Free order not created in ', 'connect-woocommerce' ) . $this->options['name'];
 
 			// Not create order if free.
-			if ( 'no' === $freeorder && 0 === $order_total && empty( $ec_invoice_id ) ) {
+			if ( 'no' === $freeorder && empty( $order_total ) && empty( $ec_invoice_id ) ) {
 				$order->update_meta_data( $this->meta_key_order, 'nocreate' );
 				$order->save();
 
@@ -124,10 +166,34 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 				);
 			}
 
+			// Order refund.
+			if ( is_a( $order, 'WC_Order_Refund' ) ) {
+				return array(
+					'status'  => 'error',
+					'message' => __( 'Connot create refund', 'connect-woocommerce' ),
+				);
+			}
+
 			// Create the inovice.
-			if ( empty( $ec_invoice_id ) ) {
+			if ( empty( $ec_invoice_id ) || $force ) {
 				try {
-					return $this->connapi_erp->create_order( $order, $this->meta_key_order );
+					$doc_id     = $order->get_meta( '_' . $this->options['slug'] . '_doc_id' );
+					$invoice_id = $order->get_meta( $this->meta_key_order );
+					$order_data = $this->generate_order_data( $order );
+					$result     = $this->connapi_erp->create_order( $order_data, $doc_id, $invoice_id, $force );
+
+					$doc_id     = 'error' === $result['status'] ? '' : $result['document_id'];
+					$invoice_id = isset( $result['invoice_id'] ) ? $result['invoice_id'] : $invoice_id;
+					$order->update_meta_data( $this->meta_key_order, $invoice_id );
+					$order->update_meta_data( '_' . $this->options['slug'] . '_doc_id', $doc_id );
+					$order->update_meta_data( '_' . $this->options['slug'] . '_doc_type', $doctype );
+					$order->save();
+
+					$order_msg = __( 'Order synced correctly with Holded, ID: ', 'connect-woocommerce-holded' ) . $invoice_id;
+
+					$order->add_order_note( $order_msg );
+					return $result;
+
 				} catch ( Exception $e ) {
 					return array(
 						'status'  => 'error',
@@ -162,14 +228,12 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 						'status'    => array( 'wc-completed' ),
 						'posts_per_page' => -1,
 						'orderby' => 'date',
-						'order'   => 'ASC',
+						'order'   => 'DESC',
 					)
 				);
 
-				
-				// Get Completed date not order date.
 				foreach ( $orders as $order ) {
-					if ( $order->has_status('completed') ) {
+					if ( $order->has_status( 'completed' ) ) {
 						$sync_orders[] = array(
 							'id'   => $order->ID,
 							'date' => $order->get_date_completed(),
@@ -180,7 +244,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 			} else {
 				$sync_orders = $_SESSION['sync_orders'];
 			}
-			
+
 			if ( false === $sync_orders ) {
 				if ( $doing_ajax ) {
 					wp_send_json_error( array( 'msg' => 'Error' ) );
@@ -294,6 +358,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 			$plugin_slug = $this->options['slug'];
 
 			if ( 'woocommerce_page_' . $plugin_slug === $screen->base && 'orders' === $get_tab ) {
+				$order_key = $plugin_slug . '-engine-orders';
 			?>
 			<style>
 				.spinner{ float: none; }
@@ -301,7 +366,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 			<script type="text/javascript">
 				var loop=0;
 				jQuery(function($){
-					$(document).find('#<?php echo esc_html( $plugin_slug ); ?>-engine-orders').after('<div class="sync-wrapper"><h2><?php esc_html_e( 'Sync Completed Orders to ', 'connect-woocommerce' ); echo esc_html( $this->options['name'] ); ?></h2><p><?php esc_html_e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it. Only COMPLETED Orders will be synced.', 'connect-woocommerce' ); ?><br/></p><button id="start-sync-orders" class="button button-primary"<?php if ( false === $this->connapi_erp->check_can_sync() ) { echo ' disabled'; } ?>><?php esc_html_e( 'Start Import', 'connect-woocommerce' ); ?></button></div><fieldset id="logwrapper"><legend><?php esc_html_e( 'Log', 'connect-woocommerce' ); ?></legend><div id="loglist"></div></fieldset>');
+					$(document).find('#<?php echo esc_html( $plugin_slug ); ?>-engine-orders').after('<div class="sync-wrapper"><h2><?php sprintf( esc_html__( 'Import Orders from %s', 'connect-woocommerce' ), esc_html( $this->options['name'] ) ); ?></h2><p><?php esc_html_e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', 'connect-woocommerce' ); ?><br/></p><button id="start-sync-orders" class="button button-primary"<?php if ( false === $this->connapi_erp->check_can_sync() ) { echo ' disabled'; } ?>><?php esc_html_e( 'Start Import', 'connect-woocommerce' ); ?></button></div><fieldset id="logwrapper"><legend><?php esc_html_e( 'Log', 'connect-woocommerce' ); ?></legend><div id="loglist"></div></fieldset>');
 					$(document).find('#start-sync-orders').on('click', function(){
 						$(this).attr('disabled','disabled');
 						$(this).after('<span class="spinner is-active"></span>');
@@ -413,12 +478,16 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 			switch ( $column ) {
 				case $this->options['slug']:
 					// Get custom order meta data.
-					$order    = wc_get_order( $order_id );
-					$edit_url = $this->connapi_erp->get_url_link_api( $order );
+					$order      = wc_get_order( $order_id );
+					$invoice_id = $order->get_meta( $this->meta_key_order );
+					if ( 'nocreate' === $invoice_id ) {
+						break;
+					}
+					$edit_url   = $this->connapi_erp->get_url_link_api( $order );
 					if ( $edit_url ) {
 						echo '<a href="' . esc_url( $edit_url ) . '" target="_blank">';
 					}
-					echo esc_html( $order->get_meta( $this->meta_key_order ) );
+					echo esc_html( $invoice_id );
 					if ( $edit_url ) {
 						echo '</a>';
 					}
@@ -427,6 +496,241 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 			}
 		}
 
+		private function generate_order_data( $order ) {
+			$order_id = $order->get_id();
+			$doclang  = $order->get_billing_country() !== 'ES' ? 'en' : 'es';
+			$url_test = wc_get_endpoint_url( 'shop' );
+
+			if ( empty( $order->get_billing_company() ) ) {
+				$contact_name = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
+			} else {
+				$contact_name = $order->get_billing_company();
+			}
+
+			// State and Country.
+			$billing_country_code = $order->get_billing_country();
+			$billing_state_code   = $order->get_billing_state();
+			$billing_state        = WC()->countries->get_states( $billing_country_code )[ $billing_state_code ];
+
+			/**
+			 * ## Fields
+			 * --------------------------- */
+			$order_data = array(
+				'contactCode'            => $order->get_meta( '_billing_vat' ),
+				'contactName'            => $contact_name,
+				'woocommerceCustomer'    => $order->get_user()->data->user_login,
+				'marketplace'            => 'woocommerce',
+				'woocommerceOrderStatus' => $order->get_status(),
+				'woocommerceOrderId'     => $order_id,
+				'woocommerceUrl'         => $url_test,
+				'woocommerceStore'       => get_bloginfo( 'name', 'display' ),
+				'contactEmail'           => $order->get_billing_email(),
+				'contact_phone'          => $order->get_billing_phone(),
+				'contactAddress'         => $order->get_billing_address_1() . ',' . $order->get_billing_address_2(),
+				'contactCity'            => $order->get_billing_city(),
+				'contactCp'              => $order->get_billing_postcode(),
+				'contactProvince'        => $billing_state,
+				'contactCountryCode'     => $billing_country_code,
+				'desc'                   => '',
+				'date'                   => $order->get_date_completed() ? strtotime( $order->get_date_completed() ) : strtotime( $order->get_date_created() ),
+				'datestart'              => strtotime( $order->get_date_created() ),
+				'notes'                  => $order->get_customer_note(),
+				'saleschannel'           => null,
+				'language'               => $doclang,
+				'pmtype'                 => null,
+				'items'                  => array(),
+				'shippingAddress'        => $order->get_shipping_address_1() ? $order->get_shipping_address_1() . ',' . $order->get_shipping_address_2() : '',
+				'shippingPostalCode'     => $order->get_shipping_postcode(),
+				'shippingCity'           => $order->get_shipping_city(),
+				'shippingProvince'       => $order->get_shipping_state(),
+				'shippingCountry'        => $order->get_shipping_country(),
+				'woocommerceTaxes'       => wp_json_encode( $order->get_tax_totals() ),
+			);
+
+			// DesignID.
+			$design_id = isset( $this->settings['design_id'] ) ? $this->settings['design_id'] : '';
+			if ( $design_id ) {
+				$order_data['designId'] = $design_id;
+			}
+
+			// Series ID.
+			$series_number = isset( $this->settings['series'] ) ? $this->settings['series'] : '';
+			if ( ! empty( $series_number ) && 'default' !== $series_number ) {
+				$order_data['numSerieId'] = $series_number;
+			}
+
+			$wc_payment_method = $order->get_payment_method();
+			$order_data['notes']  .= ' ';
+			switch ( $wc_payment_method ) {
+				case 'cod':
+					$order_data['notes'] .= __( 'Paid by cash', 'connect-woocommerce' );
+					break;
+				case 'cheque':
+					$order_data['notes'] .= __( 'Paid by check', 'connect-woocommerce' );
+					break;
+				case 'paypal':
+					$order_data['notes'] .= __( 'Paid by paypal', 'connect-woocommerce' );
+					break;
+				case 'bacs':
+					$order_data['notes'] .= __( 'Paid by bank transfer', 'connect-woocommerce' );
+					break;
+				default:
+					$order_data['notes'] .= __( 'Paid by', 'connect-woocommerce' ) . ' ' . (string) $wc_payment_method;
+					break;
+			}
+			$order_data['items'] = $this->review_items( $order );
+
+			return $order_data;
+		}
+
+		/**
+		 * Review items
+		 *
+		 * @param object $ordered_items Items ordered.
+		 * @return object
+		 */
+		private function review_items( $order ) {
+			$subproducts  = 0;
+			$fields_items = array();
+			$index        = 0;
+			$index_bund   = 0;
+			$tax = new WC_Tax();
+
+			// Order Items.
+			foreach ( $order->get_items() as $item_id => $item ) {
+				$product = $item->get_product();
+
+				if ( ! empty( $product ) && $product->is_type( 'woosb' ) ) {
+					$woosb_ids   = get_post_meta( $item['product_id'], 'woosb_ids', true );
+					$woosb_prods = explode( ',', $woosb_ids );
+
+					foreach ( $woosb_prods as $woosb_ids ) {
+						$wb_prod    = explode( '/', $woosb_ids );
+						$wb_prod_id = $wb_prod[0];
+					}
+					$subproducts = count( $woosb_prods );
+
+					$fields_items[ $index ] = array(
+						'name'     => $item['name'],
+						'desc'     => '',
+						'units'    => floatval( $item['qty'] ),
+						'subtotal' => 0,
+						'tax'      => 0,
+						'stock'    => $product->get_stock_quantity(),
+					);
+
+					// Use Source product ID instead of SKU.
+					$prod_key         = '_' . $this->options['slug'] . '_productid';
+					$source_productid = get_post_meta( $item['product_id'], $prod_key, true );
+					if ( $source_productid ) {
+						$fields_items[ $index ]['productId'] = $source_productid;
+					} else {
+						$fields_items[ $index ]['sku'] = $product->get_sku();
+					}
+					$index_bund = $index;
+					$index++;
+
+					if ( $subproducts > 0 ) {
+						$subproducts = --$subproducts;
+						$vat_per     = 0;
+						if ( floatval( $item['line_total'] ) ) {
+							$vat_per = round( ( floatval( $item['line_tax'] ) * 100 ) / ( floatval( $item['line_total'] ) ), 4 );
+						}
+						$product_cost                            = floatval( $item['line_total'] );
+						$fields_items[ $index_bund ]['subtotal'] = $fields_items[ $index_bund ]['subtotal'] + $product_cost;
+						$fields_items[ $index_bund ]['tax']      = round( $vat_per, 0 );
+					}
+				} else {
+					$product  = $item->get_product();
+					$item_qty   = (int) $item->get_quantity();
+					$price_line = $item->get_subtotal() / $item_qty;
+					
+					// Taxes.
+					$taxes     = $tax->get_rates($product->get_tax_class());
+					$rates     = array_shift( $taxes );
+					$item_rate = round( array_shift( $rates ) );
+
+					$item_data = array(
+						'name'     => $item->get_name(),
+						'desc'     => get_the_excerpt( $product->get_id() ),
+						'units'    => $item_qty,
+						'subtotal' => (float) $price_line,
+						'tax'      => $item_rate,
+						'sku'      => ! empty( $product ) ? $product->get_sku() : '',
+					);
+
+					// Discount
+					$line_discount     = $item->get_subtotal() - $item->get_total();
+					if ( $line_discount > 0 ) {
+						$item_subtotal            = $item->get_subtotal();
+						$item_discount_percentage = round( ( $line_discount * 100 ) / $item_subtotal, 2 );
+						$item_data['discount']    = $item_discount_percentage;
+					}
+					
+					$fields_items[] = $item_data;
+					$index++;
+				}
+			}
+
+			// Shipping Items.
+			$shipping_items = $order->get_items( 'shipping' );
+			if ( ! empty( $shipping_items ) ) {
+				foreach ( $shipping_items as $shipping_item ) {
+					$shipping_total = (float) $shipping_item->get_total();
+					$tax_percentage = ! empty( $shipping_total ) ? (float) $shipping_item->get_total_tax() * 100 / $shipping_total : 0;
+					$fields_items[] = array(
+						'name'     => __( 'Shipping:', 'connect-woocommerce' ) . ' ' . $shipping_item->get_name(),
+						'desc'     => '',
+						'units'    => 1,
+						'subtotal' => (float) $shipping_item->get_total(),
+						'tax'      => round( $tax_percentage, 0 ),
+						'sku'      => 'shipping',
+					);
+				}
+			}
+
+			// Items Fee.
+			$items_fee = $order->get_items('fee');
+			if ( ! empty( $items_fee ) ) {
+				foreach ( $items_fee as $item_fee ) {
+					$total_fee = (float) $item_fee->get_total();
+					$tax_percentage = ! empty( $total_fee ) ? (float) $item_fee->get_total_tax() * 100 / $total_fee : 0;
+					$fields_items[] = array(
+						'name'     => $item_fee->get_name(),
+						'desc'     => '',
+						'units'    => 1,
+						'subtotal' => (float) $item_fee->get_total(),
+						'tax'      => round( $tax_percentage, 0 ),
+						'sku'      => 'fee',
+					);
+				}
+			}
+
+			return $fields_items;
+		}
+		/**
+		 * Función ajax para sincronizar usuarios con ERP
+		 *
+		 * @return void
+		 */
+		public function sync_erp_order() {
+			$order_id = isset( $_POST['order_id'] ) ? (int) sanitize_text_field( wp_unslash( $_POST['order_id'] ) ) : 0;
+			$type     = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : '';
+
+			if ( check_ajax_referer( 'sync_erp_order_nonce', 'nonce' ) ) {
+				if ( 'erp-post' === $type ) {
+					$result = $this->create_invoice( $order_id, true );
+				}
+				wp_send_json_success(
+					array(
+						'message'  => $result['message'],
+						'order_id' => $order_id,
+					)
+				);
+			} else {
+				wp_send_json_error( array( 'error' => 'Error' ) );
+			}
+		}
 	}
 }
 

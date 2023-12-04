@@ -132,7 +132,6 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				<h2 class="nav-tab-wrapper">
 					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=sync" class="nav-tab <?php echo 'sync' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sync products', 'connect-woocommerce' ); ?></a>
 					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=orders" class="nav-tab <?php echo 'orders' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sync Orders', 'connect-woocommerce' ); ?></a>
-					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=subscriptions" class="nav-tab <?php echo 'subscriptions' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Subscriptions', 'connect-woocommerce' ); ?></a>
 					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=automate" class="nav-tab <?php echo 'automate' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Automate', 'connect-woocommerce' ); ?></a>
 					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=settings" class="nav-tab <?php echo 'settings' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Settings', 'connect-woocommerce' ); ?></a>
 					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=public" class="nav-tab <?php echo 'public' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Frontend Settings', 'connect-woocommerce' ); ?></a>
@@ -181,10 +180,6 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 						?>
 					</form>
 					<?php
-				}
-
-				if ( 'subscriptions' === $active_tab ) {
-					$this->page_get_subscriptions();
 				}
 
 				if ( 'orders' === $active_tab ) {
@@ -277,18 +272,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					'connect_woocommerce_setting_section'
 				);
 			}
-
-			// DB Name.
-			if ( in_array( 'dbname', $settings_fields, true ) ) {
-				add_settings_field(
-					'wcpimh_dbname',
-					__( 'DB Name', 'connect-woocommerce' ),
-					array( $this, 'dbname_callback' ),
-					$this->options['slug'] . '_admin',
-					'connect_woocommerce_setting_section'
-				);
-			}
-			
+	
 			// Username.
 			if ( in_array( 'username', $settings_fields, true ) ) {
 				add_settings_field(
@@ -321,7 +305,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					'connect_woocommerce_setting_section'
 				);
 			}
-
+	
 			if ( $this->options['product_option_stock'] ) {
 				add_settings_field(
 					'wcpimh_stock',
@@ -603,27 +587,6 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		}
 	
 		/**
-		 * Page get subscriptions
-		 *
-		 * @return void
-		 */
-		public function page_get_subscriptions() {
-			echo 	'<div id="' . $this->options['slug'] . '-engine-subscriptions">'.
-						'<input type="text" id="conwoo-wp-email">'.						
-						'<button id="wp-get-user-data" class="button button-primary">'.
-						'get wordpress user by email'.
-						'</button>'.
-						'<div id="wp-user-data">'.
-						'</div>'.
-						'<input type="text" id="conwoo-sub-id">'.						
-						'<button id="conwoo-get-subs" class="button button-primary">'.
-						'get subs'.
-						'</button>'.
-						'<div id="odoo-user-subs">'.
-						'</div>'.
-					'</div>';
-		}
-		/**
 		 * Page Sync Orders
 		 *
 		 * @return void
@@ -648,7 +611,6 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'url'        => '',
 				'username'   => '',
 				'password'   => '',
-				'dbname'     => '',
 				'stock'      => 'no',
 				'prodst'     => 'draft',
 				'virtual'    => 'no',
@@ -656,6 +618,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'catsep'     => '',
 				'catattr'    => '',
 				'filter'     => '',
+				'tax_option' => 'no',
 				'rates'      => 'default',
 				'catnp'      => 'yes',
 				'doctype'    => 'invoice',
@@ -793,18 +756,6 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			printf(
 				'<input class="regular-text" type="text" name="' . $this->options['slug'] . '[username]" id="wcpimh_username" value="%s">',
 				isset( $this->settings['username'] ) ? esc_attr( $this->settings['username'] ) : ''
-			);
-		}
-	
-		/**
-		 * DB Name input
-		 *
-		 * @return void
-		 */
-		public function dbname_callback() {
-			printf(
-				'<input class="regular-text" type="text" name="' . $this->options['slug'] . '[dbname]" id="wcpimh_dbname" value="%s">',
-				isset( $this->settings['dbname'] ) ? esc_attr( $this->settings['dbname'] ) : ''
 			);
 		}
 	
@@ -950,11 +901,11 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 * @return void
 		 */
 		public function tax_option_callback() {
-			$tax_price = isset( $this->settings['tax'] ) ? $this->settings['tax'] : 'no';
+			$tax_option = isset( $this->settings['tax_option'] ) ? $this->settings['tax_option'] : 'no';
 			?>
-			<select name="<?php echo esc_html( $this->options['slug'] ); ?>[tax_price]" id="wcsen_tax">
-				<option value="yes" <?php selected( $tax_price, 'yes' ); ?>><?php esc_html_e( 'Yes, tax included', 'connect-woocommerce' ); ?></option>
-				<option value="no" <?php selected( $tax_price, 'no' ); ?>><?php esc_html_e( 'No, tax not included', 'connect-woocommerce' ); ?></option>
+			<select name="<?php echo esc_html( $this->options['slug'] ); ?>[tax_option]" id="wcsen_tax">
+				<option value="yes" <?php selected( $tax_option, 'yes' ); ?>><?php esc_html_e( 'Yes, tax included', 'connect-woocommerce' ); ?></option>
+				<option value="no" <?php selected( $tax_option, 'no' ); ?>><?php esc_html_e( 'No, tax not included', 'connect-woocommerce' ); ?></option>
 			</select>
 			<?php
 		}

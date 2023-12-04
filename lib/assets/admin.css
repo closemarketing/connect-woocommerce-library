@@ -13,6 +13,7 @@
 .wp-admin.wcpimh-plugin #wcpimh_prodst {
 	width: 150px;
 }
+.wp-admin.wcpimh-plugin #wcpimh_api,
 .wp-admin.wcpimh-plugin #wcpimh_taxinc {
 	width: 270px;
 }
