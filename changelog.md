@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.4.1
+
+* Merged with latest widgets and develop.
+
 ## 1.4.0
 
 * Added Widget to send order to ERP manually.

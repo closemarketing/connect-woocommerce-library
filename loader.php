@@ -5,12 +5,12 @@
  * @package    WordPress
  * @author     David Perez <david@closemarketing.es>
  * @copyright  2022 Closemarketing
- * @version    1.4.0
+ * @version    1.4.1
  */
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'CONNECT_WOOCOMMERCE_VERSION', '1.4.0' );
+define( 'CONNECT_WOOCOMMERCE_VERSION', '1.4.1' );
 
 require_once plugin_dir_path( __FILE__ ) . '/lib/helpers-functions.php';
 
