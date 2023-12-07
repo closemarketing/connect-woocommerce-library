@@ -68,13 +68,6 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 		private $connapi_erp;
 
 		/**
-		 * Ajax action
-		 *
-		 * @var string
-		 */
-		private $ajax_action;
-
-		/**
 		 * Constructs of class
 		 *
 		 * @param array $options Options of plugin.
@@ -90,7 +83,6 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 
 			// Admin Styles.
 			add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueues' ) );
-
 			add_action( 'wp_ajax_' . $ajax_action, array( $this, 'sync_products' ) );
 
 			// Schedule.

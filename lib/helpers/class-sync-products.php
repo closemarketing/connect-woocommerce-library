@@ -12,6 +12,8 @@ namespace CLOSE\WooCommerce\Library\Helpers;
 
 defined( 'ABSPATH' ) || exit;
 
+use CLOSE\WooCommerce\Library\Helpers\TAX;
+
 /**
  * Sync Products.
  *
@@ -42,9 +44,9 @@ class PROD {
 		// Start.
 		if ( 'simple' === $type ) {
 			$product = new \WC_Product( $product_id );
-		} elseif ( 'variable' === $type && class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
+		} elseif ( 'variable' === $type ) {
 			$product = new \WC_Product_Variable( $product_id );
-		} elseif ( 'pack' === $type && class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
+		} elseif ( 'pack' === $type ) {
 			$product = new \WC_Product( $product_id );
 		}
 		// Common and default properties.
@@ -97,8 +99,8 @@ class PROD {
 		$product_id = $product->get_id();
 
 		switch ( $type ) {
-			case 'simple';
-			case 'grouped';
+			case 'simple':
+			case 'grouped':
 				// Values for simple products.
 				$product_props['sku'] = $item['sku'];
 				// Check if the product can be sold.
@@ -155,7 +157,7 @@ class PROD {
 		// Set properties and save.
 		$product->set_props( $product_props );
 		$product->save();
-		if ( 'pack' === $type && class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
+		if ( 'pack' === $type ) {
 			wp_set_object_terms( $product_id, 'woosb', 'product_type' );
 		}
 		return $product_id;
@@ -303,7 +305,7 @@ class PROD {
 				$attribute_name = wc_sanitize_taxonomy_name( $attribute['name'] );
 				$attributes_prod[ 'attribute_pa_' . $attribute_name ] = wc_sanitize_taxonomy_name( $attribute['value'] );
 	
-				$att_props = $this->make_attributes( $attributes, false );
+				$att_props = TAX::make_attributes( $attributes, false );
 			}
 		}
 		if ( ! empty( $att_props ) ) {
@@ -552,5 +554,24 @@ class PROD {
 
 			return $attach_id;
 		}
+	}
+	
+	/**
+	 * Return all meta keys from WordPress database in post type
+	 *
+	 * @return array Array of metakeys.
+	 */
+	public static function get_all_custom_fields() {
+		global $wpdb, $table_prefix;
+		// If not, query for it and store it for later.
+		$fields    = array();
+		$sql       = "SELECT DISTINCT( {$table_prefix}postmeta.meta_key )
+				FROM {$table_prefix}posts
+				LEFT JOIN {$table_prefix}postmeta
+					ON {$table_prefix}posts.ID = {$table_prefix}postmeta.post_id
+					WHERE {$table_prefix}posts.post_type = 'product'";
+		$meta_keys = $wpdb->get_col( $sql );
+
+		return $meta_keys;
 	}
 }

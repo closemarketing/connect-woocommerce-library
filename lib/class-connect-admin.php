@@ -10,6 +10,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use CLOSE\WooCommerce\Library\Helpers\PROD;
+
 /**
  * Library for WooCommerce Settings
  *
@@ -647,13 +649,59 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 * @return void
 		 */
 		public function page_get_prod_mergevars() {
+			$custom_fields = PROD::get_all_custom_fields();
+			// Get Options .
+			$attribute_fields = $this->connapi_erp->get_attributes();
+			foreach ( $attribute_fields as $property_field ) {
+				$section = esc_html( $property_field['section'] );
+				$property_values[ $section ] = get_option( 'iip_var_' . $section );
+			}
 			?>
 			<div id="<?php echo esc_attr( $this->options['slug'] ); ?>-products-mergevars">
+				<div class="wrap">
+					<h1><?php esc_html_e( 'Merge Variables with custom values', 'connect-crm-realstate' ); ?></h1>
+					<form method="post" action="options.php">
+						<?php
+						settings_fields( 'iip_plugin_merge_group' );
+						do_settings_sections( 'iip_plugin_merge_group' );
 
+						$col = 1;
+						foreach ( $attribute_fields as $property_field ) {
+							if ( 1 === $col ) {
+								echo '<div class="iip-row">';
+							}
+							echo '<div class="iip-column col-6">';
+							echo '<table class="form-table iip-table">';
+							echo '<tr valign="top">';
+							echo '<th scope="row"><h3>' . esc_html( $property_field['label'] ) . '</h3></th>';
+							echo '</tr>';
+							foreach ( $property_field['fields'] as $key => $value ) {
+								$section = esc_html( $property_field['section'] );
+								echo '<th scope="row">' . $value . '</th>';
+								echo '<td><select name="iip_var_' . $section;
+								echo '[' . $key . ']">';
+								$this->fields_to_option( $custom_fields, $property_values[ $section ][ $key ] );
+								echo '</select></td>';
+								echo '</tr>';
+							}
+							echo '</table>';
+							echo '</div>';
+							$col++;
+							if ( $col > 2 ) {
+								echo '</div>';
+								$col = 1;
+							}
+						}
+						echo '</div>';
+	
+						submit_button();
+						?>
+					</form>
+				</div>
 			</div>
 			<?php
 		}
-	
+
 		/**
 		 * Page get subscriptions
 		 *
