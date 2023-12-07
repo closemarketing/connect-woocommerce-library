@@ -10,6 +10,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use CLOSE\WooCommerce\Library\Helpers\PROD;
+
 if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 	/**
 	 * Library for WooCommerce Settings
@@ -29,13 +31,6 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 		 * @var string
 		 */
 		private $ajax_msg;
-
-		/**
-		 * Message of errors
-		 *
-		 * @var string
-		 */
-		private $msg_error_products;
 
 		/**
 		 * Saves the products with errors to send after
@@ -63,6 +58,13 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 		 *
 		 * @var object
 		 */
+		private $sync_period;
+
+		/**
+		 * API Object
+		 *
+		 * @var object
+		 */
 		private $connapi_erp;
 
 		/**
@@ -81,21 +83,15 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 		public function __construct( $options ) {
 			$this->options     = $options;
 			$apiname           = 'Connect_WooCommerce_' . $this->options['name'];
-			$this->ajax_action = $this->options['slug'] . '_import_products';
 			$this->connapi_erp = new $apiname( $options );
-
-			add_action( 'admin_print_footer_scripts', array( $this, 'admin_print_footer_scripts' ), 11, 1 );
-			add_action( 'wp_ajax_' . $this->ajax_action, array( $this, 'import_products' ) );
-
-			// Admin Styles.
-			add_action( 'admin_enqueue_scripts', array( $this, 'admin_styles' ) );
-			add_filter( 'admin_body_class', array( $this, 'admin_body_class' ) );
-
-			// Settings.
-			$this->settings = get_option( $this->options['slug'] );
-	
+			$ajax_action       = $this->options['slug'] . '_sync_products';
 			$this->settings    = get_option( $this->options['slug'] );
 			$this->sync_period = isset( $this->settings['sync'] ) ? strval( $this->settings['sync'] ) : 'no';
+
+			// Admin Styles.
+			add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueues' ) );
+
+			add_action( 'wp_ajax_' . $ajax_action, array( $this, 'sync_products' ) );
 
 			// Schedule.
 			if ( $this->sync_period && 'no' !== $this->sync_period ) {
@@ -106,25 +102,56 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 		}
 
 		/**
-		 * Adds one or more classes to the body tag in the dashboard.
-		 *
-		 * @link https://wordpress.stackexchange.com/a/154951/17187
-		 * @param  String $classes Current body classes.
-		 * @return String          Altered body classes.
-		 */
-		public function admin_body_class( $classes ) {
-			return "$classes wcpimh-plugin";
-		}
-
-		/**
 		 * Enqueues Styles for admin
 		 *
 		 * @return void
 		 */
-		public function admin_styles() {
-			wp_enqueue_style( // phpcs:ignore
+		public function admin_enqueues() {
+			wp_enqueue_style(
 				'connect-woocommerce',
-				plugin_dir_url( __FILE__ ) . 'assets/admin.css',
+				CONNECT_WOOCOMMERCE_PLUGIN_URL . 'lib/assets/admin.css',
+				array(),
+				CONNECT_WOOCOMMERCE_VERSION
+			);
+
+			wp_enqueue_script(
+				'connect-woocommerce-import',
+				CONNECT_WOOCOMMERCE_PLUGIN_URL . 'lib/assets/sync-import.js',
+				array(),
+				CONNECT_WOOCOMMERCE_VERSION,
+				true
+			);
+
+			wp_localize_script(
+				'connect-woocommerce-import',
+				'ajaxAction',
+				array(
+					'url'                 => admin_url( 'admin-ajax.php' ),
+					'label_sync'          => __( 'Sync', 'import-holded-products-woocommerce' ),
+					'label_syncing'       => __( 'Syncing', 'import-holded-products-woocommerce' ),
+					'label_sync_complete' => __( 'Finished', 'import-holded-products-woocommerce' ),
+					'nonce'               => wp_create_nonce( 'manual_import_nonce' ),
+				)
+			);
+
+			// AJAX Pedidos.
+			wp_enqueue_script(
+				'cw-sync-order-widget',
+				plugin_dir_url( __FILE__ ) . 'assets/sync-order-widget.js',
+				array(),
+				CONNECT_WOOCOMMERCE_VERSION,
+				true
+			);
+
+			wp_localize_script(
+				'cw-sync-order-widget',
+				'ajaxActionOrder',
+				array(
+					'url'           => admin_url( 'admin-ajax.php' ),
+					'label_syncing' => __( 'Syncing', 'connect-woocommerce' ),
+					'label_synced'  => __( 'Synced', 'connect-woocommerce' ),
+					'nonce'         => wp_create_nonce( 'sync_erp_order_nonce' ),
+				)
 			);
 		}
 
@@ -139,28 +166,21 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 			return $text;
 		}
 
-
-
-
-
-
-
 		/**
 		 * Import products from API
 		 *
 		 * @return void
 		 */
-		public function import_products() {
+		public function sync_products() {
 			$not_sapi_cli = substr( php_sapi_name(), 0, 3 ) != 'cli' ? true : false;
 			$doing_ajax   = defined( 'DOING_AJAX' ) && DOING_AJAX;
+			$sync_loop    = isset( $_POST['syncLoop'] ) ? (int) $_POST['syncLoop'] : 0;
 
 			if ( in_array( 'woo-product-bundle/wpc-product-bundles.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
 				$plugin_grouped_prod_active = true;
 			} else {
 				$plugin_grouped_prod_active = false;
 			}
-
-			$sync_loop = isset( $_POST['syncLoop'] ) ? (int) $_POST['syncLoop'] : 0;
 
 			// Translations.
 			$msg_product_created = __( 'Product created: ', 'connect-woocommerce' );
@@ -204,7 +224,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 
 						if ( ! $is_filtered_product && $item['sku'] && 'simple' === $item['kind'] ) {
 							$post_id = $this->sync_product_simple( $item );
-						} elseif ( ! $is_filtered_product && 'variants' === $item['kind'] && class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
+						} elseif ( ! $is_filtered_product && 'variants' === $item['kind'] ) {
 							// Variable product.
 							// Check if any variants exists.
 							$post_parent = 0;
@@ -235,7 +255,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 								}
 								$this->ajax_msg .= $item['name'] . '. SKU: ' . $item['sku'] . '(' . $item['kind'] . ') <br/>';
 							}
-						} elseif ( ! $is_filtered_product && 'pack' === $item['kind'] && class_exists( 'Connect_WooCommerce_Import_PRO' ) && $plugin_grouped_prod_active ) {
+						} elseif ( ! $is_filtered_product && 'pack' === $item['kind'] && $plugin_grouped_prod_active ) {
 							$post_id = $this->find_product( $item['sku'] );
 
 							if ( ! $post_id ) {
@@ -276,7 +296,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 								$this->ajax_msg .= $msg_product_synced;
 							}
 							$this->ajax_msg .= $item['name'] . '. SKU: ' . $item['sku'] . ' (' . $item['kind'] . ')';
-						} elseif ( ! $is_filtered_product && 'pack' === $item['kind'] && class_exists( 'Connect_WooCommerce_Import_PRO' ) && ! $plugin_grouped_prod_active ) {
+						} elseif ( ! $is_filtered_product && 'pack' === $item['kind'] && ! $plugin_grouped_prod_active ) {
 							$this->ajax_msg .= '<span class="warning">' . __( 'Product needs Plugin to import: ', 'connect-woocommerce' );
 							$this->ajax_msg .= '<a href="https://wordpress.org/plugins/woo-product-bundle/" target="_blank">WPC Product Bundles for WooCommerce</a> ';
 							$this->ajax_msg .= '(' . $item['kind'] . ') </span></br>';
@@ -361,81 +381,6 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 			}
 			// Email errors.
 			$this->send_product_errors();
-		}
-
-
-
-
-
-		/**
-		 * Adds AJAX Functionality
-		 *
-		 * @return void
-		 */
-		public function admin_print_footer_scripts() {
-			$screen       = get_current_screen();
-			$get_tab     = isset( $_GET['tab'] ) ? $_GET['tab'] : 'sync';
-			$plugin_slug = $this->options['slug'];
-
-			if ( 'woocommerce_page_' . $plugin_slug === $screen->base && 'sync' === $get_tab ) {
-				?>
-			<style>
-				.spinner{ float: none; }
-			</style>
-			<script type="text/javascript">
-				var loop=0;
-				jQuery(function($){
-					$(document).find('#<?php echo esc_html( $plugin_slug ); ?>-engine').after('<div class="sync-wrapper"><h2><?php sprintf( esc_html__( 'Import Products from %s', 'connect-woocommerce' ), esc_html( $this->options['name'] ) ); ?></h2><p><?php esc_html_e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', 'connect-woocommerce' ); ?><br/></p><button id="start-sync" class="button button-primary"<?php if ( false === $this->connapi_erp->check_can_sync() ) { echo ' disabled'; } ?>><?php esc_html_e( 'Start Import', 'connect-woocommerce' ); ?></button></div><fieldset id="logwrapper"><legend><?php esc_html_e( 'Log', 'connect-woocommerce' ); ?></legend><div id="loglist"></div></fieldset>');
-					$(document).find('#start-sync').on('click', function(){
-						$(this).attr('disabled','disabled');
-						$(this).after('<span class="spinner is-active"></span>');
-						var class_task = 'odd';
-						$(document).find('#logwrapper #loglist').append( '<p class="'+class_task+'"><?php echo '[' . date_i18n( 'H:i:s' ) . '] ' . __( 'Connecting with API and syncing Products ...', 'connect-woocommerce' ); ?></p>');
-
-						var syncAjaxCall = function(x){
-							$.ajax({
-								type: "POST",
-								url: "<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>",
-								dataType: "json",
-								data: {
-									action: "<?php echo esc_attr( $this->ajax_action ); ?>",
-									syncLoop: x
-								},
-								success: function(results) {
-									if(results.success){
-										if(results.data.loop){
-											syncAjaxCall(results.data.loop);
-										}else{
-											$(document).find('#start-sync').removeAttr('disabled');
-											$(document).find('.sync-wrapper .spinner').remove();
-										}
-									} else {
-										$(document).find('#start-sync').removeAttr('disabled');
-										$(document).find('.sync-wrapper .spinner').remove();
-									}
-									if( results.data.msg != undefined ){
-										$(document).find('#logwrapper #loglist').append( '<p class="'+class_task+'">'+results.data.msg+'</p>');
-									}
-									if ( class_task == 'odd' ) {
-										class_task = 'even';
-									} else {
-										class_task = 'odd';
-									}
-									$(".woocommerce_page_connect_woocommerce #loglist").animate({ scrollTop: $(".woocommerce_page_connect_woocommerce #loglist")[0].scrollHeight}, 450);
-								},
-								error: function (xhr, text_status, error_thrown) {
-									$(document).find('#start-sync').removeAttr('disabled');
-									$(document).find('.sync-wrapper .spinner').remove();
-									$(document).find('.sync-wrapper').append('<div class="progress">There was an Error! '+xhr.responseText+' '+text_status+': '+error_thrown+'</div>');
-								}
-									});
-							}
-							syncAjaxCall(window.loop);
-						});
-					});
-				</script>
-				<?php
-			}
 		}
 
 		/**

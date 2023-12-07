@@ -104,8 +104,9 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 * @return void
 		 */
 		public function create_admin_page() {
-			$this->settings = get_option( $this->options['slug'] );
+			$this->settings        = get_option( $this->options['slug'] );
 			$this->settings_public = get_option( $this->options['slug'] . '_public' );
+			$special_tabs          = ! empty( $this->options['settings_special_tabs'] ) ? $this->options['settings_special_tabs'] : array();
 			?>
 			<div class="header-wrap">
 				<div class="wrapper">
@@ -126,23 +127,32 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</div>
 			<div class="wrap">
 				<?php settings_errors(); ?>
-	
+
 				<?php $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'sync'; ?>
-	
+
 				<h2 class="nav-tab-wrapper">
-					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=sync" class="nav-tab <?php echo 'sync' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sync products', 'connect-woocommerce' ); ?></a>
-					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=orders" class="nav-tab <?php echo 'orders' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sync Orders', 'connect-woocommerce' ); ?></a>
-					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=subscriptions" class="nav-tab <?php echo 'subscriptions' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Subscriptions', 'connect-woocommerce' ); ?></a>
+					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=sync_products" class="nav-tab <?php echo 'sync_products' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sync products', 'connect-woocommerce' ); ?></a>
+					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=prod_mergevars" class="nav-tab <?php echo 'prod_mergevars' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Merge Vars', 'connect-woocommerce' ); ?></a>
+					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=sync_orders" class="nav-tab <?php echo 'sync_orders' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sync Orders', 'connect-woocommerce' ); ?></a>
+					<?php
+					if ( in_array( 'subscriptions', $special_tabs, true ) ) {
+						?>
+						<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=subscriptions" class="nav-tab <?php echo 'subscriptions' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Subscriptions', 'connect-woocommerce' ); ?></a>
+						<?php
+					}
+					?>
 					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=automate" class="nav-tab <?php echo 'automate' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Automate', 'connect-woocommerce' ); ?></a>
 					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=settings" class="nav-tab <?php echo 'settings' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Settings', 'connect-woocommerce' ); ?></a>
 					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=public" class="nav-tab <?php echo 'public' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Frontend Settings', 'connect-woocommerce' ); ?></a>
 					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=license" class="nav-tab <?php echo 'license' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'License', 'connect-woocommerce' ); ?></a>
 				</h2>
-	
-				<?php	if ( 'sync' === $active_tab ) { ?>
-					<div id="<?php echo esc_html( $this->options['slug'] ); ?>-engine"></div>
-				<?php } ?>
-				<?php	if ( 'settings' === $active_tab ) { ?>
+
+				<?php
+				if ( 'sync_products' === $active_tab || 'sync_orders' === $active_tab ) {
+					$this->page_get_sync( $active_tab );
+				}
+
+				if ( 'settings' === $active_tab ) { ?>
 					<form method="post" action="options.php">
 						<?php
 							settings_fields( $this->settings_slug );
@@ -183,12 +193,12 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					<?php
 				}
 
-				if ( 'subscriptions' === $active_tab ) {
-					$this->page_get_subscriptions();
+				if ( 'prod_mergevars' === $active_tab ) {
+					$this->page_get_prod_mergevars();
 				}
 
-				if ( 'orders' === $active_tab ) {
-					$this->page_sync_orders();
+				if ( 'subscriptions' === $active_tab ) {
+					$this->page_get_subscriptions();
 				}
 
 				if ( 'license' === $active_tab ) {
@@ -603,33 +613,69 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		}
 	
 		/**
+		 * Page get Merge Product variables
+		 *
+		 * @return void
+		 */
+		public function page_get_sync( $type = 'sync_products' ) {
+			$ajax_action = $this->options['slug'] . '_' . $type;
+			?>
+			<div class="connwoo-sync-engine">
+				<div class="sync-wrapper">
+					<h2><?php
+					sprintf(
+						esc_html__( 'Import Products from %s', 'connect-woocommerce' ),
+						esc_html( $this->options['name'] ) );
+						?>
+					</h2>
+					<p><?php esc_html_e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', 'connect-woocommerce' ); ?>
+					</p>
+					<br/>
+					<div id="sync-products" name="sync-products" class="button button-large button-primary" onclick="syncManualItems(this, '<?php echo esc_attr( $ajax_action ); ?>', 0);" <?php if ( false === $this->connapi_erp->check_can_sync() ) { echo ' disabled'; } ?>><?php esc_html_e( 'Start Import', 'connect-crm-realstate' ); ?></div>
+				</div>
+				<fieldset id="logwrapper">
+					<legend><?php esc_html_e( 'Log', 'connect-woocommerce' ); ?></legend>
+					<div id="loglist"></div>
+				</fieldset>
+			</div>
+			<?php
+		}
+	
+		/**
+		 * Page get Merge Product variables
+		 *
+		 * @return void
+		 */
+		public function page_get_prod_mergevars() {
+			?>
+			<div id="<?php echo esc_attr( $this->options['slug'] ); ?>-products-mergevars">
+
+			</div>
+			<?php
+		}
+	
+		/**
 		 * Page get subscriptions
 		 *
 		 * @return void
 		 */
 		public function page_get_subscriptions() {
-			echo 	'<div id="' . $this->options['slug'] . '-engine-subscriptions">'.
-						'<input type="text" id="conwoo-wp-email">'.						
-						'<button id="wp-get-user-data" class="button button-primary">'.
-						'get wordpress user by email'.
-						'</button>'.
-						'<div id="wp-user-data">'.
-						'</div>'.
-						'<input type="text" id="conwoo-sub-id">'.						
-						'<button id="conwoo-get-subs" class="button button-primary">'.
-						'get subs'.
-						'</button>'.
-						'<div id="odoo-user-subs">'.
-						'</div>'.
-					'</div>';
-		}
-		/**
-		 * Page Sync Orders
-		 *
-		 * @return void
-		 */
-		public function page_sync_orders() {
-			echo '<div id="' . $this->options['slug'] . '-engine-orders"></div>';
+			?>
+			<div id="<?php echo esc_attr( $this->options['slug'] ); ?>-engine-subscriptions">
+				<input type="text" id="conwoo-wp-email">						
+				<button id="wp-get-user-data" class="button button-primary">
+				get wordpress user by email
+				</button>
+				<div id="wp-user-data">
+				</div>
+				<input type="text" id="conwoo-sub-id">						
+				<button id="conwoo-get-subs" class="button button-primary">
+				get subs
+				</button>
+				<div id="odoo-user-subs">
+				</div>
+			</div>
+			<?php
 		}
 	
 		/**
