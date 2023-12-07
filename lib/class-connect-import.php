@@ -438,19 +438,20 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 			}
 		}
 
-	/**
-	 * Cron advanced with Action Scheduler
-	 *
-	 * @return void
-	 */
-	public function action_scheduler() {
-		$pos = array_search( $this->sync_period, array_column( $this->options['cron'], 'cron' ), true );
-		if ( false !== $pos ) {
-			$cron_option = $this->options['cron'][ $pos ];
-		}
+		/**
+		 * Cron advanced with Action Scheduler
+		 *
+		 * @return void
+		 */
+		public function action_scheduler() {
+			$pos = array_search( $this->sync_period, array_column( $this->options['cron'], 'cron' ), true );
+			if ( false !== $pos ) {
+				$cron_option = $this->options['cron'][ $pos ];
+			}
 
-		if ( isset( $cron_option['cron'] ) && false === as_has_scheduled_action( $cron_option['cron'] ) ) {
-			as_schedule_recurring_action( time(), $cron_option['interval'], $cron_option['cron'] );
+			if ( isset( $cron_option['cron'] ) && false === as_has_scheduled_action( $cron_option['cron'] ) ) {
+				as_schedule_recurring_action( time(), $cron_option['interval'], $cron_option['cron'] );
+			}
 		}
 	}
 }
