@@ -128,21 +128,21 @@ class PROD {
 			// Product not synced without SKU.
 			return array(
 				'status'  => 'error',
-				'post_id' => $post_id,
+				'post_id' => (int) $post_id,
 				'message' => __( 'SKU not finded in Simple product. Product not imported: ', 'connect-woocommerce' ) . $item['name'] . '(' . $item_kind . ')</br>',
 			);
 		} elseif ( 'simple' !== $item_kind ) {
 			// Product not synced type not supported.
 			return array(
 				'status'  => 'error',
-				'post_id' => $post_id,
+				'post_id' => (int) $post_id,
 				'message' => __( 'Product type not supported. Product not imported: ', 'connect-woocommerce' ) . $item['name'] . '(' . $item_kind . ')',
 			);
 		}
 
 		return array(
 			'status'  => $status,
-			'post_id' => $post_id,
+			'post_id' => (int) $post_id,
 			'message' => $message,
 		);
 	}

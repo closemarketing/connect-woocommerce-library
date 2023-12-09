@@ -21,22 +21,26 @@ class ORDER {
 	/**
 	 * Creates invoice data to API
 	 *
+	 * @param array  $settings Settings data.
 	 * @param string $order_id Order id to api.
+	 * @param string $meta_key_order Meta key order.
+	 * @param string $option_prefix Option prefix.
+	 * @param object $api_erp API ERP.
 	 * @param bool   $force    Force create.
 	 *
 	 * @return array
 	 */
-	public function create_invoice( $order_id, $force = false ) {
-		$doctype        = isset( $this->sync_settings['doctype'] ) ? $this->sync_settings['doctype'] : 'nosync';
+	public static function create_invoice( $settings, $order_id, $meta_key_order, $option_prefix, $api_erp, $force = false ) {
+		$doctype        = isset( $settings['doctype'] ) ? $settings['doctype'] : 'nosync';
 		$order          = wc_get_order( $order_id );
 		$order_total    = (float) $order->get_total();
-		$ec_invoice_id  = $order->get_meta( $this->meta_key_order );
-		$freeorder      = isset( $this->sync_settings['freeorder'] ) ? $this->sync_settings['freeorder'] : 'no';
-		$order_free_msg = __( 'Free order not created in ', 'connect-woocommerce' ) . $this->options['name'];
+		$ec_invoice_id  = $order->get_meta( $meta_key_order );
+		$freeorder      = isset( $settings['freeorder'] ) ? $settings['freeorder'] : 'no';
+		$order_free_msg = __( 'Free order not created ', 'connect-woocommerce' );
 
 		// Not create order if free.
 		if ( 'no' === $freeorder && empty( $order_total ) && empty( $ec_invoice_id ) ) {
-			$order->update_meta_data( $this->meta_key_order, 'nocreate' );
+			$order->update_meta_data( $meta_key_order, 'nocreate' );
 			$order->save();
 
 			$order->add_order_note( $order_free_msg );
@@ -45,7 +49,7 @@ class ORDER {
 				'message' => $order_free_msg,
 			);
 		} elseif ( ! empty( $ec_invoice_id ) && 'nocreate' === $ec_invoice_id ) {
-			$order_free_msg = __( 'Free order not created in ', 'connect-woocommerce' ) . $this->options['name'];
+			$order_free_msg = __( 'Free order not created ', 'connect-woocommerce' );
 			return array(
 				'status'  => 'ok',
 				'message' => $order_free_msg,
@@ -63,16 +67,16 @@ class ORDER {
 		// Create the inovice.
 		if ( empty( $ec_invoice_id ) || $force ) {
 			try {
-				$doc_id     = $order->get_meta( '_' . $this->options['slug'] . '_doc_id' );
-				$invoice_id = $order->get_meta( $this->meta_key_order );
-				$order_data = $this->generate_order_data( $order );
-				$result     = $this->connapi_erp->create_order( $order_data, $doc_id, $invoice_id, $force );
+				$doc_id     = $order->get_meta( '_' . $option_prefix . '_doc_id' );
+				$invoice_id = $order->get_meta( $meta_key_order );
+				$order_data = self::generate_order_data( $settings, $order, $option_prefix );
+				$result     = $api_erp->create_order( $order_data, $doc_id, $invoice_id, $force );
 
 				$doc_id     = 'error' === $result['status'] ? '' : $result['document_id'];
 				$invoice_id = isset( $result['invoice_id'] ) ? $result['invoice_id'] : $invoice_id;
-				$order->update_meta_data( $this->meta_key_order, $invoice_id );
-				$order->update_meta_data( '_' . $this->options['slug'] . '_doc_id', $doc_id );
-				$order->update_meta_data( '_' . $this->options['slug'] . '_doc_type', $doctype );
+				$order->update_meta_data( $meta_key_order, $invoice_id );
+				$order->update_meta_data( '_' . $option_prefix . '_doc_id', $doc_id );
+				$order->update_meta_data( '_' . $option_prefix . '_doc_type', $doctype );
 				$order->save();
 
 				$order_msg = __( 'Order synced correctly with Holded, ID: ', 'connect-woocommerce-holded' ) . $invoice_id;
@@ -80,7 +84,7 @@ class ORDER {
 				$order->add_order_note( $order_msg );
 				return $result;
 
-			} catch ( Exception $e ) {
+			} catch ( \Exception $e ) {
 				return array(
 					'status'  => 'error',
 					'message' => $e,
@@ -93,7 +97,17 @@ class ORDER {
 			);
 		}
 	}
-	private function generate_order_data( $order ) {
+
+	/**
+	 * Generate data for Order ERP
+	 *
+	 * @param object $setttings Settings data.
+	 * @param object $order Order data from WooCommerce.
+	 * @param string $option_prefix Option prefix.
+	 *
+	 * @return array
+	 */
+	private static function generate_order_data( $setttings, $order, $option_prefix ) {
 		$order_id = $order->get_id();
 		$doclang  = $order->get_billing_country() !== 'ES' ? 'en' : 'es';
 		$url_test = wc_get_endpoint_url( 'shop' );
@@ -145,13 +159,13 @@ class ORDER {
 		);
 
 		// DesignID.
-		$design_id = isset( $this->settings['design_id'] ) ? $this->settings['design_id'] : '';
+		$design_id = isset( $setttings['design_id'] ) ? $setttings['design_id'] : '';
 		if ( $design_id ) {
 			$order_data['designId'] = $design_id;
 		}
 
 		// Series ID.
-		$series_number = isset( $this->settings['series'] ) ? $this->settings['series'] : '';
+		$series_number = isset( $setttings['series'] ) ? $setttings['series'] : '';
 		if ( ! empty( $series_number ) && 'default' !== $series_number ) {
 			$order_data['numSerieId'] = $series_number;
 		}
@@ -175,7 +189,7 @@ class ORDER {
 				$order_data['notes'] .= __( 'Paid by', 'connect-woocommerce' ) . ' ' . (string) $wc_payment_method;
 				break;
 		}
-		$order_data['items'] = $this->review_items( $order );
+		$order_data['items'] = self::review_items( $order, $option_prefix );
 
 		return $order_data;
 	}
@@ -186,12 +200,12 @@ class ORDER {
 	 * @param object $ordered_items Items ordered.
 	 * @return object
 	 */
-	private function review_items( $order ) {
+	private static function review_items( $order, $option_prefix ) {
 		$subproducts  = 0;
 		$fields_items = array();
 		$index        = 0;
 		$index_bund   = 0;
-		$tax = new WC_Tax();
+		$tax = new \WC_Tax();
 
 		// Order Items.
 		foreach ( $order->get_items() as $item_id => $item ) {
@@ -217,7 +231,7 @@ class ORDER {
 				);
 
 				// Use Source product ID instead of SKU.
-				$prod_key         = '_' . $this->options['slug'] . '_productid';
+				$prod_key         = '_' . $option_prefix . '_productid';
 				$source_productid = get_post_meta( $item['product_id'], $prod_key, true );
 				if ( $source_productid ) {
 					$fields_items[ $index ]['productId'] = $source_productid;

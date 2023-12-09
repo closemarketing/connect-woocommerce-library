@@ -21,39 +21,43 @@ class HELPER {
 	/**
 	 * Emails products with errors
 	 *
+	 * @param array  $product_errors Array of errors.
+	 * @param string $option_name Name of option.
+	 *
 	 * @return void
 	 */
-	public static function send_product_errors() {
+	public static function send_product_errors( $product_errors, $option_name = '' ) {
 		// Send to WooCommerce Logger.
-		$logger = wc_get_logger();
+		$logger      = wc_get_logger();
+		$option_name = sanitize_title( $option_name );
 
 		$error_content = '';
-		if ( empty( $this->error_product_import ) ) {
+		if ( empty( $product_errors ) ) {
 			return;
 		}
-		foreach ( $this->error_product_import as $error ) {
+		foreach ( $product_errors as $error ) {
 			$error_prod  = ' ' . __( 'Error:', 'connect-woocommerce' ) . $error['error'];
 			$error_prod .= ' ' . __( 'SKU:', 'connect-woocommerce' ) . $error['sku'];
 			$error_prod .= ' ' . __( 'Name:', 'connect-woocommerce' ) . $error['name'];
 
-			if ( 'Holded' === $this->options['name'] ) {
+			if ( 'holded' === $option_name ) {
 				$error_prod .= ' <a href="https://app.holded.com/products/' . $error['prod_id'] . '">';
 				$error_prod .= __( 'Edit:', 'connect-woocommerce' ) . '</a>';
 			} else {
 				$error_prod .= ' ' . __( 'Prod ID:', 'connect-woocommerce' ) . $error['prod_id'];
 			}
-			// Sends to WooCommerce Log
+			// Sends to WooCommerce Log.
 			$logger->warning(
 				$error_prod,
 				array(
-					'source' => 'connect-woocommerce'
-					)
+					'source' => 'connect-woocommerce',
+				),
 			);
 			$error_content .= $error_prod . '<br/>';
 		}
 		// Sends an email to admin.
 		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
-		wp_mail( get_option( 'admin_email' ), __( 'Error in Products Synced in', 'connect-woocommerce' ) . ' ' . get_option( 'blogname' ), $error_content, $headers );	
+		wp_mail( get_option( 'admin_email' ), __( 'Error in Products Synced in', 'connect-woocommerce' ) . ' ' . get_option( 'blogname' ), $error_content, $headers );
 	}
 	/**
 	 * Sends errors to admin

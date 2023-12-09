@@ -11,6 +11,7 @@
 defined( 'ABSPATH' ) || exit;
 
 use CLOSE\WooCommerce\Library\Helpers\PROD;
+use CLOSE\WooCommerce\Library\Helpers\HELPER;
 
 if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 	/**
@@ -30,7 +31,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 		 *
 		 * @var string
 		 */
-		private $ajax_msg;
+		private $message;
 
 		/**
 		 * Saves the products with errors to send after
@@ -172,9 +173,12 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 		 * @return void
 		 */
 		public function sync_products() {
-			$not_sapi_cli = substr( php_sapi_name(), 0, 3 ) != 'cli' ? true : false;
-			$doing_ajax   = defined( 'DOING_AJAX' ) && DOING_AJAX;
-			$sync_loop    = isset( $_POST['syncLoop'] ) ? (int) $_POST['syncLoop'] : 0;
+			$sync_loop = isset( $_POST['loop'] ) ? (int) $_POST['loop'] : 0;
+			$message   = '';
+
+			if ( ! check_ajax_referer( 'manual_import_nonce', 'nonce' ) ) {
+				wp_send_json_error( array( 'message' => 'Error' ) );
+			}
 
 			$api_products = get_transient( $this->options['slug'] . '_query_api_products' );
 			if ( ! $api_products || 0 === $sync_loop ) {
@@ -183,99 +187,64 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 			}
 
 			if ( empty( $api_products ) ) {
-				if ( $doing_ajax ) {
-					wp_send_json_error( array( 'msg' => 'Error' ) );
-				} else {
-					die();
-				}
-			} else {
-				$products_count           = count( $api_products );
-				$item                     = $api_products[ $sync_loop ];
-				$this->msg_error_products = array();
-
-				if ( $products_count ) {
-					if ( ( $doing_ajax ) || $not_sapi_cli ) {
-						$limit = 10;
-						$count = $sync_loop + 1;
-					}
-					if ( $sync_loop > $products_count ) {
-						if ( $doing_ajax ) {
-							wp_send_json_error(
-								array(
-									'msg' => __( 'No products to import', 'connect-woocommerce' ),
-								)
-							);
-						} else {
-							die( esc_html( __( 'No products to import', 'connect-woocommerce' ) ) );
-						}
-					} else {
-						$result_sync = PROD::sync_product_item( $this->settings, $item, $this->connapi_erp, $this->options['slug'] );
-						$post_id     = $result_sync['post_id'] ?? 0;
-						if ( 'error' === $result_sync['status'] ) {
-							$this->error_product_import[] = array(
-								'prod_id' => $item['id'],
-								'name'    => $item['name'],
-								'sku'     => $item['sku'],
-								'error'   => $result_sync['message'],
-							);
-						}
-					}
-
-					if ( $doing_ajax || $not_sapi_cli ) {
-						$products_synced = $sync_loop + 1;
-
-						if ( $products_synced <= $products_count ) {
-							$this->ajax_msg = '[' . date_i18n( 'H:i:s' ) . '] ' . $products_synced . '/' . $products_count . ' ' . __( 'products. ', 'connect-woocommerce' ) . $this->ajax_msg;
-							if ( $post_id ) {
-								// Get taxonomies from post_id.
-								$term_list = wp_get_post_terms( $post_id, 'product_cat', array( 'fields' => 'names' ) );
-								if ( ! empty( $term_list ) && is_array( $term_list ) ) {
-									$this->ajax_msg .= ' <span class="taxonomies">' . __( 'Categories: ', 'connect-woocommerce' );
-									$this->ajax_msg .= implode( ', ', $term_list ) . '</span>';
-								}
-
-								// Get link to product.
-								$this->ajax_msg .= ' <a href="' . get_edit_post_link( $post_id ) . '" target="_blank">' . __( 'View', 'connect-woocommerce' ) . '</a>';
-							}
-							if ( $products_synced == $products_count ) {
-								$this->ajax_msg .= '<p class="finish">' . __( 'All caught up!', 'connect-woocommerce' ) . '</p>';
-							}
-
-							$args = array(
-								'msg'           => $this->ajax_msg,
-								'product_count' => $products_count,
-							);
-							if ( $doing_ajax ) {
-								if ( $products_synced < $products_count ) {
-									$args['loop'] = $sync_loop + 1;
-								}
-								wp_send_json_success( $args );
-							} elseif ( $not_sapi_cli && $products_synced < $products_count ) {
-								$url  = home_url() . '/?sync=true';
-								$url .= '&syncLoop=' . ( $sync_loop + 1 );
-								?>
-								<script>
-									window.location.href = '<?php echo esc_url( $url ); ?>';
-								</script>
-								<?php
-								echo esc_html( $args['msg'] );
-								die( 0 );
-							}
-						}
-					}
-				} else {
-					if ( $doing_ajax ) {
-						wp_send_json_error( array( 'msg' => __( 'No products to import', 'connect-woocommerce' ) ) );
-					} else {
-						die( esc_html( __( 'No products to import', 'connect-woocommerce' ) ) );
-					}
-				}
+				wp_send_json_error( array( 'message' => 'No products' ) );
 			}
-			if ( $doing_ajax ) {
-				wp_die();
+
+			$products_count           = count( $api_products );
+			$item                     = $api_products[ $sync_loop ];
+			$this->msg_error_products = array();
+
+			if ( $sync_loop > $products_count ) {
+					wp_send_json_error(
+						array(
+							'msg' => __( 'No products to import', 'connect-woocommerce' ),
+						)
+					);
 			}
-			// Email errors.
-			$this->send_product_errors();
+			$result_sync = PROD::sync_product_item( $this->settings, $item, $this->connapi_erp, $this->options['slug'] );
+			$post_id     = $result_sync['post_id'] ?? 0;
+			if ( 'error' === $result_sync['status'] ) {
+				$this->error_product_import[] = array(
+					'prod_id' => $item['id'],
+					'name'    => $item['name'],
+					'sku'     => $item['sku'],
+					'error'   => $result_sync['message'],
+				);
+			}
+			$message = $result_sync['message'];
+
+			$products_synced = $sync_loop + 1;
+			$finish          = $products_synced === $products_count ? true : false;
+			$message         = '[' . date_i18n( 'H:i:s' ) . '] ' . $products_synced . '/' . $products_count . ' ' . __( 'products. ', 'connect-woocommerce' ) . $message;
+
+			if ( $post_id ) {
+				// Get taxonomies from post_id.
+				$term_list = wp_get_post_terms( $post_id, 'product_cat', array( 'fields' => 'names' ) );
+				if ( ! empty( $term_list ) && is_array( $term_list ) ) {
+					$message .= ' <span class="taxonomies">' . __( 'Categories: ', 'connect-woocommerce' );
+					$message .= implode( ', ', $term_list ) . '</span>';
+				}
+
+				// Get link to product.
+				$message .= ' <a href="' . get_edit_post_link( $post_id ) . '" target="_blank">' . __( 'View', 'connect-woocommerce' ) . '</a>';
+			}
+			if ( $products_synced === $products_count ) {
+				$message .= '<p class="finish">' . __( 'All caught up!', 'connect-woocommerce' ) . '</p>';
+			}
+
+			$args = array(
+				'message'       => $message,
+				'finish'        => $finish,
+				'product_count' => $products_count,
+			);
+			if ( $products_synced < $products_count ) {
+				$args['loop'] = $sync_loop + 1;
+			}
+			if ( $finish ) {
+				// Email errors.
+				HELPER::send_product_errors( $this->error_product_import, $this->options['slug'] );
+			}
+			wp_send_json_success( $args );
 		}
 
 		/**

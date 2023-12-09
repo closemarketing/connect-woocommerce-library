@@ -26,7 +26,7 @@ class TAX {
 	 * @return array
 	 */
 	public static function make_attributes( $attributes, $for_variation = true ) {
-		$position = 0;
+		$position          = 0;
 		$attributes_return = array();
 		foreach ( $attributes as $attr_name => $attr_values ) {
 			$attribute = new \WC_Product_Attribute();
@@ -59,6 +59,7 @@ class TAX {
 		}
 		return $attributes_return;
 	}
+
 	/**
 	 * Create a new global attribute.
 	 *
