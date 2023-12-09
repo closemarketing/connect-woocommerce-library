@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## 1.5.0
 
 * Refactored library with static functions and javascript importer.
+* Added Merge vars for product custom fields importer.
 
 ## 1.4.1
 
