@@ -11,6 +11,7 @@
 defined( 'ABSPATH' ) || exit;
 
 use CLOSE\WooCommerce\Library\Helpers\PROD;
+use CLOSE\WooCommerce\Library\Helpers\HELPER;
 
 /**
  * Library for WooCommerce Settings
@@ -1972,7 +1973,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 * @return void
 		 */
 		function process_activation_premium() {
-			connwoo_create_table( $this->options['table_sync'] );
+			HELPER::create_sync_table( $this->options['table_sync'] );
 	
 			// Migrates options.
 			$old_settings = get_option( 'imhset' );

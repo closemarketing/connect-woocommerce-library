@@ -110,7 +110,7 @@ class HELPER {
 	 * @param string $table_name Name of table.
 	 * @return void
 	 */
-	public static function connwoo_create_table( $table_name ) {
+	public static function create_sync_table( $table_name ) {
 		global $wpdb;
 		$charset_collate = $wpdb->get_charset_collate();
 
