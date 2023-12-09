@@ -43,6 +43,13 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		private $settings_public;
 
 		/**
+		 * Settings
+		 *
+		 * @var array
+		 */
+		private $settings_prod_mergevars;
+
+		/**
 		 * Options name for getting settings
 		 *
 		 * @var array
@@ -64,6 +71,13 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		private $settings_slug;
 
 		/**
+		 * Settings slug
+		 *
+		 * @var string
+		 */
+		private $is_mergevars;
+
+		/**
 		 * Construct of class
 		 *
 		 * @param array $options Options.
@@ -74,6 +88,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			$apiname             = 'Connect_WooCommerce_' . $this->options['name'];
 			$this->connapi_erp   = new $apiname( $options );
 			$this->settings_slug = $this->options['slug'] . '_settings';
+			$this->is_mergevars  = method_exists( $this->connapi_erp, 'get_product_attributes' ) ? true : false;
 
 			add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
 			add_action( 'admin_init', array( $this, 'page_init' ) );
@@ -106,9 +121,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 * @return void
 		 */
 		public function create_admin_page() {
-			$this->settings        = get_option( $this->options['slug'] );
-			$this->settings_public = get_option( $this->options['slug'] . '_public' );
-			$special_tabs          = ! empty( $this->options['settings_special_tabs'] ) ? $this->options['settings_special_tabs'] : array();
+			$this->settings                = get_option( $this->options['slug'] );
+			$this->settings_public         = get_option( $this->options['slug'] . '_public' );
+			$this->settings_prod_mergevars = get_option( $this->options['slug'] . '_prod_mergevars' );
+			$special_tabs                  = ! empty( $this->options['settings_special_tabs'] ) ? $this->options['settings_special_tabs'] : array();
 			?>
 			<div class="header-wrap">
 				<div class="wrapper">
@@ -130,11 +146,12 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			<div class="wrap">
 				<?php settings_errors(); ?>
 
-				<?php $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'sync'; ?>
-
+				<?php $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'sync_products'; ?>
 				<h2 class="nav-tab-wrapper">
 					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=sync_products" class="nav-tab <?php echo 'sync_products' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sync products', 'connect-woocommerce' ); ?></a>
+					<?php if ( $this->is_mergevars ) { ?>
 					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=prod_mergevars" class="nav-tab <?php echo 'prod_mergevars' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Merge Vars', 'connect-woocommerce' ); ?></a>
+					<?php } ?>
 					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=sync_orders" class="nav-tab <?php echo 'sync_orders' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sync Orders', 'connect-woocommerce' ); ?></a>
 					<?php
 					if ( in_array( 'subscriptions', $special_tabs, true ) ) {
@@ -195,8 +212,20 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					<?php
 				}
 
-				if ( 'prod_mergevars' === $active_tab ) {
-					$this->page_get_prod_mergevars();
+				if ( 'prod_mergevars' === $active_tab && $this->is_mergevars ) {
+					?>
+					<form method="post" action="options.php">
+						<?php
+						settings_fields( $this->options['slug'] . '_settings_prod_mergevars' );
+						do_settings_sections( $this->options['slug'] . '_prod_mergevars' );
+						submit_button(
+							__( 'Save merge', 'connect-woocommerce' ),
+							'primary',
+							'submit_prod_mergevars'
+						);
+						?>
+					</form>
+					<?php
 				}
 
 				if ( 'subscriptions' === $active_tab ) {
@@ -470,7 +499,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					'connect_woocommerce_setting_section'
 				);
 			}
-	
+
 			/**
 			 * # Automate
 			 * ---------------------------------------------------------------------------------------------------- */
@@ -482,6 +511,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				$this->options['slug'] . '_automate'
 			);
 			$name_sync = __( 'When do you want to sync?', 'connect-woocommerce' );
+
 			add_settings_field(
 				'wcpimh_sync',
 				$name_sync,
@@ -506,6 +536,31 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				$this->options['slug'] . '_automate',
 				'connect_woocommerce_setting_automate'
 			);
+
+			/**
+			 * ## Merge Vars
+			 * --------------------------- */
+	
+			register_setting(
+				$this->options['slug'] . '_settings_prod_mergevars',
+				$this->options['slug'] . '_prod_mergevars',
+				array( $this, 'sanitize_fields_prod_mergevars' )
+			);
+	
+			add_settings_section(
+				'imhset_prod_mergevars_setting_section',
+				__( 'Merge variables from product attributes to custom fields', 'connect-woocommerce' ),
+				array( $this, 'section_info_prod_mergevars' ),
+				$this->options['slug'] . '_prod_mergevars'
+			);
+	
+			add_settings_field(
+				'wcpimh_prod_mergevars',
+				__( 'Merge fields with product', 'connect-woocommerce' ),
+				array( $this, 'prod_mergevars_callback' ),
+				$this->options['slug'] . '_prod_mergevars',
+				'imhset_prod_mergevars_setting_section'
+			);
 	
 			/**
 			 * ## Public
@@ -514,10 +569,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			register_setting(
 				$this->options['slug'] . '_settings_public',
 				$this->options['slug'] . '_public',
-				array(
-					$this,
-					'sanitize_fields_public',
-				)
+				array( $this, 'sanitize_fields_public' )
 			);
 	
 			add_settings_section(
@@ -639,65 +691,6 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					<legend><?php esc_html_e( 'Log', 'connect-woocommerce' ); ?></legend>
 					<div id="loglist"></div>
 				</fieldset>
-			</div>
-			<?php
-		}
-	
-		/**
-		 * Page get Merge Product variables
-		 *
-		 * @return void
-		 */
-		public function page_get_prod_mergevars() {
-			$custom_fields = PROD::get_all_custom_fields();
-			// Get Options .
-			$attribute_fields = $this->connapi_erp->get_attributes();
-			foreach ( $attribute_fields as $property_field ) {
-				$section = esc_html( $property_field['section'] );
-				$property_values[ $section ] = get_option( 'iip_var_' . $section );
-			}
-			?>
-			<div id="<?php echo esc_attr( $this->options['slug'] ); ?>-products-mergevars">
-				<div class="wrap">
-					<h1><?php esc_html_e( 'Merge Variables with custom values', 'connect-crm-realstate' ); ?></h1>
-					<form method="post" action="options.php">
-						<?php
-						settings_fields( 'iip_plugin_merge_group' );
-						do_settings_sections( 'iip_plugin_merge_group' );
-
-						$col = 1;
-						foreach ( $attribute_fields as $property_field ) {
-							if ( 1 === $col ) {
-								echo '<div class="iip-row">';
-							}
-							echo '<div class="iip-column col-6">';
-							echo '<table class="form-table iip-table">';
-							echo '<tr valign="top">';
-							echo '<th scope="row"><h3>' . esc_html( $property_field['label'] ) . '</h3></th>';
-							echo '</tr>';
-							foreach ( $property_field['fields'] as $key => $value ) {
-								$section = esc_html( $property_field['section'] );
-								echo '<th scope="row">' . $value . '</th>';
-								echo '<td><select name="iip_var_' . $section;
-								echo '[' . $key . ']">';
-								$this->fields_to_option( $custom_fields, $property_values[ $section ][ $key ] );
-								echo '</select></td>';
-								echo '</tr>';
-							}
-							echo '</table>';
-							echo '</div>';
-							$col++;
-							if ( $col > 2 ) {
-								echo '</div>';
-								$col = 1;
-							}
-						}
-						echo '</div>';
-	
-						submit_button();
-						?>
-					</form>
-				</div>
 			</div>
 			<?php
 		}
@@ -1168,7 +1161,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			?>
 			<select name="<?php echo esc_html( $this->options['slug'] ); ?>[ecstatus]" id="wcpimh_ecstatus">
 				<option value="all" <?php selected( $ecstatus, 'all' ); ?>><?php esc_html_e( 'All status orders', 'connect-woocommerce' ); ?></option>
-	
+
 				<option value="completed" <?php selected( $ecstatus, 'completed' ); ?>><?php esc_html_e( 'Only Completed', 'connect-woocommerce' ); ?></option>
 			</select>
 			<?php
@@ -1231,9 +1224,119 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			?>
 			<select name="<?php echo esc_html( $this->options['slug'] ); ?>[sync_email]" id="wcpimh_sync_email">
 				<option value="yes" <?php selected( $sync_email, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
-	
 				<option value="no" <?php selected( $sync_email, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 			</select>
+			<?php
+		}
+
+		/**
+		 * ## Merge vars
+		 * --------------------------- */
+
+		/**
+		 * Sanitize fiels before saves in DB
+		 *
+		 * @param array $input Input fields.
+		 * @return array
+		 */
+		public function sanitize_fields_prod_mergevars( $input ) {
+			$sanitary_values = array();
+
+			if ( ! isset( $input['prod_mergevars'] ) ) {
+				return $sanitary_values;
+			}
+
+			foreach ( $input['prod_mergevars'] as $mergevar ) {
+				if ( ! empty( $mergevar['attrprod'] ) && ! empty( $mergevar['custom_field'] ) ) {
+					$sanitary_values['prod_mergevars'][ $mergevar['attrprod'] ] = sanitize_text_field( $mergevar['custom_field'] );
+				}
+			}
+	
+			return $sanitary_values;
+		}
+
+		/**
+		 * Info for holded automate section.
+		 *
+		 * @return void
+		 */
+		public function section_info_prod_mergevars() {
+			esc_html_e( 'Please select the following settings in order customize your eCommerce. ', 'connect-woocommerce' );
+		}
+		/**
+		 * Page get Merge Product variables
+		 *
+		 * @return void
+		 */
+		public function prod_mergevars_callback() {
+			$custom_fields    = PROD::get_all_custom_fields();
+			$attribute_fields = $this->connapi_erp->get_product_attributes();
+			$settings_mergevars = ! empty( $this->settings_prod_mergevars['prod_mergevars'] ) ? $this->settings_prod_mergevars['prod_mergevars'] : array();
+
+			$saved_attr = array();
+			foreach ( $settings_mergevars as $key => $value ) {
+				$saved_attr[] = array(
+					'attrprod' => $key,
+					'custom_field' => $value,
+				);
+			}
+			?>
+			<div id="<?php echo esc_attr( $this->options['slug'] ); ?>-products-mergevars" class="repeater-section">
+				<div class="wrap">
+					<div class="product-mergevars">
+						<div class="save-item"><strong><?php esc_html_e( 'Field from ', 'connect-woocommerce' ); echo ' ' . esc_html( $this->options['name'] ); ?></strong></div>
+						<div></div>
+						<div class="save-item"><strong><?php esc_html_e( 'Custom Field ', 'connect-woocommerce' );?></strong></div>
+					</div>
+					<?php
+					$size = isset( $settings_mergevars ) ? count( $settings_mergevars ) -1 : 0;
+					for ( $idx = 0, $size; $idx <= $size; ++$idx ) {
+						?>
+						<div class="product-mergevars repeating" style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
+							<div class="save-item">
+								<select name='<?php echo esc_html( $this->options['slug'] ); ?>_prod_mergevars[prod_mergevars][<?php echo esc_html( $idx ); ?>][attrprod]' class="attrprod-publish" data-row="<?php echo esc_html( $idx ); ?>">
+									<option value=''></option>
+									<?php
+									$attrprod = isset( $saved_attr[ $idx ]['attrprod'] ) ? $saved_attr[ $idx ]['attrprod'] : '';
+
+									foreach ( $attribute_fields as $key ) {
+										echo '<option value="' . esc_html( $key ) . '" ';
+										selected( $key, $attrprod );
+										echo '>' . esc_html( $key ) . '</option>';
+									}
+									?>
+								</select>
+							</div>
+							<span class="dashicons dashicons-arrow-right-alt2"></span>
+							<div class="save-item">
+								<?php 
+								$saved_custom_field = isset( $saved_attr[ $idx ]['custom_field'] ) ? $saved_attr[ $idx ]['custom_field'] : '';
+								if ( ! in_array( $saved_custom_field, $custom_fields, true ) ) {
+									$custom_fields[] = $saved_custom_field;
+								}
+								?>
+								<select name='<?php echo esc_html( $this->options['slug'] ); ?>_prod_mergevars[prod_mergevars][<?php echo esc_html( $idx ); ?>][custom_field]' class="source-cf" onchange="chargeother(this)">
+									<option value=''></option>
+									<?php
+									foreach ( $custom_fields as $key ) {
+										echo '<option value="' . esc_html( $key ) . '" ';
+										selected( $key, $saved_custom_field );
+										echo '>' . esc_html( $key ) . '</option>';
+									}
+									echo '<option value="custom">' . esc_html__( 'Customized', 'connect-woocommerce' ) . '</option>';
+									?>
+								</select>
+							</div>
+							<div class="save-item">
+								<a href="#" class="button alt remove"><span class="dashicons dashicons-remove"></span><?php esc_html_e( 'Remove', 'connect-woocommerce' ); ?></a>
+							</div>
+						</div>
+						<?php
+					}
+					?>
+					<a href="#" class="button repeat"><span class="dashicons dashicons-insert"></span><?php esc_html_e( 'Add Another', 'connect-woocommerce' ); ?></a>
+				</div>
+			</div>
 			<?php
 		}
 	

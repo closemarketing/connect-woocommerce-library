@@ -107,6 +107,14 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 			);
 
 			wp_enqueue_script(
+				'connect-woocommerce-repeat',
+				CONNECT_WOOCOMMERCE_PLUGIN_URL . 'lib/assets/repeatable-fields.js',
+				array(),
+				CONNECT_WOOCOMMERCE_VERSION,
+				true
+			);
+
+			wp_enqueue_script(
 				'connect-woocommerce-import',
 				CONNECT_WOOCOMMERCE_PLUGIN_URL . 'lib/assets/sync-import.js',
 				array(),

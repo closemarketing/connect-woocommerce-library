@@ -76,3 +76,17 @@
   padding: 10px 0 0 30px;
   margin: 0;
 }
+
+.repeater-section .product-mergevars {
+	display: grid;
+	grid-template-columns: 3fr 1fr 3fr 1fr;
+}
+
+.repeater-section .dashicons {
+	padding-top: 4px;
+	padding-right: 5px;
+}
+
+.repeater-section .dashicons.dashicons-arrow-right-alt2 {
+	padding-top: 7px;
+}
