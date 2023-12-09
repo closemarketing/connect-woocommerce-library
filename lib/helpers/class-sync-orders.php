@@ -31,7 +31,6 @@ class ORDER {
 	 * @return array
 	 */
 	public static function create_invoice( $settings, $order_id, $meta_key_order, $option_prefix, $api_erp, $force = false ) {
-		$doctype        = isset( $settings['doctype'] ) ? $settings['doctype'] : 'nosync';
 		$order          = wc_get_order( $order_id );
 		$order_total    = (float) $order->get_total();
 		$ec_invoice_id  = $order->get_meta( $meta_key_order );
@@ -70,7 +69,7 @@ class ORDER {
 				$doc_id     = $order->get_meta( '_' . $option_prefix . '_doc_id' );
 				$invoice_id = $order->get_meta( $meta_key_order );
 				$order_data = self::generate_order_data( $settings, $order, $option_prefix );
-				$result     = $api_erp->create_order( $order_data, $doc_id, $invoice_id, $force );
+				$result     = $api_erp->create_order( $order_data, $doc_id, $invoice_id, $settings, $force );
 
 				$doc_id     = 'error' === $result['status'] ? '' : $result['document_id'];
 				$invoice_id = isset( $result['invoice_id'] ) ? $result['invoice_id'] : $invoice_id;
