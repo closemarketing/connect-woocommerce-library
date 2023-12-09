@@ -84,16 +84,9 @@ $connwoo_options_erp = array(
 	),
 );
 
-require_once PREFIX_PLUGIN_PATH . 'includes/connect-woocommerce/loader.php';
 require_once PREFIX_PLUGIN_PATH . 'includes/class-api-erp.php';
 
-if ( is_admin() ) {
-	new Connect_WooCommerce_Admin( $connwoo_options_erp );
-}
-
-new Connect_WooCommerce_Orders( $connwoo_options_erp );
-new Connect_WooCommerce_Import( $connwoo_options_erp );
-$connwoo_pro = new Connect_WooCommerce_Import_PRO( $connwoo_options_erp );
-new Connect_WooCommerce_Public( $connwoo_options_erp );
-$coonnwoo_subs = new Connect_WooCommerce_Subs( $connwoo_options_erp );
+// Connect WooCommerce Library.
+require_once PREFIX_PLUGIN_PATH . 'vendor/closemarketing/connect-woocommerce-library/loader.php';
+new Connect_WooCommerce( $connwoo_options_erp );
 ```

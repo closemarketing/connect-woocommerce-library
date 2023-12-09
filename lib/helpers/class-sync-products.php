@@ -21,24 +21,154 @@ use CLOSE\WooCommerce\Library\Helpers\TAX;
  */
 class PROD {
 	/**
+	 * Syncronizes the product from item api to WooCommerce
+	 *
+	 * @param array  $settings Settings of the plugin.
+	 * @param array  $item Item from API.
+	 * @param object $api_erp API Object.
+	 * @param string $option_prefix Slug of the plugin.
+	 * @return array
+	 */
+	public static function sync_product_item( $settings, $item, $api_erp, $option_prefix ) {
+		$post_id     = 0;
+		$status      = 'ok';
+		$message     = '';
+		$is_filtered = empty( $item['tags'] ) ? false : self::filter_product( $settings, $item['tags'] );
+		$item_kind   = ! empty( $item['kind'] ) ? $item['kind'] : 'simple';
+
+		if ( in_array( 'woo-product-bundle/wpc-product-bundles.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
+			$plugin_grouped_prod_active = true;
+		} else {
+			$plugin_grouped_prod_active = false;
+		}
+
+		// Translations.
+		$msg_product_created = __( 'Product created: ', 'connect-woocommerce' );
+		$msg_product_synced  = __( 'Product synced: ', 'connect-woocommerce' );
+
+		if ( ! $is_filtered && $item['sku'] && 'simple' === $item_kind ) {
+			$result_post = self::sync_product_simple( $settings, $item, false, $option_prefix, $api_erp );
+			$post_id     = $result_post['post_id'] ?? 0;
+			$message    .= $result_post['message'] ?? '';
+		} elseif ( ! $is_filtered && 'variants' === $item_kind ) {
+			// Variable product.
+			// Check if any variants exists.
+			$post_parent = 0;
+			// Activar para buscar un archivo.
+			$any_variant_sku = false;
+
+			foreach ( $item['variants'] as $variant ) {
+				if ( ! $variant['sku'] ) {
+					break;
+				} else {
+					$any_variant_sku = true;
+				}
+				$post_parent = self::find_parent_product( $variant['sku'] );
+				if ( $post_parent ) {
+					// Do not iterate if it's find it.
+					break;
+				}
+			}
+			if ( false === $any_variant_sku ) {
+				$message .= __( 'Product not imported becouse any variant has got SKU: ', 'connect-woocommerce' ) . $item['name'] . '(' . $item_kind . ') <br/>';
+			} else {
+				// Update meta for product.
+				$post_id = self::sync_product( $settings, $item, $post_parent, 'variable', null, $option_prefix, $api_erp );
+				if ( 0 === $post_parent || false === $post_parent ) {
+					$message .= $msg_product_created;
+				} else {
+					$message .= $msg_product_synced;
+				}
+				$message .= $item['name'] . '. SKU: ' . $item['sku'] . '(' . $item_kind . ') <br/>';
+			}
+		} elseif ( ! $is_filtered && 'pack' === $item_kind && $plugin_grouped_prod_active ) {
+			$post_id = self::find_product( $item['sku'] );
+
+			if ( ! $post_id ) {
+				$post_id = self::create_product_post( $settings, $item );
+				wp_set_object_terms( $post_id, 'woosb', 'product_type' );
+			}
+			if ( $post_id && $item['sku'] && 'pack' === $item_kind ) {
+				// Create subproducts before.
+				$pack_items = '';
+				if ( isset( $item['packItems'] ) && ! empty( $item['packItems'] ) ) {
+					foreach ( $item['packItems'] as $pack_item ) {
+						$item_simple     = $api_erp->get_products( $pack_item['pid'] );
+						$product_pack_id = self::sync_product_simple( $settings, $item_simple, true, $option_prefix, $api_erp );
+						$pack_items     .= $product_pack_id . '/' . $pack_item['u'] . ',';
+						$message        .= ' x ' . $pack_item['u'];
+					}
+					$message   .= '<br/>';
+					$pack_items = substr( $pack_items, 0, -1 );
+				}
+
+				// Update meta for product.
+				$post_id = self::sync_product( $settings, $item, $post_id, 'pack', $pack_items, $option_prefix, $api_erp );
+			} else {
+				return array(
+					'status'  => 'error',
+					'post_id' => $post_id,
+					'message' => __( 'There was an error while inserting new product!', 'connect-woocommerce' ) . ' ' . $item['name'],
+				);
+			}
+			if ( ! $post_id ) {
+				$message .= $msg_product_created;
+			} else {
+				$message .= $msg_product_synced;
+			}
+			$message .= $item['name'] . '. SKU: ' . $item['sku'] . ' (' . $item_kind . ')';
+		} elseif ( ! $is_filtered && 'pack' === $item_kind && ! $plugin_grouped_prod_active ) {
+			$message .= '<span class="warning">' . __( 'Product needs Plugin to import: ', 'connect-woocommerce' );
+			$message .= '<a href="https://wordpress.org/plugins/woo-product-bundle/" target="_blank">WPC Product Bundles for WooCommerce</a> ';
+			$message .= '(' . $item_kind . ') </span></br>';
+		} elseif ( $is_filtered ) {
+			// Product not synced without SKU.
+			$message .= '<span class="warning">' . __( 'Product filtered to not import: ', 'connect-woocommerce' ) . $item['name'] . '(' . $item_kind . ') </span></br>';
+		} elseif ( '' === $item['sku'] && 'simple' === $item_kind ) {
+			// Product not synced without SKU.
+			return array(
+				'status'  => 'error',
+				'post_id' => $post_id,
+				'message' => __( 'SKU not finded in Simple product. Product not imported: ', 'connect-woocommerce' ) . $item['name'] . '(' . $item_kind . ')</br>',
+			);
+		} elseif ( 'simple' !== $item_kind ) {
+			// Product not synced type not supported.
+			return array(
+				'status'  => 'error',
+				'post_id' => $post_id,
+				'message' => __( 'Product type not supported. Product not imported: ', 'connect-woocommerce' ) . $item['name'] . '(' . $item_kind . ')',
+			);
+		}
+
+		return array(
+			'status'  => $status,
+			'post_id' => $post_id,
+			'message' => $message,
+		);
+	}
+
+	/**
 	 * Update product meta with the object included in WooCommerce
 	 *
 	 * Coded inspired from: https://github.com/woocommerce/wc-smooth-generator/blob/master/includes/Generator/Product.php
 	 *
-	 * @param object $item Item Object from holded.
+	 * @param object $settings Product settings.
+	 * @param object $item Item Object from ERP.
 	 * @param string $product_id Product ID. If is null, is new product.
 	 * @param string $type Type of the product.
 	 * @param array  $pack_items Array of packs: post_id and qty.
+	 * @param string $option_prefix Slug of the plugin.
+	 * @param object $api_erp API Object.
+	 *
 	 * @return int $product_id Product ID.
 	 */
-	public function sync_product( $item, $product_id = 0, $type = 'simple', $pack_items = null ) {
-		global $connwoo_pro;
-		$import_stock     = ! empty( $this->settings['stock'] ) ? $this->settings['stock'] : 'no';
-		$is_virtual       = ! empty( $this->settings['virtual'] ) && 'yes' === $this->settings['virtual'] ? true : false;
-		$allow_backorders = ! empty( $this->settings['backorders'] ) ? $this->settings['backorders'] : 'yes';
-		$rate_id          = ! empty( $this->settings['rates'] ) ? $this->settings['rates'] : 'default';
-		$post_status      = ! empty( $this->settings['prodst'] ) ? $this->settings['prodst'] : 'draft';
-		$attribute_cat_id = ! empty( $this->settings['catattr'] ) ? $this->settings['catattr'] : '';
+	public static function sync_product( $settings, $item, $product_id = 0, $type = 'simple', $pack_items = null, $option_prefix, $api_erp ) {
+		$import_stock     = ! empty( $settings['stock'] ) ? $settings['stock'] : 'no';
+		$is_virtual       = ! empty( $settings['virtual'] ) && 'yes' === $settings['virtual'] ? true : false;
+		$allow_backorders = ! empty( $settings['backorders'] ) ? $settings['backorders'] : 'yes';
+		$rate_id          = ! empty( $settings['rates'] ) ? $settings['rates'] : 'default';
+		$post_status      = ! empty( $settings['prodst'] ) ? $settings['prodst'] : 'draft';
+		$attribute_cat_id = ! empty( $settings['catattr'] ) ? $settings['catattr'] : '';
 		$is_new_product   = ( 0 === $product_id || false === $product_id ) ? true : false;
 
 		// Start.
@@ -131,29 +261,24 @@ class PROD {
 				}
 				break;
 			case 'variable':
-				if ( class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
-					$product_props = $connwoo_pro->sync_product_variable( $product, $item, $is_new_product, $rate_id );
-				}
+				$product_props = self::sync_product_variable( $settings, $product, $item, $is_new_product, $rate_id, $option_prefix );
 				break;
 			case 'pack':
-				if ( class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
-					$product_props = $connwoo_pro->sync_product_pack( $product, $item, $pack_items );
-				}
+				$product_props = self::sync_product_pack( $settings, $product, $item, $pack_items, $option_prefix );
 				break;
 		}
 		$attributes = ! empty( $item['attributes'] ) && is_array( $item['attributes'] ) ? $item['attributes'] : array();
 		$item_type  = array_search( $attribute_cat_id, array_column( $attributes, 'id', 'value' ) );
-		if ( class_exists( 'Connect_WooCommerce_Import_PRO' ) && $item_type ) {
-			$categories_ids = $connwoo_pro->get_categories_ids( $item_type, $is_new_product );
+		if ( $item_type ) {
+			$categories_ids = TAX::get_categories_ids( $settings, $item_type, $is_new_product );
 			if ( ! empty( $categories_ids ) ) {
 				$product_props['category_ids'] = $categories_ids;
 			}
 		}
 
-		if ( class_exists( 'Connect_WooCommerce_Import_PRO' ) ) {
-			// Imports image.
-			$this->put_product_image( $item['id'], $product_id );
-		}
+		// Imports image.
+		self::put_product_image( $settings, $item['id'], $product_id, $api_erp );
+
 		// Set properties and save.
 		$product->set_props( $product_props );
 		$product->save();
@@ -164,20 +289,69 @@ class PROD {
 	}
 
 	/**
+	 * Creates the simple product post from item
+	 *
+	 * @param object  $settings Product settings.
+	 * @param array   $item Item from ERP.
+	 * @param boolean $from_pack Item is a pack.
+	 * @param string  $option_prefix Slug of the plugin.
+	 * @param object  $api_erp API Object.
+	 *
+	 * @return array
+	 */
+	private static function sync_product_simple( $settings, $item, $from_pack = false, $option_prefix, $api_erp ) {
+		$message = '';
+		$post_id = self::find_product( $item['sku'] );
+		if ( ! $post_id ) {
+			$post_id = self::create_product_post( $settings, $item );
+		}
+		if ( $post_id && $item['sku'] && 'simple' === $item['kind'] ) {
+			wp_set_object_terms( $post_id, 'simple', 'product_type' );
+
+			// Update meta for product.
+			self::sync_product( $settings, $item, $post_id, 'simple', null, $option_prefix, $api_erp );
+		}
+		if ( $from_pack ) {
+			$message .= '<br/>';
+			if ( ! $post_id ) {
+				$message .= __( 'Subproduct created: ', 'connect-woocommerce' );
+			} else {
+				$message .= __( 'Subproduct synced: ', 'connect-woocommerce' );
+			}
+		} else {
+			if ( ! $post_id ) {
+				$message .= __( 'Product created: ', 'connect-woocommerce' );
+			} else {
+				$message .= __( 'Product synced: ', 'connect-woocommerce' );
+			}
+		}
+		$message .= $item['name'] . '. SKU: ' . $item['sku'] . ' (' . $item['kind'] . ')';
+
+		return array(
+			'post_id' => $post_id,
+			'message' => $message,
+		);
+	}
+
+	/**
 	 * Syncs product variable
 	 *
+	 * @param object  $settings Product settings.
 	 * @param object  $product Product WooCommerce.
 	 * @param array   $item Item from API.
 	 * @param boolean $is_new_product Is new product?.
 	 * @param int     $rate_id Rate ID.
+	 * @param string  $option_prefix Slug of the plugin.
+	 *
 	 * @return array
 	 */
-	public function sync_product_variable( $product, $item, $is_new_product, $rate_id ) {
+	public static function sync_product_variable( $settings, $product, $item, $is_new_product, $rate_id, $option_prefix ) {
 		$attributes      = array();
 		$attributes_prod = array();
 		$parent_sku      = $product->get_sku();
 		$product_id      = $product->get_id();
-		$is_virtual      = ( isset( $this->settings['virtual'] ) && 'yes' === $this->settings['virtual'] ) ? true : false;
+		$is_virtual      = ( isset( $settings['virtual'] ) && 'yes' === $settings['virtual'] ) ? true : false;
+		$message         = '';
 
 		if ( ! $is_new_product ) {
 			foreach ( $product->get_children( false ) as $child_id ) {
@@ -209,13 +383,7 @@ class PROD {
 			}
 
 			if ( ! isset( $variant['categoryFields'] ) ) {
-				$this->error_product_import[] = array(
-					'prod_id' => $item['id'],
-					'name'    => $item['name'],
-					'sku'     => $variant['sku'],
-					'error'   => __( 'Variation error: ', 'connect-woocommerce' ),
-				);
-				$this->ajax_msg .= '<span class="error">' . __( 'Variation error: ', 'connect-woocommerce' ) . $item['name'] . '. Variant SKU: ' . $variant['sku'] . '(' . $item['kind'] . ') </span><br/>';
+				$message .= '<span class="error">' . __( 'Variation error: ', 'connect-woocommerce' ) . $item['name'] . '. Variant SKU: ' . $variant['sku'] . '(' . $item['kind'] . ') </span><br/>';
 				continue;
 			}
 			// Get all Attributes for the product.
@@ -260,7 +428,7 @@ class PROD {
 				);
 				$variation_props     = array_merge( $variation_props, $variation_props_new );
 			}
-			$variation       = new \WC_Product_Variation( $variation_id );
+			$variation = new \WC_Product_Variation( $variation_id );
 			$variation->set_props( $variation_props );
 			// Stock.
 			if ( ! empty( $variant['stock'] ) ) {
@@ -274,10 +442,10 @@ class PROD {
 				$variation->set_sku( $variant['sku'] );
 			}
 			$variation->save();
-			$key = '_' . $this->options['slug'] . '_productid';
+			$key = '_' . $option_prefix . '_productid';
 			update_post_meta( $variation_id, $key, $variant['id'] );
 		}
-		$var_prop   = $this->make_attributes( $attributes, true );
+		$var_prop   = TAX::make_attributes( $attributes, true );
 		$data_store = $product->get_data_store();
 		$data_store->sort_all_product_variations( $product_id );
 
@@ -301,10 +469,10 @@ class PROD {
 				if ( ! isset( $attributes[ $attribute['name'] ] ) || ! in_array( $attribute['value'], $attributes[ $attribute['name'] ], true ) ) {
 					$attributes[ $attribute['name'] ][] = $attribute['value'];
 				}
-	
+
 				$attribute_name = wc_sanitize_taxonomy_name( $attribute['name'] );
 				$attributes_prod[ 'attribute_pa_' . $attribute_name ] = wc_sanitize_taxonomy_name( $attribute['value'] );
-	
+
 				$att_props = TAX::make_attributes( $attributes, false );
 			}
 		}
@@ -323,9 +491,11 @@ class PROD {
 	 * @param object $product Product WooCommerce.
 	 * @param array  $item Item API.
 	 * @param string $pack_items String with ids.
+	 * @param string $option_prefix Slug of the plugin.
+	 *
 	 * @return void
 	 */
-	public function sync_product_pack( $product, $item, $pack_items ) {
+	public static function sync_product_pack( $product, $item, $pack_items, $option_prefix ) {
 		$product_id = $product->get_id();
 
 		$wosb_metas = array(
@@ -346,7 +516,7 @@ class PROD {
 		foreach ( $wosb_metas as $key => $value ) {
 			update_post_meta( $product_id, $key, $value );
 		}
-		$prod_key = '_' . $this->options['slug'] . '_productid';
+		$prod_key = '_' . $option_prefix . '_productid';
 		update_post_meta( $product_id, $prod_key, $item['id'] );
 	}
 
@@ -354,30 +524,28 @@ class PROD {
 	/**
 	 * Filters product to not import to web
 	 *
+	 * @param array $settings Settings of the plugin.
 	 * @param array $tag_product Tags of the product.
 	 * @return boolean True to not get the product, false to get it.
 	 */
-	private function filter_product( $tag_product ) {
-		if ( empty( $this->settings['filter'] ) ) {
+	public static function filter_product( $settings, $tag_product ) {
+		if ( empty( $settings['filter'] ) ) {
 			return false;
 		}
-		$tags_option = explode( ',', $this->settings['filter'] );
+		$tags_option = explode( ',', $settings['filter'] );
 
-		if ( empty( array_intersect( $tags_option, $tag_product ) ) ) {
-			return true;
-		} else {
-			return false;
-		}
+		return empty( array_intersect( $tags_option, $tag_product ) ) ? true : false;
 	}
 
 	/**
 	 * Creates the post for the product from item
 	 *
+	 * @param array  $settings Settings of the plugin.
 	 * @param [type] $item Item product from api.
 	 * @return int
 	 */
-	public function create_product_post( $item ) {
-		$prod_status = ( isset( $this->settings['prodst'] ) && $this->settings['prodst'] ) ? $this->settings['prodst'] : 'draft';
+	public static function create_product_post( $settings, $item ) {
+		$prod_status = ! empty( $settings['prodst'] ) ? $settings['prodst'] : 'draft';
 
 		$post_type = 'product';
 		$sku_key   = '_sku';
@@ -396,49 +564,12 @@ class PROD {
 	}
 
 	/**
-	 * Creates the simple product post from item
-	 *
-	 * @param array   $item Item from holded.
-	 * @param boolean $from_pack Item is a pack.
-	 * @return int
-	 */
-	private function sync_product_simple( $item, $from_pack = false ) {
-		$post_id = $this->find_product( $item['sku'] );
-		if ( ! $post_id ) {
-			$post_id = $this->create_product_post( $item );
-		}
-		if ( $post_id && $item['sku'] && 'simple' == $item['kind'] ) {
-
-			wp_set_object_terms( $post_id, 'simple', 'product_type' );
-
-			// Update meta for product.
-			$this->sync_product( $item, $post_id, 'simple' );
-		}
-		if ( $from_pack ) {
-			$this->ajax_msg .= '<br/>';
-			if ( ! $post_id ) {
-				$this->ajax_msg .= __( 'Subproduct created: ', 'connect-woocommerce' );
-			} else {
-				$this->ajax_msg .= __( 'Subproduct synced: ', 'connect-woocommerce' );
-			}
-		} else {
-			if ( ! $post_id ) {
-				$this->ajax_msg .= __( 'Product created: ', 'connect-woocommerce' );
-			} else {
-				$this->ajax_msg .= __( 'Product synced: ', 'connect-woocommerce' );
-			}
-		}
-		$this->ajax_msg .= $item['name'] . '. SKU: ' . $item['sku'] . ' (' . $item['kind'] . ')';
-
-		return $post_id;
-	}
-	/**
 	 * Finds simple and variation item in WooCommerce.
 	 *
 	 * @param string $sku SKU of product.
 	 * @return string $product_id Products id.
 	 */
-	public function find_product( $sku ) {
+	public static function find_product( $sku ) {
 		global $wpdb;
 		$post_type    = 'product';
 		$meta_key     = '_sku';
@@ -453,9 +584,9 @@ class PROD {
 	 * @param string $sku SKU of product.
 	 * @return string $product_id Products id.
 	 */
-	public function find_parent_product( $sku ) {
+	public static function find_parent_product( $sku ) {
 		global $wpdb;
-		$post_id_var = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key='_sku' AND meta_value='%s' LIMIT 1", $sku ) );
+		$post_id_var = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key='_sku' AND meta_value=%s LIMIT 1", $sku ) );
 
 		if ( $post_id_var ) {
 			$post_parent = wp_get_post_parent_id( $post_id_var );
@@ -463,14 +594,15 @@ class PROD {
 		}
 		return false;
 	}
-		/**
+
+	/**
 	 * Attachs images to a post id
 	 *
 	 * @param int    $post_id Post id.
 	 * @param string $img_string Image string from API.
 	 * @return int
 	 */
-	public function attach_image( $post_id, $img_string ) {
+	public static function attach_image( $post_id, $img_string ) {
 		if ( ! $img_string || ! $post_id ) {
 			return null;
 		}
@@ -524,17 +656,19 @@ class PROD {
 	/**
 	 * Gets image from API products
 	 *
-	 * @param string $prod_id Id of API to get information.
+	 * @param string $item_id Id of API to get information.
 	 * @param string $product_id Id of product to get information.
+	 * @param object $api_erp API Object.
+	 *
 	 * @return array Array of products imported via API.
 	 */
-	public function put_product_image( $prod_id, $product_id ) {
+	public static function put_product_image( $settings, $item_id, $product_id, $api_erp ) {
 		// Don't import if there is thumbnail.
 		if ( has_post_thumbnail( $product_id ) ) {
 			return false;
 		}
 
-		$result_api = $this->connapi_erp->get_image_product( $this->settings, $prod_id, $product_id );
+		$result_api = $api_erp->get_image_product( $settings, $item_id, $product_id );
 
 		if ( isset( $result_api['upload']['url'] ) ) {
 			$attachment = array(

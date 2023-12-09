@@ -86,17 +86,6 @@ class HELPER {
 	}
 
 	/**
-	 * Internal function to sanitize text
-	 *
-	 * @param string $text Text to sanitize.
-	 * @return string Sanitized text.
-	 */
-	public static function sanitize_text( $text ) {
-		$text = str_replace( '>', '&gt;', $text );
-		return $text;
-	}
-
-	/**
 	 * Shows in WordPress error message
 	 *
 	 * @param string $code Code of error.

@@ -25,7 +25,7 @@ class TAX {
 	 * @param boolean $for_variation Is for variation.
 	 * @return array
 	 */
-	private function make_attributes( $attributes, $for_variation = true ) {
+	public static function make_attributes( $attributes, $for_variation = true ) {
 		$position = 0;
 		$attributes_return = array();
 		foreach ( $attributes as $attr_name => $attr_values ) {
@@ -65,7 +65,7 @@ class TAX {
 	 * @param string $raw_name Attribute name (label).
 	 * @return int Attribute ID.
 	 */
-	protected static function create_global_attribute( $raw_name ) {
+	private static function create_global_attribute( $raw_name ) {
 		$slug = wc_sanitize_taxonomy_name( $raw_name );
 
 		$attribute_id = wc_create_attribute(
@@ -100,13 +100,14 @@ class TAX {
 
 		return $attribute_id;
 	}
+
 	/**
 	 * Finds product categories ids from array of names given
 	 *
 	 * @param array $product_cat_names Array of names.
 	 * @return string IDS of categories.
 	 */
-	private function find_categories_ids( $product_cat_names ) {
+	private static function find_categories_ids( $product_cat_names ) {
 		$level         = 0;
 		$cats_ids      = array();
 		$taxonomy_name = 'product_cat';
@@ -145,15 +146,16 @@ class TAX {
 	/**
 	 * Get categories ids
 	 *
+	 * @param array   $settings Settings of the plugin.
 	 * @param string  $item_type Type of the product.
 	 * @param boolean $is_new_product Is new.
 	 * @return array
 	 */
-	public function get_categories_ids( $item_type, $is_new_product ) {
+	public static function get_categories_ids( $settings, $item_type, $is_new_product ) {
 		$categories_ids = array();
 		// Category API.
-		$category_newp = isset( $this->settings['catnp'] ) ? $this->settings['catnp'] : 'yes';
-		$category_sep  = isset( $this->settings['catsep'] ) ? $this->settings['catsep'] : '';
+		$category_newp = isset( $settings['catnp'] ) ? $settings['catnp'] : 'yes';
+		$category_sep  = isset( $settings['catsep'] ) ? $settings['catsep'] : '';
 
 		if ( ( ! empty( $item_type ) && 'yes' === $category_newp && $is_new_product ) ||
 			( ! empty( $item_type ) && 'no' === $category_newp && false === $is_new_product )
@@ -164,10 +166,11 @@ class TAX {
 			} else {
 				$category_array[] = $item_type;
 			}
-			$categories_ids = $this->find_categories_ids( $category_array );
+			$categories_ids = self::find_categories_ids( $category_array );
 		}
 		return $categories_ids;
 	}
+
 	/**
 	 * Assigns the array to a taxonomy, and creates missing term
 	 *
@@ -176,13 +179,13 @@ class TAX {
 	 * @param array  $category_array Array of category.
 	 * @return void
 	 */
-	private function assign_product_term( $post_id, $taxonomy_slug, $category_array ) {
+	private static function assign_product_term( $post_id, $taxonomy_slug, $category_array ) {
 		$parent_term      = '';
 		$term_levels      = count( $category_array );
 		$term_level_index = 1;
 
 		foreach ( $category_array as $category_name ) {
-			$category_name = $this->sanitize_text( $category_name );
+			$category_name = self::sanitize_text( $category_name );
 			$search_term   = term_exists( $category_name, $taxonomy_slug );
 
 			if ( 0 === $search_term || null === $search_term ) {
@@ -207,5 +210,16 @@ class TAX {
 			$parent_term = $search_term['term_id'];
 			$term_level_index++;
 		}
+	}
+
+	/**
+	 * Internal function to sanitize text
+	 *
+	 * @param string $text Text to sanitize.
+	 * @return string Sanitized text.
+	 */
+	private static function sanitize_text( $text ) {
+		$text = str_replace( '>', '&gt;', $text );
+		return $text;
 	}
 }
