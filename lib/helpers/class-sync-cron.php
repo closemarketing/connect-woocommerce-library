@@ -12,6 +12,8 @@ namespace CLOSE\WooCommerce\Library\Helpers;
 
 defined( 'ABSPATH' ) || exit;
 
+use CLOSE\WooCommerce\Library\Helpers\PROD;
+
 /**
  * Sync Products.
  *
@@ -19,98 +21,12 @@ defined( 'ABSPATH' ) || exit;
  */
 class CRON {
 	/**
-	 * ## Sync products
-	 * --------------------------- */
-
-		public function cron_sync_products() {
-		$products_sync = $this->get_products_sync();
-
-		connwoo_check_table_sync( $this->options['table_sync'] );
-
-		if ( false === $products_sync ) {
-			$this->send_sync_ended_products();
-			$this->fill_table_sync();
-		} else {
-			foreach ( $products_sync as $product_sync ) {
-				$product_id = $product_sync['prod_id'];
-
-				$product_api = $this->connapi_erp->get_products( $product_id );
-				$this->create_sync_product( $product_api );
-				$this->save_product_sync( $product_id );
-			}
-		}
-	}
-
-	/**
-	 * Create Syncs product for automatic
-	 *
-	 * @param array $item Item of API.
-	 * @return void
-	 */
-	private function create_sync_product( $item ) {
-		global $connwoo;
-
-		$product_info = array(
-			'id'   => isset( $item['id'] ) ? $item['id'] : '',
-			'name' => isset( $item['name'] ) ? $item['name'] : '',
-			'sku'  => isset( $item['sku'] ) ? $item['sku'] : '',
-			'type' => isset( $item['type'] ) ? $item['type'] : '',
-		);
-
-		if ( isset( $item['sku'] ) && $item['sku'] && 'simple' === $item['kind'] ) {
-			$post_id = $connwoo->find_product( $item['sku'] );
-
-			if ( ! $post_id ) {
-				$post_id = $connwoo->create_product_post( $item );
-			}
-			if ( $post_id && $item['sku'] && 'simple' == $item['kind'] ) {
-				wp_set_object_terms( $post_id, 'simple', 'product_type' );
-
-				// Update meta for product.
-				$connwoo->sync_product( $item, $post_id, 'simple' );
-			}
-		} elseif ( isset( $item['kind'] ) && 'variants' === $item['kind'] ) {
-			// Variable product.
-			// Check if any variants exists.
-			$post_parent = 0;
-			// Activar para buscar un archivo.
-			$any_variant_sku = false;
-
-			foreach ( $item['variants'] as $variant ) {
-				if ( ! $variant['sku'] ) {
-					break;
-				} else {
-					$any_variant_sku = true;
-				}
-				$post_parent = $connwoo->find_parent_product( $variant['sku'] );
-				if ( $post_parent ) {
-					// Do not iterate if it's find it.
-					break;
-				}
-			}
-			if ( false === $any_variant_sku ) {
-				$product_info['error'] = __( 'Product not imported becouse any variant has got SKU: ', 'connect-woocommerce' );
-				$this->save_sync_errors( $product_info );
-			} else {
-				// Update meta for product.
-				$connwoo->sync_product( $item, $post_parent, 'variable' );
-			}
-		} elseif ( isset( $item['sku'] ) && '' === $item['sku'] && isset( $item['kind'] ) && 'simple' === $item['kind'] ) {
-			$product_info['error'] = __( 'SKU not finded in Simple product. Product not imported ', 'connect-woocommerce' );
-			$this->save_sync_errors( $product_info );
-		} elseif ( isset( $item['kind'] ) && 'simple' !== $item['kind'] ) {
-			$product_info['error'] = __( 'Product type not supported. Product not imported ', 'connect-woocommerce' );
-			$this->save_sync_errors( $product_info );
-		}
-	}
-
-	/**
 	 * Save in options errors founded.
 	 *
 	 * @param array $errors Errors sync.
 	 * @return void
 	 */
-	private function save_sync_errors( $errors ) {
+	public static function save_sync_errors( $errors ) {
 		$option_errors = get_option( $this->options['slug'] . '_sync_errors' );
 		$save_errors[] = $errors;
 		if ( false !== $option_errors && ! empty( $option_errors ) ) {
@@ -122,33 +38,37 @@ class CRON {
 	/**
 	 * Fills table to sync
 	 *
+	 * @param array  $settings Settings of plugin.
+	 * @param string $table_sync Table name.
+	 * @param object $api_erp API Object.
+	 * @param string $option_prefix Prefix of options.
+	 *
 	 * @return boolean
 	 */
-	private function fill_table_sync() {
+	public static function fill_table_sync( $settings, $table_sync, $api_erp, $option_prefix ) {
 		global $wpdb;
-		$table_sync = $this->options['table_sync'];
 		$wpdb->query( "TRUNCATE TABLE $table_sync;" );
 
 		// Get products from API.
-		$products = $this->connapi_erp->get_products();
+		$products = $api_erp->get_products();
 		if ( ! is_array( $products ) ) {
 			return;
 		}
 
-		update_option( $this->options['slug'] . '_total_api_products', count( $products ) );
-		update_option( $this->options['slug'] . '_sync_start_time', strtotime( 'now' ) );
-		update_option( $this->options['slug'] . '_sync_errors', array() );
+		update_option( $option_prefix . '_total_api_products', count( $products ) );
+		update_option( $option_prefix . '_sync_start_time', strtotime( 'now' ) );
+		update_option( $option_prefix . '_sync_errors', array() );
 		foreach ( $products as $product ) {
-			$is_filtered_product = ! empty( $product['tags'] ) ? $this->filter_product( $product['tags'] ) : false;
+			$is_filtered_product = ! empty( $product['tags'] ) ? PROD::filter_product( $settings, $product['tags'] ) : false;
 
 			if ( ! $is_filtered_product ) {
 				$db_values = array(
 					'prod_id' => $product['id'],
 					'synced'  => false,
 				);
-				if ( ! $this->check_exist_valuedb( $product['id'] ) ) {
+				if ( ! self::check_exist_valuedb( $table_sync, $product['id'] ) ) {
 					$wpdb->insert(
-						$this->table_sync,
+						$table_sync,
 						$db_values
 					);
 				}
@@ -161,7 +81,7 @@ class CRON {
 	 *
 	 * @return array results;
 	 */
-	private function get_products_sync() {
+	public static function get_products_sync() {
 		global $wpdb;
 		$limit = isset( $this->settings['sync_num'] ) ? $this->settings['sync_num'] : 5;
 
@@ -180,12 +100,12 @@ class CRON {
 	 * @param  string $gid Task ID.
 	 * @return boolean Exist the value
 	 */
-	public function check_exist_valuedb( $gid ) {
+	public function check_exist_valuedb( $table_sync, $gid ) {
 		global $wpdb;
 		if ( ! isset( $gid ) ) {
 			return false;
 		}
-		$results = $wpdb->get_row( "SELECT prod_id FROM $this->table_sync WHERE prod_id = '$gid'" );
+		$results = $wpdb->get_row( "SELECT prod_id FROM $table_sync WHERE prod_id = '$gid'" );
 
 		if ( $results ) {
 			return true;
@@ -197,24 +117,27 @@ class CRON {
 	/**
 	 * Saves synced products
 	 *
+	 * @param string $table_sync Table name.
 	 * @param string $product_id Product ID that synced.
+	 * @param string $options_prefix Prefix of options.
+	 *
 	 * @return void
 	 */
-	private function save_product_sync( $product_id ) {
+	public static function save_product_sync( $table_sync, $product_id, $options_prefix ) {
 		global $wpdb;
 		$db_values = array(
 			'prod_id' => $product_id,
 			'synced'  => true,
 		);
 		$update = $wpdb->update(
-			$this->table_sync,
+			$table_sync,
 			$db_values,
 			array(
 				'prod_id' => $product_id,
 			)
 		);
 		if ( ! $update && $wpdb->last_error ) {
-			$this->save_sync_errors(
+			self::save_sync_errors(
 				array(
 					'Import Product Sync Error',
 					'Product ID:' . $product_id,
@@ -223,11 +146,11 @@ class CRON {
 			);
 
 			// Logs in WooCommerce.
-			$logger = new WC_Logger();
+			$logger = new \WC_Logger();
 			$logger->debug(
 				'Import Product Sync Error Product ID:' . $product_id . 'DB error:' . $wpdb->last_error,
 				array(
-					'source' => $this->options['slug'],
+					'source' => $options_prefix,
 				)
 			);
 		}
@@ -238,36 +161,36 @@ class CRON {
 	 *
 	 * @return void
 	 */
-	public function send_sync_ended_products() {
+	public static function send_sync_ended_products( $settings, $table_sync, $option_name, $option_prefix ) {
 		global $wpdb;
-		$send_email   = isset( $this->settings['sync_email'] ) ? strval( $this->settings['sync_email'] ) : 'yes';
+		$send_email   = isset( $settings['sync_email'] ) ? strval( $settings['sync_email'] ) : 'yes';
 
-		$total_count = $wpdb->get_var( "SELECT COUNT(*) FROM $this->table_sync WHERE synced = 1" );
+		$total_count = $wpdb->get_var( "SELECT COUNT(*) FROM $table_sync WHERE synced = 1" );
 
 		if ( $total_count > 0 && 'yes' === $send_email ) {
-			$subject = __( 'All products synced with ', 'connect-woocommerce' ) . $this->options['name'];
+			$subject = __( 'All products synced with ', 'connect-woocommerce' ) . $option_name;
 			$headers = array( 'Content-Type: text/html; charset=UTF-8' );
-			$body    = '<h2>' . __( 'All products synced with ', 'connect-woocommerce' ) . $this->options['name'] . '</h2> ';
+			$body    = '<h2>' . __( 'All products synced with ', 'connect-woocommerce' ) . $option_name . '</h2> ';
 			$body   .= '<br/><strong>' . __( 'Total products:', 'connect-woocommerce' ) . '</strong> ';
 			$body   .= $total_count;
 
-			$total_api_products = (int) get_option( $this->options['slug'] . '_total_api_products' );
+			$total_api_products = (int) get_option( $option_prefix . '_total_api_products' );
 			if ( $total_api_products || $total_count !== $total_api_products ) {
 				$body .= ' ' . esc_html__( 'filtered', 'connect-woocommerce' );
 				$body .= ' ( ' . $total_api_products . ' ' . esc_html__( 'total', 'connect-woocommerce' ) . ' )';
 			}
 
 			$body .= '<br/><strong>' . __( 'Time:', 'connect-woocommerce' ) . '</strong> ';
-			$body .= date_i18n( 'Y-m-d H:i', current_time( 'timestamp') );
+			$body .= date_i18n( 'Y-m-d H:i', current_time( 'timestamp' ) );
 
-			$start_time = get_option( $this->options['slug'] . '_sync_start_time' );
+			$start_time = get_option( $option_prefix . '_sync_start_time' );
 			if ( $start_time ) {
 				$body .= '<br/><strong>' . __( 'Total Time:', 'connect-woocommerce' ) . '</strong> ';
 				$body .= round( ( strtotime( 'now' ) - $start_time ) / 60 / 60, 1 );
 				$body .= 'h';
 			}
 
-			$products_errors = get_option( $this->options['slug'] . '_sync_errors' );
+			$products_errors = get_option( $option_prefix . '_sync_errors' );
 			if ( false !== $products_errors && ! empty( $products_errors ) ) {
 				$body .= '<h2>' . __( 'Errors founded', 'connect-woocommerce' ) . '</h2>';
 
@@ -275,7 +198,7 @@ class CRON {
 					$body .= '<br/><strong>' . $error['error'] . '</strong>';
 					$body .= '<br/><strong>' . __( 'Product id: ', 'connect-woocommerce' ) . '</strong>' . $error['id'];
 
-					if ( 'Holded' === $this->options['name'] ) {
+					if ( 'Holded' === $option_name ) {
 						$body .= ' <a href="https://app.holded.com/products/' . $error['id'] . '">' . __( 'View in Holded', 'connect-woocommerce' ) . '</a>';
 					}
 					$body .= '<br/><strong>' . __( 'Product name: ', 'connect-woocommerce' ) . '</strong>' . $error['name'];

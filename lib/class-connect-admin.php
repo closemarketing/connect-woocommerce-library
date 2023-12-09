@@ -778,7 +778,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		public function section_automate() {
 			global $wpdb;
 			$table_sync = $this->options['table_sync'];
-			connwoo_check_table_sync( $table_sync );
+			HELPER::check_table_sync( $table_sync );
 			$count        = $wpdb->get_var( "SELECT COUNT(*) FROM $table_sync WHERE synced = 1" );
 			$total_count  = $wpdb->get_var( "SELECT COUNT(*) FROM $table_sync" );
 			$count_return = $count . ' / ' . $total_count;

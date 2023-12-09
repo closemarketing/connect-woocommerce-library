@@ -90,16 +90,15 @@ class HELPER {
 	}
 
 	/**
-	 * Shows in WordPress error message
+	 * Saves log in WooCommerce
 	 *
-	 * @param string $code Code of error.
-	 * @param string $message Message.
+	 * @param string $error Error to save.
+	 *
 	 * @return void
 	 */
-	public static function error_admin_message( $code, $message ) {
-		echo '<div class="error">';
-		echo '<p><strong>API ' . esc_html( $code ) . ': </strong> ' . esc_html( $message ) . '</p>';
-		echo '</div>';
+	public static function save_log( $error ) {
+		$log = new \WC_Logger();
+		$log->log( 'connect-woocommerce', $error );
 	}
 
 	/**
@@ -131,12 +130,12 @@ class HELPER {
 	 * @param string $table_name Name of table.
 	 * @return void
 	 */
-	public static function connwoo_check_table_sync( $table_name ) {
+	public static function check_table_sync( $table_name ) {
 		global $wpdb;
 		$check_table = $wpdb->get_var( "SHOW TABLES LIKE '$table_name'" );
 
 		if ( $check_table !== $table_name ) {
-			connwoo_create_table( $table_name );
+			self::create_sync_table( $table_name );
 		}
 	}
 }

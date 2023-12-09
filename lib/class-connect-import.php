@@ -12,6 +12,7 @@ defined( 'ABSPATH' ) || exit;
 
 use CLOSE\WooCommerce\Library\Helpers\PROD;
 use CLOSE\WooCommerce\Library\Helpers\HELPER;
+use CLOSE\WooCommerce\Library\Helpers\CRON;
 
 if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 	/**
@@ -260,6 +261,30 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 
 			if ( isset( $cron_option['cron'] ) && false === as_has_scheduled_action( $cron_option['cron'] ) ) {
 				as_schedule_recurring_action( time(), $cron_option['interval'], $cron_option['cron'] );
+			}
+		}
+
+		/**
+		 * Cron sync products
+		 *
+		 * @return void
+		 */
+		public function cron_sync_products() {
+			$products_sync = CRON::get_products_sync();
+
+			HELPER::check_table_sync( $this->options['table_sync'] );
+
+			if ( false === $products_sync ) {
+				CRON::send_sync_ended_products( $this->settings, $this->options['table_sync'], $this->options['name'], $this->options['slug'] );
+				CRON::fill_table_sync( $this->settings, $this->options['table_sync'], $this->connapi_erp, $this->options['slug'] );
+			} else {
+				foreach ( $products_sync as $product_sync ) {
+					$product_id = $product_sync['prod_id'];
+
+					$product_api = $this->connapi_erp->get_products( $product_id );
+					$result      = PROD::sync_product_item( $this->settings, $product_api, $this->connapi_erp, $this->options['slug'] );
+					CRON::save_product_sync( $this->options['table_sync'], $result['post_id'], $this->options['slug'] );
+				}
 			}
 		}
 	}

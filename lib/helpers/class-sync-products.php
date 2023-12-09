@@ -682,7 +682,8 @@ class PROD {
 			add_post_meta( $product_id, '_thumbnail_id', $attach_id, true );
 
 			if ( isset( $body_response['errors'] ) ) {
-				error_admin_message( 'ERROR', $body_response['errors'][0]['message'] . ' <br/> Api Call: /' );
+				$message = isset( $body_response['errors'][0]['message'] ) ? $body_response['errors'][0]['message'] : __( 'There was an error while inserting new product!', 'connect-woocommerce' );
+				HELPER::save_log( $message );
 				return false;
 			}
 
