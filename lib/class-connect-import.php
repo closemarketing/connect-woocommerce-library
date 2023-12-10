@@ -180,11 +180,15 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 			if ( ! check_ajax_referer( 'manual_import_nonce', 'nonce' ) ) {
 				wp_send_json_error( array( 'message' => 'Error' ) );
 			}
-
-			$api_products = get_transient( $this->options['slug'] . '_query_api_products' );
-			if ( ! $api_products || 0 === $sync_loop ) {
+			// Start.
+			if ( ! session_id() ) {
+				session_start();
+			}
+			if ( 0 === $sync_loop ) {
 				$api_products = $this->connapi_erp->get_products();
-				set_transient( $this->options['slug'] . '_query_api_products', $api_products, HOUR_IN_SECONDS );
+				$_SESSION['api_products'] = $api_products;
+			} else {
+				$api_products = $_SESSION['api_products'];
 			}
 
 			if ( empty( $api_products ) ) {
