@@ -282,6 +282,16 @@ class PROD {
 		// Imports image.
 		self::put_product_image( $settings, $item['id'], $product_id, $api_erp );
 
+		// Adds custom fields.
+		$settings_mergevars = get_option( $option_prefix . '_prod_mergevars' );
+		if ( ! empty( $settings_mergevars['prod_mergevars'] ) ) {
+			foreach ( $settings_mergevars['prod_mergevars'] as $key => $custom_field ) {
+				if ( isset( $item[ $key ] ) ) {
+					update_post_meta( $product_id, $custom_field, $item[ $key ] );
+				}
+			}
+		}
+
 		// Set properties and save.
 		$product->set_props( $product_props );
 		$product->save();

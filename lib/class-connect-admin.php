@@ -1290,7 +1290,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 						<div class="save-item"><strong><?php esc_html_e( 'Custom Field ', 'connect-woocommerce' );?></strong></div>
 					</div>
 					<?php
-					$size = isset( $settings_mergevars ) ? count( $settings_mergevars ) -1 : 0;
+					$size = isset( $settings_mergevars ) ? count( $settings_mergevars ) : 0;
 					for ( $idx = 0, $size; $idx <= $size; ++$idx ) {
 						?>
 						<div class="product-mergevars repeating" style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
