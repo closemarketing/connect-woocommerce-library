@@ -1300,10 +1300,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 									<?php
 									$attrprod = isset( $saved_attr[ $idx ]['attrprod'] ) ? $saved_attr[ $idx ]['attrprod'] : '';
 
-									foreach ( $attribute_fields as $key ) {
+									foreach ( $attribute_fields as $key => $value ) {
 										echo '<option value="' . esc_html( $key ) . '" ';
 										selected( $key, $attrprod );
-										echo '>' . esc_html( $key ) . '</option>';
+										echo '>' . esc_html( $value ) . '</option>';
 									}
 									?>
 								</select>
