@@ -66,10 +66,11 @@ class ORDER {
 		// Create the inovice.
 		if ( empty( $ec_invoice_id ) || $force ) {
 			try {
+				$doctype    = isset( $settings['doctype'] ) ? $settings['doctype'] : 'invoice';
 				$doc_id     = $order->get_meta( '_' . $option_prefix . '_doc_id' );
 				$invoice_id = $order->get_meta( $meta_key_order );
 				$order_data = self::generate_order_data( $settings, $order, $option_prefix );
-				$result     = $api_erp->create_order( $order_data, $doc_id, $invoice_id, $settings, $force );
+				$result     = $api_erp->create_order( $order_data, $doc_id, $invoice_id, $force );
 
 				$doc_id     = 'error' === $result['status'] ? '' : $result['document_id'];
 				$invoice_id = isset( $result['invoice_id'] ) ? $result['invoice_id'] : $invoice_id;
@@ -78,7 +79,7 @@ class ORDER {
 				$order->update_meta_data( '_' . $option_prefix . '_doc_type', $doctype );
 				$order->save();
 
-				$order_msg = __( 'Order synced correctly with Holded, ID: ', 'connect-woocommerce-holded' ) . $invoice_id;
+				$order_msg = __( 'Order synced correctly with ERP, ID: ', 'connect-woocommerce-holded' ) . $invoice_id;
 
 				$order->add_order_note( $order_msg );
 				return $result;
