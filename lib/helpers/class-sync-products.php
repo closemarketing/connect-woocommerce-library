@@ -129,6 +129,7 @@ class PROD {
 			return array(
 				'status'  => 'error',
 				'post_id' => (int) $post_id,
+				'prod_id' => $item['id'] ? sanitize_text_field( $item['id'] ) : '',
 				'message' => __( 'SKU not finded in Simple product. Product not imported: ', 'connect-woocommerce' ) . $item['name'] . '(' . $item_kind . ')</br>',
 			);
 		} elseif ( 'simple' !== $item_kind ) {
@@ -136,6 +137,7 @@ class PROD {
 			return array(
 				'status'  => 'error',
 				'post_id' => (int) $post_id,
+				'prod_id' => $item['id'] ? sanitize_text_field( $item['id'] ) : '',
 				'message' => __( 'Product type not supported. Product not imported: ', 'connect-woocommerce' ) . $item['name'] . '(' . $item_kind . ')',
 			);
 		}
@@ -143,6 +145,7 @@ class PROD {
 		return array(
 			'status'  => $status,
 			'post_id' => (int) $post_id,
+			'prod_id' => $item['id'] ? sanitize_text_field( $item['id'] ) : '',
 			'message' => $message,
 		);
 	}

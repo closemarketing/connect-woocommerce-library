@@ -23,16 +23,18 @@ class CRON {
 	/**
 	 * Save in options errors founded.
 	 *
-	 * @param array $errors Errors sync.
+	 * @param array  $errors Errors sync.
+	 * @param string $option_prefix Prefix of options.
+	 *
 	 * @return void
 	 */
-	public static function save_sync_errors( $errors ) {
-		$option_errors = get_option( $this->options['slug'] . '_sync_errors' );
+	public static function save_sync_errors( $errors, $option_prefix ) {
+		$option_errors = get_option( $option_prefix . '_sync_errors' );
 		$save_errors[] = $errors;
 		if ( false !== $option_errors && ! empty( $option_errors ) ) {
 			$save_errors = array_merge( $save_errors, $option_errors );
 		}
-		update_option( $this->options['slug'] . '_sync_errors', $save_errors );
+		update_option( $option_prefix . '_sync_errors', $save_errors );
 	}
 
 	/**
@@ -58,6 +60,7 @@ class CRON {
 		update_option( $option_prefix . '_total_api_products', count( $products ) );
 		update_option( $option_prefix . '_sync_start_time', strtotime( 'now' ) );
 		update_option( $option_prefix . '_sync_errors', array() );
+
 		foreach ( $products as $product ) {
 			$is_filtered_product = ! empty( $product['tags'] ) ? PROD::filter_product( $settings, $product['tags'] ) : false;
 
@@ -79,13 +82,16 @@ class CRON {
 	/**
 	 * Get products to sync
 	 *
+	 * @param array  $settings Settings of plugin.
+	 * @param string $table_sync Table name.
+	 *
 	 * @return array results;
 	 */
-	public static function get_products_sync() {
+	public static function get_products_sync( $settings, $table_sync ) {
 		global $wpdb;
-		$limit = isset( $this->settings['sync_num'] ) ? $this->settings['sync_num'] : 5;
+		$limit = isset( $settings['sync_num'] ) ? $settings['sync_num'] : 5;
 
-		$results = $wpdb->get_results( "SELECT prod_id FROM $this->table_sync WHERE synced = 0 LIMIT $limit", ARRAY_A );
+		$results = $wpdb->get_results( "SELECT prod_id FROM $table_sync WHERE synced = 0 LIMIT $limit", ARRAY_A );
 
 		if ( count( $results ) > 0 ) {
 			return $results;
@@ -97,10 +103,12 @@ class CRON {
 	/**
 	 * Checks if the value already exists in db
 	 *
+	 * @param  string $table_sync Table name.
 	 * @param  string $gid Task ID.
+	 *
 	 * @return boolean Exist the value
 	 */
-	public function check_exist_valuedb( $table_sync, $gid ) {
+	public static function check_exist_valuedb( $table_sync, $gid ) {
 		global $wpdb;
 		if ( ! isset( $gid ) ) {
 			return false;
@@ -123,7 +131,7 @@ class CRON {
 	 *
 	 * @return void
 	 */
-	public static function save_product_sync( $table_sync, $product_id, $options_prefix ) {
+	public static function save_product_sync( $table_sync, $product_id, $option_prefix ) {
 		global $wpdb;
 		$db_values = array(
 			'prod_id' => $product_id,
@@ -142,7 +150,8 @@ class CRON {
 					'Import Product Sync Error',
 					'Product ID:' . $product_id,
 					'DB error:' . $wpdb->last_error,
-				)
+				),
+				$option_prefix
 			);
 
 			// Logs in WooCommerce.
@@ -150,7 +159,7 @@ class CRON {
 			$logger->debug(
 				'Import Product Sync Error Product ID:' . $product_id . 'DB error:' . $wpdb->last_error,
 				array(
-					'source' => $options_prefix,
+					'source' => $option_prefix,
 				)
 			);
 		}
@@ -159,12 +168,16 @@ class CRON {
 	/**
 	 * Sends an email when is finished the sync
 	 *
+	 * @param array  $settings Settings of plugin.
+	 * @param string $table_sync Table name.
+	 * @param string $option_name Name of plugin.
+	 * @param string $option_prefix Prefix of options.
+	 *
 	 * @return void
 	 */
 	public static function send_sync_ended_products( $settings, $table_sync, $option_name, $option_prefix ) {
 		global $wpdb;
-		$send_email   = isset( $settings['sync_email'] ) ? strval( $settings['sync_email'] ) : 'yes';
-
+		$send_email  = isset( $settings['sync_email'] ) ? strval( $settings['sync_email'] ) : 'yes';
 		$total_count = $wpdb->get_var( "SELECT COUNT(*) FROM $table_sync WHERE synced = 1" );
 
 		if ( $total_count > 0 && 'yes' === $send_email ) {

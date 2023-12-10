@@ -129,9 +129,9 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 				'ajaxAction',
 				array(
 					'url'                 => admin_url( 'admin-ajax.php' ),
-					'label_sync'          => __( 'Sync', 'import-holded-products-woocommerce' ),
-					'label_syncing'       => __( 'Syncing', 'import-holded-products-woocommerce' ),
-					'label_sync_complete' => __( 'Finished', 'import-holded-products-woocommerce' ),
+					'label_sync'          => __( 'Sync', 'connect-woocommerce' ),
+					'label_syncing'       => __( 'Syncing', 'connect-woocommerce' ),
+					'label_sync_complete' => __( 'Finished', 'connect-woocommerce' ),
 					'nonce'               => wp_create_nonce( 'manual_import_nonce' ),
 				)
 			);
@@ -270,7 +270,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 		 * @return void
 		 */
 		public function cron_sync_products() {
-			$products_sync = CRON::get_products_sync();
+			$products_sync = CRON::get_products_sync( $this->settings, $this->options['table_sync'] );
 
 			HELPER::check_table_sync( $this->options['table_sync'] );
 
@@ -283,7 +283,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 
 					$product_api = $this->connapi_erp->get_products( $product_id );
 					$result      = PROD::sync_product_item( $this->settings, $product_api, $this->connapi_erp, $this->options['slug'] );
-					CRON::save_product_sync( $this->options['table_sync'], $result['post_id'], $this->options['slug'] );
+					CRON::save_product_sync( $this->options['table_sync'], $result['prod_id'], $this->options['slug'] );
 				}
 			}
 		}
