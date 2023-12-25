@@ -158,17 +158,6 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 		}
 
 		/**
-		 * Internal function to sanitize text
-		 *
-		 * @param string $text Text to sanitize.
-		 * @return string Sanitized text.
-		 */
-		private function sanitize_text( $text ) {
-			$text = str_replace( '>', '&gt;', $text );
-			return $text;
-		}
-
-		/**
 		 * Import products from API
 		 *
 		 * @return void
