@@ -563,19 +563,15 @@ class PROD {
 	 * @return int
 	 */
 	public static function create_product_post( $settings, $item ) {
-		$prod_status = ! empty( $settings['prodst'] ) ? $settings['prodst'] : 'draft';
-
-		$post_type = 'product';
-		$sku_key   = '_sku';
-		$post_arg  = array(
+		$post_arg = array(
 			'post_title'   => ( $item['name'] ) ? $item['name'] : '',
 			'post_content' => ( $item['desc'] ) ? $item['desc'] : '',
-			'post_status'  => $prod_status,
-			'post_type'    => $post_type,
+			'post_status'  => ! empty( $settings['prodst'] ) ? $settings['prodst'] : 'draft',
+			'post_type'    => 'product',
 		);
 		$post_id   = wp_insert_post( $post_arg );
 		if ( $post_id ) {
-			update_post_meta( $post_id, $sku_key, $item['sku'] );
+			update_post_meta( $post_id, '_sku', $item['sku'] );
 		}
 
 		return $post_id;
