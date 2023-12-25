@@ -73,13 +73,10 @@ class PROD {
 				$message .= __( 'Product not imported becouse any variant has got SKU: ', 'connect-woocommerce' ) . $item['name'] . '(' . $item_kind . ') <br/>';
 			} else {
 				// Update meta for product.
-				$post_id = self::sync_product( $settings, $item, $post_parent, 'variable', null, $option_prefix, $api_erp );
-				if ( 0 === $post_parent || false === $post_parent ) {
-					$message .= $msg_product_created;
-				} else {
-					$message .= $msg_product_synced;
-				}
-				$message .= $item['name'] . '. SKU: ' . $item['sku'] . '(' . $item_kind . ') <br/>';
+				$result_prod = self::sync_product( $settings, $item, $post_parent, 'variable', null, $option_prefix, $api_erp );
+				$post_id     = $result_prod['prod_id'] ?? 0;
+				$message    .= 0 === $post_parent || false === $post_parent ? $msg_product_created : $msg_product_synced;
+				$message    .= $item['name'] . '. SKU: ' . $item['sku'] . '(' . $item_kind . ') ' . $result_prod['message'] ?? '';
 			}
 		} elseif ( ! $is_filtered && 'pack' === $item_kind && $plugin_grouped_prod_active ) {
 			$post_id = self::find_product( $item['sku'] );
@@ -98,12 +95,13 @@ class PROD {
 						$pack_items     .= $product_pack_id . '/' . $pack_item['u'] . ',';
 						$message        .= ' x ' . $pack_item['u'];
 					}
-					$message   .= '<br/>';
+					$message   .= ' ';
 					$pack_items = substr( $pack_items, 0, -1 );
 				}
 
 				// Update meta for product.
-				$post_id = self::sync_product( $settings, $item, $post_id, 'pack', $pack_items, $option_prefix, $api_erp );
+				$result_prod = self::sync_product( $settings, $item, $post_id, 'pack', $pack_items, $option_prefix, $api_erp );
+				$post_id     = $result_prod['prod_id'] ?? 0;
 			} else {
 				return array(
 					'status'  => 'error',
@@ -111,12 +109,7 @@ class PROD {
 					'message' => __( 'There was an error while inserting new product!', 'connect-woocommerce' ) . ' ' . $item['name'],
 				);
 			}
-			if ( ! $post_id ) {
-				$message .= $msg_product_created;
-			} else {
-				$message .= $msg_product_synced;
-			}
-			$message .= $item['name'] . '. SKU: ' . $item['sku'] . ' (' . $item_kind . ')';
+			$message .= $item['name'] . '. SKU: ' . $item['sku'] . ' (' . $item_kind . ')' . $result_prod['message'] ?? '';
 		} elseif ( ! $is_filtered && 'pack' === $item_kind && ! $plugin_grouped_prod_active ) {
 			$message .= '<span class="warning">' . __( 'Product needs Plugin to import: ', 'connect-woocommerce' );
 			$message .= '<a href="https://wordpress.org/plugins/woo-product-bundle/" target="_blank">WPC Product Bundles for WooCommerce</a> ';
@@ -173,6 +166,7 @@ class PROD {
 		$post_status      = ! empty( $settings['prodst'] ) ? $settings['prodst'] : 'draft';
 		$attribute_cat_id = ! empty( $settings['catattr'] ) ? $settings['catattr'] : '';
 		$is_new_product   = ( 0 === $product_id || false === $product_id ) ? true : false;
+		$message          = '';
 
 		// Start.
 		if ( 'simple' === $type ) {
@@ -264,7 +258,9 @@ class PROD {
 				}
 				break;
 			case 'variable':
-				$product_props = self::sync_product_variable( $settings, $product, $item, $is_new_product, $rate_id, $option_prefix );
+				$result_var    = self::sync_product_variable( $settings, $product, $item, $is_new_product, $rate_id, $option_prefix );
+				$product_props = ! empty( $result_var['props'] ) ? $result_var['props'] : array();
+				$message      .= ! empty( $result_var['message'] ) ? $result_var['message'] : '';
 				break;
 			case 'pack':
 				$product_props = self::sync_product_pack( $settings, $product, $item, $pack_items, $option_prefix );
@@ -298,7 +294,11 @@ class PROD {
 		if ( 'pack' === $type ) {
 			wp_set_object_terms( $product_id, 'woosb', 'product_type' );
 		}
-		return $product_id;
+		return array(
+			'status'  => 'ok',
+			'message' => $message,
+			'prod_id' => $product_id,
+		);
 	}
 
 	/**
@@ -322,7 +322,8 @@ class PROD {
 			wp_set_object_terms( $post_id, 'simple', 'product_type' );
 
 			// Update meta for product.
-			self::sync_product( $settings, $item, $post_id, 'simple', null, $option_prefix, $api_erp );
+			$result_prod = self::sync_product( $settings, $item, $post_id, 'simple', null, $option_prefix, $api_erp );
+			$post_id     = $result_prod['prod_id'] ?? 0;
 		}
 		if ( $from_pack ) {
 			$message .= '<br/>';
@@ -338,7 +339,7 @@ class PROD {
 				$message .= __( 'Product synced: ', 'connect-woocommerce' );
 			}
 		}
-		$message .= $item['name'] . '. SKU: ' . $item['sku'] . ' (' . $item['kind'] . ')';
+		$message .= $item['name'] . '. SKU: ' . $item['sku'] . ' (' . $item['kind'] . ')' . $result_prod['message'] ?? '';
 
 		return array(
 			'post_id' => $post_id,
@@ -373,13 +374,13 @@ class PROD {
 				if ( ! $variation_children || ! $variation_children->exists() ) {
 					continue;
 				}
-				$variations_array[ $child_id ] = $variation_children->get_sku();
+				$variations_item[ $child_id ] = $variation_children->get_sku();
 			}
 		}
 
 		// Remove variations without SKU blank.
-		if ( ! empty( $variations_array ) ) {
-			foreach ( $variations_array as $variation_id => $variation_sku ) {
+		if ( ! empty( $variations_item ) ) {
+			foreach ( $variations_item as $variation_id => $variation_sku ) {
 				if ( $parent_sku == $variation_sku ) {
 					wp_delete_post(
 						$variation_id,
@@ -390,13 +391,13 @@ class PROD {
 		}
 		foreach ( $item['variants'] as $variant ) {
 			$variation_id = 0; // default value.
-			if ( ! $is_new_product && is_array( $variations_array ) ) {
-				$variation_id = array_search( $variant['sku'], $variations_array );
-				unset( $variations_array[ $variation_id ] );
+			if ( ! $is_new_product && is_array( $variations_item ) ) {
+				$variation_id = array_search( $variant['sku'], $variations_item );
+				unset( $variations_item[ $variation_id ] );
 			}
 
 			if ( ! isset( $variant['categoryFields'] ) ) {
-				$message .= '<span class="error">' . __( 'Variation error: ', 'connect-woocommerce' ) . $item['name'] . '. Variant SKU: ' . $variant['sku'] . '(' . $item['kind'] . ') </span><br/>';
+				$message .= '<span class="error">' . __( 'Variation has no attributes: ', 'connect-woocommerce' ) . $item['name'] . '. Variant SKU: ' . $variant['sku'] . '(' . $item['kind'] . ') </span>';
 				continue;
 			}
 			// Get all Attributes for the product.
@@ -463,8 +464,8 @@ class PROD {
 		$data_store->sort_all_product_variations( $product_id );
 
 		// Check if WooCommerce Variations have more than API and unset.
-		if ( ! $is_new_product && ! empty( $variations_array ) ) {
-			foreach ( $variations_array as $variation_id => $variation_sku ) {
+		if ( ! $is_new_product && ! empty( $variations_item ) ) {
+			foreach ( $variations_item as $variation_id => $variation_sku ) {
 				wp_update_post(
 					array(
 						'ID'          => $variation_id,
@@ -495,7 +496,11 @@ class PROD {
 			$product_props['attributes'] = $var_prop;
 		}
 
-		return $product_props;
+		return array(
+			'status'  => 'ok',
+			'props'   => $product_props,
+			'message' => $message,
+		);
 	}
 
 	/**
