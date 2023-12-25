@@ -37,9 +37,9 @@ class PROD {
 		$item_kind   = ! empty( $item['kind'] ) ? $item['kind'] : 'simple';
 
 		if ( in_array( 'woo-product-bundle/wpc-product-bundles.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
-			$plugin_grouped_prod_active = true;
+			$plugin_pack_active = true;
 		} else {
-			$plugin_grouped_prod_active = false;
+			$plugin_pack_active = false;
 		}
 
 		// Translations.
@@ -78,7 +78,7 @@ class PROD {
 				$message    .= 0 === $post_parent || false === $post_parent ? $msg_product_created : $msg_product_synced;
 				$message    .= $item['name'] . '. SKU: ' . $item['sku'] . '(' . $item_kind . ') ' . $result_prod['message'] ?? '';
 			}
-		} elseif ( ! $is_filtered && 'pack' === $item_kind && $plugin_grouped_prod_active ) {
+		} elseif ( ! $is_filtered && 'pack' === $item_kind && $plugin_pack_active ) {
 			$post_id = self::find_product( $item['sku'] );
 
 			if ( ! $post_id ) {
@@ -110,7 +110,7 @@ class PROD {
 				);
 			}
 			$message .= $item['name'] . '. SKU: ' . $item['sku'] . ' (' . $item_kind . ')' . $result_prod['message'] ?? '';
-		} elseif ( ! $is_filtered && 'pack' === $item_kind && ! $plugin_grouped_prod_active ) {
+		} elseif ( ! $is_filtered && 'pack' === $item_kind && ! $plugin_pack_active ) {
 			$message .= '<span class="warning">' . __( 'Product needs Plugin to import: ', 'connect-woocommerce' );
 			$message .= '<a href="https://wordpress.org/plugins/woo-product-bundle/" target="_blank">WPC Product Bundles for WooCommerce</a> ';
 			$message .= '(' . $item_kind . ') </span></br>';
