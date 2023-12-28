@@ -723,4 +723,17 @@ class PROD {
 
 		return $meta_keys;
 	}
+
+	/**
+	 * Return all product fields
+	 *
+	 * @return array
+	 */
+	public static function get_all_product_fields() {
+		return array(
+			'post_title' => __( 'Product Title', 'connect-woocommerce' ),
+			'post_content' => __( 'Product Description', 'connect-woocommerce' ),
+			'post_excerpt' => __( 'Product Short Description', 'connect-woocommerce' ),
+		);
+	}
 }

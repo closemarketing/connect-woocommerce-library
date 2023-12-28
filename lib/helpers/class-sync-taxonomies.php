@@ -223,4 +223,21 @@ class TAX {
 		$text = str_replace( '>', '&gt;', $text );
 		return $text;
 	}
+
+	/**
+	 * Return all custom taxonomies
+	 *
+	 * @return array
+	 */
+	public static function get_all_custom_taxonomies() {
+		$taxonomies        = get_taxonomies( array( 'public' => true ), 'objects' );
+		$custom_taxonomies = array();
+		foreach ( $taxonomies as $taxonomy ) {
+			if ( in_array( $taxonomy->name, array( 'product_type', 'product_shipping_class' ), true ) ) {
+				continue;
+			}
+			$custom_taxonomies[ $taxonomy->name ] = $taxonomy->label;
+		}
+		return $custom_taxonomies;
+	}
 }

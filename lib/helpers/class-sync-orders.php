@@ -122,6 +122,7 @@ class ORDER {
 		$billing_country_code = $order->get_billing_country();
 		$billing_state_code   = $order->get_billing_state();
 		$billing_state        = WC()->countries->get_states( $billing_country_code )[ $billing_state_code ];
+		$order_description    = get_bloginfo( 'name', 'display' ) . ' WooCommerce ' . $order_id;
 
 		/**
 		 * ## Fields
@@ -142,7 +143,7 @@ class ORDER {
 			'contactCp'              => $order->get_billing_postcode(),
 			'contactProvince'        => $billing_state,
 			'contactCountryCode'     => $billing_country_code,
-			'desc'                   => '',
+			'desc'                   => $order_description,
 			'date'                   => $order->get_date_completed() ? strtotime( $order->get_date_completed() ) : strtotime( $order->get_date_created() ),
 			'datestart'              => strtotime( $order->get_date_created() ),
 			'notes'                  => $order->get_customer_note(),

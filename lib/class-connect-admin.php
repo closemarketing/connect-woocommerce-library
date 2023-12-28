@@ -11,6 +11,7 @@
 defined( 'ABSPATH' ) || exit;
 
 use CLOSE\WooCommerce\Library\Helpers\PROD;
+use CLOSE\WooCommerce\Library\Helpers\TAX;
 use CLOSE\WooCommerce\Library\Helpers\HELPER;
 
 /**
@@ -1270,7 +1271,9 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 * @return void
 		 */
 		public function prod_mergevars_callback() {
-			$custom_fields    = PROD::get_all_custom_fields();
+			$product_fields    = PROD::get_all_product_fields();
+			$custom_fields     = PROD::get_all_custom_fields();
+			$custom_taxonomies = TAX::get_all_custom_taxonomies();
 			$attribute_fields = $this->connapi_erp->get_product_attributes();
 			$settings_mergevars = ! empty( $this->settings_prod_mergevars['prod_mergevars'] ) ? $this->settings_prod_mergevars['prod_mergevars'] : array();
 
@@ -1287,19 +1290,18 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					<div class="product-mergevars">
 						<div class="save-item"><strong><?php esc_html_e( 'Field from ', 'connect-woocommerce' ); echo ' ' . esc_html( $this->options['name'] ); ?></strong></div>
 						<div></div>
-						<div class="save-item"><strong><?php esc_html_e( 'Custom Field ', 'connect-woocommerce' );?></strong></div>
+						<div class="save-item"><strong><?php esc_html_e( 'WooCommerce Field', 'connect-woocommerce' );?></strong></div>
 					</div>
 					<?php
 					$size = isset( $settings_mergevars ) ? count( $settings_mergevars ) : 0;
 					for ( $idx = 0, $size; $idx <= $size; ++$idx ) {
+						$attrprod = isset( $saved_attr[ $idx ]['attrprod'] ) ? $saved_attr[ $idx ]['attrprod'] : '';
 						?>
 						<div class="product-mergevars repeating" style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
 							<div class="save-item">
 								<select name='<?php echo esc_html( $this->options['slug'] ); ?>_prod_mergevars[prod_mergevars][<?php echo esc_html( $idx ); ?>][attrprod]' class="attrprod-publish" data-row="<?php echo esc_html( $idx ); ?>">
 									<option value=''></option>
 									<?php
-									$attrprod = isset( $saved_attr[ $idx ]['attrprod'] ) ? $saved_attr[ $idx ]['attrprod'] : '';
-
 									foreach ( $attribute_fields as $key => $value ) {
 										echo '<option value="' . esc_html( $key ) . '" ';
 										selected( $key, $attrprod );
@@ -1318,14 +1320,34 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 								?>
 								<select name='<?php echo esc_html( $this->options['slug'] ); ?>_prod_mergevars[prod_mergevars][<?php echo esc_html( $idx ); ?>][custom_field]' class="source-cf" onchange="chargeother(this)">
 									<option value=''></option>
+									<optgroup label="<?php esc_html_e( 'Product Fields', 'connect-woocommerce' ); ?>">
+										<?php
+										foreach ( $product_fields as $key => $value ) {
+											echo '<option value="prod|' . esc_html( $key ) . '" ';
+											selected( $key, $saved_attr[ $idx ]['attrprod'] );
+											echo '>' . esc_html( $value ) . '</option>';
+										}
+										?>
+									</optgroup>
+									<optgroup label="<?php esc_html_e( 'Taxonomy Fields', 'connect-woocommerce' ); ?>">
+										<?php
+										foreach ( $custom_taxonomies as $key => $value ) {
+											echo '<option value="tax|' . esc_html( $key ) . '" ';
+											selected( $key, $saved_attr[ $idx ]['attrprod'] );
+											echo '>' . esc_html( $value ) . '</option>';
+										}
+										?>
+									</optgroup>
+									<optgroup label="<?php esc_html_e( 'Custom Fields', 'connect-woocommerce' ); ?>">
 									<?php
 									foreach ( $custom_fields as $key ) {
-										echo '<option value="' . esc_html( $key ) . '" ';
+										echo '<option value="cf|' . esc_html( $key ) . '" ';
 										selected( $key, $saved_custom_field );
 										echo '>' . esc_html( $key ) . '</option>';
 									}
 									echo '<option value="custom">' . esc_html__( 'Customized', 'connect-woocommerce' ) . '</option>';
 									?>
+									</optgroup>
 								</select>
 							</div>
 							<div class="save-item">
