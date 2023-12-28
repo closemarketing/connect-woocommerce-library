@@ -281,10 +281,28 @@ class PROD {
 		// Adds custom fields.
 		$settings_mergevars = get_option( $option_prefix . '_prod_mergevars' );
 		if ( ! empty( $settings_mergevars['prod_mergevars'] ) ) {
+			$product_fields = array();
 			foreach ( $settings_mergevars['prod_mergevars'] as $key => $custom_field ) {
-				if ( isset( $item[ $key ] ) ) {
-					update_post_meta( $product_id, $custom_field, $item[ $key ] );
+				$field_key  = explode( '|', $custom_field );
+				$field_type = isset( $field_key[0] ) ? $field_key[0] : 'cf';
+				$field_slug = isset( $field_key[1] ) ? $field_key[1] : $field_key;
+				if ( isset( $item[ $key ] ) && 'cf' === $field_type ) {
+					update_post_meta( $product_id, $field_slug, $item[ $key ] );
+				} elseif ( isset( $item[ $key ] ) && 'tax' === $field_type ) {
+					wp_set_object_terms( $product_id, $item[ $key ], $field_slug );
+				} elseif ( isset( $item[ $key ] ) && 'prod' === $field_type ) {
+					$product_fields[ $field_slug ] = $item[ $key ];
 				}
+			}
+			if ( ! empty( $product_fields ) ) {
+				wp_update_post(
+					array_merge(
+						array(
+							'ID' => $product_id,
+						),
+						$product_fields
+					)
+				);
 			}
 		}
 
@@ -721,7 +739,10 @@ class PROD {
 					WHERE {$table_prefix}posts.post_type = 'product'";
 		$meta_keys = $wpdb->get_col( $sql );
 
-		return $meta_keys;
+		foreach ( $meta_keys as $meta_key ) {
+			$fields[ 'cf|' . $meta_key ] = $meta_key;
+		}
+		return $fields;
 	}
 
 	/**
@@ -731,9 +752,9 @@ class PROD {
 	 */
 	public static function get_all_product_fields() {
 		return array(
-			'post_title' => __( 'Product Title', 'connect-woocommerce' ),
-			'post_content' => __( 'Product Description', 'connect-woocommerce' ),
-			'post_excerpt' => __( 'Product Short Description', 'connect-woocommerce' ),
+			'prod|post_title' => __( 'Product Title', 'connect-woocommerce' ),
+			'prod|post_content' => __( 'Product Description', 'connect-woocommerce' ),
+			'prod|post_excerpt' => __( 'Product Short Description', 'connect-woocommerce' ),
 		);
 	}
 }

@@ -236,7 +236,7 @@ class TAX {
 			if ( in_array( $taxonomy->name, array( 'product_type', 'product_shipping_class' ), true ) ) {
 				continue;
 			}
-			$custom_taxonomies[ $taxonomy->name ] = $taxonomy->label;
+			$custom_taxonomies[ 'tax|' . $taxonomy->name ] = $taxonomy->label;
 		}
 		return $custom_taxonomies;
 	}

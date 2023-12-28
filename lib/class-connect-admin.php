@@ -1249,7 +1249,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			}
 
 			foreach ( $input['prod_mergevars'] as $mergevar ) {
-				if ( ! empty( $mergevar['attrprod'] ) && ! empty( $mergevar['custom_field'] ) ) {
+				if ( isset( $mergevar['attrprod'] ) && ! empty( $mergevar['custom_field'] ) ) {
 					$sanitary_values['prod_mergevars'][ $mergevar['attrprod'] ] = sanitize_text_field( $mergevar['custom_field'] );
 				}
 			}
@@ -1271,10 +1271,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 * @return void
 		 */
 		public function prod_mergevars_callback() {
-			$product_fields    = PROD::get_all_product_fields();
-			$custom_fields     = PROD::get_all_custom_fields();
-			$custom_taxonomies = TAX::get_all_custom_taxonomies();
-			$attribute_fields = $this->connapi_erp->get_product_attributes();
+			$product_fields     = PROD::get_all_product_fields();
+			$custom_fields      = PROD::get_all_custom_fields();
+			$custom_taxonomies  = TAX::get_all_custom_taxonomies();
+			$attribute_fields   = $this->connapi_erp->get_product_attributes();
 			$settings_mergevars = ! empty( $this->settings_prod_mergevars['prod_mergevars'] ) ? $this->settings_prod_mergevars['prod_mergevars'] : array();
 
 			$saved_attr = array();
@@ -1314,7 +1314,8 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 							<div class="save-item">
 								<?php 
 								$saved_custom_field = isset( $saved_attr[ $idx ]['custom_field'] ) ? $saved_attr[ $idx ]['custom_field'] : '';
-								if ( ! in_array( $saved_custom_field, $custom_fields, true ) ) {
+								$all_fields = array_merge( $product_fields, $custom_taxonomies, $custom_fields );
+								if ( ! array_key_exists( $saved_custom_field, $all_fields ) ) {
 									$custom_fields[] = $saved_custom_field;
 								}
 								?>
@@ -1323,8 +1324,8 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 									<optgroup label="<?php esc_html_e( 'Product Fields', 'connect-woocommerce' ); ?>">
 										<?php
 										foreach ( $product_fields as $key => $value ) {
-											echo '<option value="prod|' . esc_html( $key ) . '" ';
-											selected( $key, $saved_attr[ $idx ]['attrprod'] );
+											echo '<option value="' . esc_html( $key ) . '" ';
+											selected( $key, $saved_custom_field );
 											echo '>' . esc_html( $value ) . '</option>';
 										}
 										?>
@@ -1332,8 +1333,8 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 									<optgroup label="<?php esc_html_e( 'Taxonomy Fields', 'connect-woocommerce' ); ?>">
 										<?php
 										foreach ( $custom_taxonomies as $key => $value ) {
-											echo '<option value="tax|' . esc_html( $key ) . '" ';
-											selected( $key, $saved_attr[ $idx ]['attrprod'] );
+											echo '<option value="' . esc_html( $key ) . '" ';
+											selected( $key, $saved_custom_field );
 											echo '>' . esc_html( $value ) . '</option>';
 										}
 										?>
@@ -1341,7 +1342,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 									<optgroup label="<?php esc_html_e( 'Custom Fields', 'connect-woocommerce' ); ?>">
 									<?php
 									foreach ( $custom_fields as $key ) {
-										echo '<option value="cf|' . esc_html( $key ) . '" ';
+										echo '<option value="' . esc_html( $key ) . '" ';
 										selected( $key, $saved_custom_field );
 										echo '>' . esc_html( $key ) . '</option>';
 									}
