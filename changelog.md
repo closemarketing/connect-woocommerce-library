@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 * Refactored library with static functions and javascript importer.
 * Added Merge vars for product custom fields, taxonomies and product fields importer.
+* Fix: Orders with products without tax sending tax items.
 
 ## 1.4.1
 
