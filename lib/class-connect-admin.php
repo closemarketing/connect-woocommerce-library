@@ -502,9 +502,20 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				);
 			}
 
+	
+			if ( ! empty( $this->options['product_weight_equivalence'] ) ) {
+				add_settings_field(
+					'wcpimh_product_weight_equivalence',
+					__( 'Custom field for Equivalence with weight', 'connect-woocommerce' ),
+					array( $this, 'product_weight_equivalence_callback' ),
+					$this->options['slug'] . '_admin',
+					'connect_woocommerce_setting_section'
+				);
+			}
+
 			/**
-			 * # Automate
-			 * ---------------------------------------------------------------------------------------------------- */
+			 * ## Automate
+			 * --------------------------- */
 	
 			add_settings_section(
 				'connect_woocommerce_setting_automate',
@@ -732,30 +743,31 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			$imh_settings    = get_option( $this->options['slug'] );
 	
 			$admin_settings = array(
-				'api'        => '',
-				'idcentre'   => '',
-				'url'        => '',
-				'username'   => '',
-				'password'   => '',
-				'dbname'     => '',
-				'stock'      => 'no',
-				'prodst'     => 'draft',
-				'virtual'    => 'no',
-				'backorders' => 'no',
-				'catsep'     => '',
-				'catattr'    => '',
-				'filter'     => '',
-				'tax_option' => 'no',
-				'rates'      => 'default',
-				'catnp'      => 'yes',
-				'doctype'    => 'invoice',
-				'series'     => '',
-				'freeorder'  => 'no',
-				'ecstatus'   => 'all',
-				'design_id'  => '',
-				'sync'       => 'no',
-				'sync_num'   => 5,
-				'sync_email' => 'yes',
+				'api'            => '',
+				'idcentre'       => '',
+				'url'            => '',
+				'username'       => '',
+				'password'       => '',
+				'dbname'         => '',
+				'stock'          => 'no',
+				'prodst'         => 'draft',
+				'virtual'        => 'no',
+				'backorders'     => 'no',
+				'catsep'         => '',
+				'catattr'        => '',
+				'filter'         => '',
+				'tax_option'     => 'no',
+				'rates'          => 'default',
+				'catnp'          => 'yes',
+				'doctype'        => 'invoice',
+				'series'         => '',
+				'freeorder'      => 'no',
+				'ecstatus'       => 'all',
+				'design_id'      => '',
+				'sync'           => 'no',
+				'sync_num'       => 5,
+				'sync_email'     => 'yes',
+				'prod_weight_eq' =>  '',
 			);
 	
 			foreach ( $admin_settings as $setting => $default_value ) {
@@ -1179,6 +1191,30 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'<input class="regular-text" type="text" name="' . $this->options['slug'] . '[design_id]" id="wcpimh_design_id" value="%s">',
 				isset( $this->settings['design_id'] ) ? esc_attr( $this->settings['design_id'] ) : ''
 			);
+		}
+	
+		/**
+		 * Callback Billing nif key
+		 *
+		 * @return void
+		 */
+		public function product_weight_equivalence_callback() {
+			$attribute_fields = $this->connapi_erp->get_product_attributes();
+			if ( empty( $attribute_fields ) ) {
+				return;
+			}
+			?>
+			<select name="<?php echo esc_html( $this->options['slug'] ); ?>[prod_weight_eq]" id="wcpimh_prod_weight_eq">
+				<?php
+				echo '<option value="">' . esc_html__( 'No', 'connect-woocommerce' ) . '</option>';
+				foreach ( $attribute_fields as $value => $label ) {
+					echo '<option value="' . esc_html( $value ) . '" ';
+					selected( $value, $this->settings['prod_weight_eq'] );
+					echo '>' . esc_html( $label ) . '</option>';
+				}
+				?>
+			</select>
+			<?php
 		}
 	
 		/**
