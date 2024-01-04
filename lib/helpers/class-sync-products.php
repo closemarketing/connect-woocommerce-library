@@ -306,6 +306,14 @@ class PROD {
 			}
 		}
 
+		// Equivalence weight.
+		if ( ! empty( $settings['prod_weight_eq'] ) && ! empty( $item[ $settings['prod_weight_eq'] ] ) ) {
+			$product->update_meta_data( 'prod_weight_eq', $item[ $settings['prod_weight_eq'] ] );
+		}
+
+		// Save ERP ID.
+		$product->update_meta_data( $option_prefix . '_id', $item['id'] );
+
 		// Set properties and save.
 		$product->set_props( $product_props );
 		$product->save();
