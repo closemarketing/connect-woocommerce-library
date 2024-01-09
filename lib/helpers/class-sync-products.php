@@ -292,14 +292,15 @@ class PROD {
 				} elseif ( isset( $item[ $custom_field ] ) && 'tax' === $field_type ) {
 					wp_set_object_terms( $product_id, $item[ $custom_field ], $field_slug );
 				} elseif ( isset( $item[ $custom_field ] ) && 'prod' === $field_type ) {
-					$product_info[ $field_slug ] = $item[ $custom_field ];
+					$product_value = $item[ $custom_field ];
+					$product_info[ $field_slug ] = mb_convert_encoding( $product_value, 'UTF-8', mb_detect_encoding( $product_value ) );
 				}
 			}
 
 			if ( ! empty( $product_info ) ) {
-				$product_info['ID'] = $product_id;
+				$product_info['ID']        = $product_id;
 				wp_update_post(
-					$product_info
+					$product_info,
 				);
 			}
 		}
