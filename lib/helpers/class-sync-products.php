@@ -281,27 +281,25 @@ class PROD {
 		// Adds custom fields.
 		$settings_mergevars = get_option( $option_prefix . '_prod_mergevars' );
 		if ( ! empty( $settings_mergevars['prod_mergevars'] ) ) {
-			$product_fields = array();
-			foreach ( $settings_mergevars['prod_mergevars'] as $key => $custom_field ) {
+			$product_info = array();
+			foreach ( $settings_mergevars['prod_mergevars'] as $custom_field ) {
 				$field_key  = explode( '|', $custom_field );
 				$field_type = isset( $field_key[0] ) ? $field_key[0] : 'cf';
 				$field_slug = isset( $field_key[1] ) ? $field_key[1] : $field_key;
-				if ( isset( $item[ $key ] ) && 'cf' === $field_type ) {
-					update_post_meta( $product_id, $field_slug, $item[ $key ] );
-				} elseif ( isset( $item[ $key ] ) && 'tax' === $field_type ) {
-					wp_set_object_terms( $product_id, $item[ $key ], $field_slug );
-				} elseif ( isset( $item[ $key ] ) && 'prod' === $field_type ) {
-					$product_fields[ $field_slug ] = $item[ $key ];
+
+				if ( isset( $item[ $custom_field ] ) && 'cf' === $field_type ) {
+					$product->update_meta_data( $field_slug, $item[ $custom_field ] );
+				} elseif ( isset( $item[ $custom_field ] ) && 'tax' === $field_type ) {
+					wp_set_object_terms( $product_id, $item[ $custom_field ], $field_slug );
+				} elseif ( isset( $item[ $custom_field ] ) && 'prod' === $field_type ) {
+					$product_info[ $field_slug ] = $item[ $custom_field ];
 				}
 			}
-			if ( ! empty( $product_fields ) ) {
+
+			if ( ! empty( $product_info ) ) {
+				$product_info['ID'] = $product_id;
 				wp_update_post(
-					array_merge(
-						array(
-							'ID' => $product_id,
-						),
-						$product_fields
-					)
+					$product_info
 				);
 			}
 		}
