@@ -8,7 +8,7 @@ You will find all the documentation [here](./doc/readme.md).
 
 ## Change log
 
-See the [./changelog.md](changelog.md) file.
+See the [Change log](./changelog.md) file.
 
 ## Help & Support
 

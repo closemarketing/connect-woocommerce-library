@@ -10,6 +10,10 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use CLOSE\WooCommerce\Library\Helpers\PROD;
+use CLOSE\WooCommerce\Library\Helpers\TAX;
+use CLOSE\WooCommerce\Library\Helpers\HELPER;
+
 /**
  * Library for WooCommerce Settings
  *
@@ -41,6 +45,13 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		private $settings_public;
 
 		/**
+		 * Settings
+		 *
+		 * @var array
+		 */
+		private $settings_prod_mergevars;
+
+		/**
 		 * Options name for getting settings
 		 *
 		 * @var array
@@ -62,6 +73,13 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		private $settings_slug;
 
 		/**
+		 * Settings slug
+		 *
+		 * @var string
+		 */
+		private $is_mergevars;
+
+		/**
 		 * Construct of class
 		 *
 		 * @param array $options Options.
@@ -72,6 +90,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			$apiname             = 'Connect_WooCommerce_' . $this->options['name'];
 			$this->connapi_erp   = new $apiname( $options );
 			$this->settings_slug = $this->options['slug'] . '_settings';
+			$this->is_mergevars  = method_exists( $this->connapi_erp, 'get_product_attributes' ) ? true : false;
 
 			add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
 			add_action( 'admin_init', array( $this, 'page_init' ) );
@@ -104,8 +123,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 * @return void
 		 */
 		public function create_admin_page() {
-			$this->settings = get_option( $this->options['slug'] );
-			$this->settings_public = get_option( $this->options['slug'] . '_public' );
+			$this->settings                = get_option( $this->options['slug'] );
+			$this->settings_public         = get_option( $this->options['slug'] . '_public' );
+			$this->settings_prod_mergevars = get_option( $this->options['slug'] . '_prod_mergevars' );
+			$special_tabs                  = ! empty( $this->options['settings_special_tabs'] ) ? $this->options['settings_special_tabs'] : array();
 			?>
 			<div class="header-wrap">
 				<div class="wrapper">
@@ -126,22 +147,33 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</div>
 			<div class="wrap">
 				<?php settings_errors(); ?>
-	
-				<?php $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'sync'; ?>
-	
+
+				<?php $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'sync_products'; ?>
 				<h2 class="nav-tab-wrapper">
-					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=sync" class="nav-tab <?php echo 'sync' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sync products', 'connect-woocommerce' ); ?></a>
-					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=orders" class="nav-tab <?php echo 'orders' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sync Orders', 'connect-woocommerce' ); ?></a>
+					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=sync_products" class="nav-tab <?php echo 'sync_products' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sync products', 'connect-woocommerce' ); ?></a>
+					<?php if ( $this->is_mergevars ) { ?>
+					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=prod_mergevars" class="nav-tab <?php echo 'prod_mergevars' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Merge Vars', 'connect-woocommerce' ); ?></a>
+					<?php } ?>
+					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=sync_orders" class="nav-tab <?php echo 'sync_orders' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sync Orders', 'connect-woocommerce' ); ?></a>
+					<?php
+					if ( in_array( 'subscriptions', $special_tabs, true ) ) {
+						?>
+						<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=subscriptions" class="nav-tab <?php echo 'subscriptions' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Subscriptions', 'connect-woocommerce' ); ?></a>
+						<?php
+					}
+					?>
 					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=automate" class="nav-tab <?php echo 'automate' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Automate', 'connect-woocommerce' ); ?></a>
 					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=settings" class="nav-tab <?php echo 'settings' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Settings', 'connect-woocommerce' ); ?></a>
 					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=public" class="nav-tab <?php echo 'public' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Frontend Settings', 'connect-woocommerce' ); ?></a>
 					<a href="?page=<?php echo esc_html( $this->options['slug'] ); ?>&tab=license" class="nav-tab <?php echo 'license' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'License', 'connect-woocommerce' ); ?></a>
 				</h2>
-	
-				<?php	if ( 'sync' === $active_tab ) { ?>
-					<div id="<?php echo esc_html( $this->options['slug'] ); ?>-engine"></div>
-				<?php } ?>
-				<?php	if ( 'settings' === $active_tab ) { ?>
+
+				<?php
+				if ( 'sync_products' === $active_tab || 'sync_orders' === $active_tab ) {
+					$this->page_get_sync( $active_tab );
+				}
+
+				if ( 'settings' === $active_tab ) { ?>
 					<form method="post" action="options.php">
 						<?php
 							settings_fields( $this->settings_slug );
@@ -182,8 +214,24 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					<?php
 				}
 
-				if ( 'orders' === $active_tab ) {
-					$this->page_sync_orders();
+				if ( 'prod_mergevars' === $active_tab && $this->is_mergevars ) {
+					?>
+					<form method="post" action="options.php">
+						<?php
+						settings_fields( $this->options['slug'] . '_settings_prod_mergevars' );
+						do_settings_sections( $this->options['slug'] . '_prod_mergevars' );
+						submit_button(
+							__( 'Save merge', 'connect-woocommerce' ),
+							'primary',
+							'submit_prod_mergevars'
+						);
+						?>
+					</form>
+					<?php
+				}
+
+				if ( 'subscriptions' === $active_tab ) {
+					$this->page_get_subscriptions();
 				}
 
 				if ( 'license' === $active_tab ) {
@@ -272,7 +320,18 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					'connect_woocommerce_setting_section'
 				);
 			}
-	
+
+			// DB Name.
+			if ( in_array( 'dbname', $settings_fields, true ) ) {
+				add_settings_field(
+					'wcpimh_dbname',
+					__( 'DB Name', 'connect-woocommerce' ),
+					array( $this, 'dbname_callback' ),
+					$this->options['slug'] . '_admin',
+					'connect_woocommerce_setting_section'
+				);
+			}
+			
 			// Username.
 			if ( in_array( 'username', $settings_fields, true ) ) {
 				add_settings_field(
@@ -305,7 +364,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					'connect_woocommerce_setting_section'
 				);
 			}
-	
+
 			if ( $this->options['product_option_stock'] ) {
 				add_settings_field(
 					'wcpimh_stock',
@@ -442,10 +501,21 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					'connect_woocommerce_setting_section'
 				);
 			}
+
 	
+			if ( ! empty( $this->options['product_weight_equivalence'] ) ) {
+				add_settings_field(
+					'wcpimh_product_weight_equivalence',
+					__( 'Custom field for Equivalence with weight', 'connect-woocommerce' ),
+					array( $this, 'product_weight_equivalence_callback' ),
+					$this->options['slug'] . '_admin',
+					'connect_woocommerce_setting_section'
+				);
+			}
+
 			/**
-			 * # Automate
-			 * ---------------------------------------------------------------------------------------------------- */
+			 * ## Automate
+			 * --------------------------- */
 	
 			add_settings_section(
 				'connect_woocommerce_setting_automate',
@@ -454,6 +524,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				$this->options['slug'] . '_automate'
 			);
 			$name_sync = __( 'When do you want to sync?', 'connect-woocommerce' );
+
 			add_settings_field(
 				'wcpimh_sync',
 				$name_sync,
@@ -478,6 +549,31 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				$this->options['slug'] . '_automate',
 				'connect_woocommerce_setting_automate'
 			);
+
+			/**
+			 * ## Merge Vars
+			 * --------------------------- */
+	
+			register_setting(
+				$this->options['slug'] . '_settings_prod_mergevars',
+				$this->options['slug'] . '_prod_mergevars',
+				array( $this, 'sanitize_fields_prod_mergevars' )
+			);
+	
+			add_settings_section(
+				'imhset_prod_mergevars_setting_section',
+				__( 'Merge variables from product attributes to custom fields', 'connect-woocommerce' ),
+				array( $this, 'section_info_prod_mergevars' ),
+				$this->options['slug'] . '_prod_mergevars'
+			);
+	
+			add_settings_field(
+				'wcpimh_prod_mergevars',
+				__( 'Merge fields with product', 'connect-woocommerce' ),
+				array( $this, 'prod_mergevars_callback' ),
+				$this->options['slug'] . '_prod_mergevars',
+				'imhset_prod_mergevars_setting_section'
+			);
 	
 			/**
 			 * ## Public
@@ -486,10 +582,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			register_setting(
 				$this->options['slug'] . '_settings_public',
 				$this->options['slug'] . '_public',
-				array(
-					$this,
-					'sanitize_fields_public',
-				)
+				array( $this, 'sanitize_fields_public' )
 			);
 	
 			add_settings_section(
@@ -587,12 +680,56 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		}
 	
 		/**
-		 * Page Sync Orders
+		 * Page get Merge Product variables
 		 *
 		 * @return void
 		 */
-		public function page_sync_orders() {
-			echo '<div id="' . $this->options['slug'] . '-engine-orders"></div>';
+		public function page_get_sync( $type = 'sync_products' ) {
+			$ajax_action = $this->options['slug'] . '_' . $type;
+			?>
+			<div class="connwoo-sync-engine">
+				<div class="sync-wrapper">
+					<h2><?php
+					sprintf(
+						esc_html__( 'Import Products from %s', 'connect-woocommerce' ),
+						esc_html( $this->options['name'] ) );
+						?>
+					</h2>
+					<p><?php esc_html_e( 'After you fillup the API settings, use the button below to import the products. The importing process may take a while and you need to keep this page open to complete it.', 'connect-woocommerce' ); ?>
+					</p>
+					<br/>
+					<div id="sync-products" name="sync-products" class="button button-large button-primary" onclick="syncManualItems(this, '<?php echo esc_attr( $ajax_action ); ?>', 0);" <?php if ( false === $this->connapi_erp->check_can_sync() ) { echo ' disabled'; } ?>><?php esc_html_e( 'Start Import', 'connect-crm-realstate' ); ?></div>
+				</div>
+				<fieldset id="logwrapper">
+					<legend><?php esc_html_e( 'Log', 'connect-woocommerce' ); ?></legend>
+					<div id="loglist"></div>
+				</fieldset>
+			</div>
+			<?php
+		}
+
+		/**
+		 * Page get subscriptions
+		 *
+		 * @return void
+		 */
+		public function page_get_subscriptions() {
+			?>
+			<div id="<?php echo esc_attr( $this->options['slug'] ); ?>-engine-subscriptions">
+				<input type="text" id="conwoo-wp-email">						
+				<button id="wp-get-user-data" class="button button-primary">
+				get wordpress user by email
+				</button>
+				<div id="wp-user-data">
+				</div>
+				<input type="text" id="conwoo-sub-id">						
+				<button id="conwoo-get-subs" class="button button-primary">
+				get subs
+				</button>
+				<div id="odoo-user-subs">
+				</div>
+			</div>
+			<?php
 		}
 	
 		/**
@@ -606,29 +743,31 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			$imh_settings    = get_option( $this->options['slug'] );
 	
 			$admin_settings = array(
-				'api'        => '',
-				'idcentre'   => '',
-				'url'        => '',
-				'username'   => '',
-				'password'   => '',
-				'stock'      => 'no',
-				'prodst'     => 'draft',
-				'virtual'    => 'no',
-				'backorders' => 'no',
-				'catsep'     => '',
-				'catattr'    => '',
-				'filter'     => '',
-				'tax_option' => 'no',
-				'rates'      => 'default',
-				'catnp'      => 'yes',
-				'doctype'    => 'invoice',
-				'series'     => '',
-				'freeorder'  => 'no',
-				'ecstatus'   => 'all',
-				'design_id'  => '',
-				'sync'       => 'no',
-				'sync_num'   => 5,
-				'sync_email' => 'yes',
+				'api'            => '',
+				'idcentre'       => '',
+				'url'            => '',
+				'username'       => '',
+				'password'       => '',
+				'dbname'         => '',
+				'stock'          => 'no',
+				'prodst'         => 'draft',
+				'virtual'        => 'no',
+				'backorders'     => 'no',
+				'catsep'         => '',
+				'catattr'        => '',
+				'filter'         => '',
+				'tax_option'     => 'no',
+				'rates'          => 'default',
+				'catnp'          => 'yes',
+				'doctype'        => 'invoice',
+				'series'         => '',
+				'freeorder'      => 'no',
+				'ecstatus'       => 'all',
+				'design_id'      => '',
+				'sync'           => 'no',
+				'sync_num'       => 5,
+				'sync_email'     => 'yes',
+				'prod_weight_eq' =>  '',
 			);
 	
 			foreach ( $admin_settings as $setting => $default_value ) {
@@ -652,7 +791,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		public function section_automate() {
 			global $wpdb;
 			$table_sync = $this->options['table_sync'];
-			connwoo_check_table_sync( $table_sync );
+			HELPER::check_table_sync( $table_sync );
 			$count        = $wpdb->get_var( "SELECT COUNT(*) FROM $table_sync WHERE synced = 1" );
 			$total_count  = $wpdb->get_var( "SELECT COUNT(*) FROM $table_sync" );
 			$count_return = $count . ' / ' . $total_count;
@@ -756,6 +895,18 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			printf(
 				'<input class="regular-text" type="text" name="' . $this->options['slug'] . '[username]" id="wcpimh_username" value="%s">',
 				isset( $this->settings['username'] ) ? esc_attr( $this->settings['username'] ) : ''
+			);
+		}
+	
+		/**
+		 * DB Name input
+		 *
+		 * @return void
+		 */
+		public function dbname_callback() {
+			printf(
+				'<input class="regular-text" type="text" name="' . $this->options['slug'] . '[dbname]" id="wcpimh_dbname" value="%s">',
+				isset( $this->settings['dbname'] ) ? esc_attr( $this->settings['dbname'] ) : ''
 			);
 		}
 	
@@ -901,11 +1052,11 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 * @return void
 		 */
 		public function tax_option_callback() {
-			$tax_option = isset( $this->settings['tax_option'] ) ? $this->settings['tax_option'] : 'no';
+			$tax_price = isset( $this->settings['tax'] ) ? $this->settings['tax'] : 'no';
 			?>
-			<select name="<?php echo esc_html( $this->options['slug'] ); ?>[tax_option]" id="wcsen_tax">
-				<option value="yes" <?php selected( $tax_option, 'yes' ); ?>><?php esc_html_e( 'Yes, tax included', 'connect-woocommerce' ); ?></option>
-				<option value="no" <?php selected( $tax_option, 'no' ); ?>><?php esc_html_e( 'No, tax not included', 'connect-woocommerce' ); ?></option>
+			<select name="<?php echo esc_html( $this->options['slug'] ); ?>[tax_price]" id="wcsen_tax">
+				<option value="yes" <?php selected( $tax_price, 'yes' ); ?>><?php esc_html_e( 'Yes, tax included', 'connect-woocommerce' ); ?></option>
+				<option value="no" <?php selected( $tax_price, 'no' ); ?>><?php esc_html_e( 'No, tax not included', 'connect-woocommerce' ); ?></option>
 			</select>
 			<?php
 		}
@@ -1024,7 +1175,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			?>
 			<select name="<?php echo esc_html( $this->options['slug'] ); ?>[ecstatus]" id="wcpimh_ecstatus">
 				<option value="all" <?php selected( $ecstatus, 'all' ); ?>><?php esc_html_e( 'All status orders', 'connect-woocommerce' ); ?></option>
-	
+
 				<option value="completed" <?php selected( $ecstatus, 'completed' ); ?>><?php esc_html_e( 'Only Completed', 'connect-woocommerce' ); ?></option>
 			</select>
 			<?php
@@ -1040,6 +1191,30 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'<input class="regular-text" type="text" name="' . $this->options['slug'] . '[design_id]" id="wcpimh_design_id" value="%s">',
 				isset( $this->settings['design_id'] ) ? esc_attr( $this->settings['design_id'] ) : ''
 			);
+		}
+	
+		/**
+		 * Callback Billing nif key
+		 *
+		 * @return void
+		 */
+		public function product_weight_equivalence_callback() {
+			$attribute_fields = $this->connapi_erp->get_product_attributes();
+			if ( empty( $attribute_fields ) ) {
+				return;
+			}
+			?>
+			<select name="<?php echo esc_html( $this->options['slug'] ); ?>[prod_weight_eq]" id="wcpimh_prod_weight_eq">
+				<?php
+				echo '<option value="">' . esc_html__( 'No', 'connect-woocommerce' ) . '</option>';
+				foreach ( $attribute_fields as $value => $label ) {
+					echo '<option value="' . esc_html( $value ) . '" ';
+					selected( $value, $this->settings['prod_weight_eq'] );
+					echo '>' . esc_html( $label ) . '</option>';
+				}
+				?>
+			</select>
+			<?php
 		}
 	
 		/**
@@ -1087,9 +1262,141 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			?>
 			<select name="<?php echo esc_html( $this->options['slug'] ); ?>[sync_email]" id="wcpimh_sync_email">
 				<option value="yes" <?php selected( $sync_email, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
-	
 				<option value="no" <?php selected( $sync_email, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 			</select>
+			<?php
+		}
+
+		/**
+		 * ## Merge vars
+		 * --------------------------- */
+
+		/**
+		 * Sanitize fiels before saves in DB
+		 *
+		 * @param array $input Input fields.
+		 * @return array
+		 */
+		public function sanitize_fields_prod_mergevars( $input ) {
+			$sanitary_values = array();
+
+			if ( ! isset( $input['prod_mergevars'] ) ) {
+				return $sanitary_values;
+			}
+
+			foreach ( $input['prod_mergevars'] as $mergevar ) {
+				if ( isset( $mergevar['attrprod'] ) && ! empty( $mergevar['custom_field'] ) ) {
+					$sanitary_values['prod_mergevars'][ $mergevar['attrprod'] ] = sanitize_text_field( $mergevar['custom_field'] );
+				}
+			}
+	
+			return $sanitary_values;
+		}
+
+		/**
+		 * Info for holded automate section.
+		 *
+		 * @return void
+		 */
+		public function section_info_prod_mergevars() {
+			esc_html_e( 'Please select the following settings in order customize your eCommerce. ', 'connect-woocommerce' );
+		}
+		/**
+		 * Page get Merge Product variables
+		 *
+		 * @return void
+		 */
+		public function prod_mergevars_callback() {
+			$product_fields     = PROD::get_all_product_fields();
+			$custom_fields      = PROD::get_all_custom_fields();
+			$custom_taxonomies  = TAX::get_all_custom_taxonomies();
+			$attribute_fields   = $this->connapi_erp->get_product_attributes();
+			$settings_mergevars = ! empty( $this->settings_prod_mergevars['prod_mergevars'] ) ? $this->settings_prod_mergevars['prod_mergevars'] : array();
+
+			$saved_attr = array();
+			foreach ( $settings_mergevars as $key => $value ) {
+				$saved_attr[] = array(
+					'attrprod' => $key,
+					'custom_field' => $value,
+				);
+			}
+			?>
+			<div id="<?php echo esc_attr( $this->options['slug'] ); ?>-products-mergevars" class="repeater-section">
+				<div class="wrap">
+					<div class="product-mergevars">
+						<div class="save-item"><strong><?php esc_html_e( 'Field from ', 'connect-woocommerce' ); echo ' ' . esc_html( $this->options['name'] ); ?></strong></div>
+						<div></div>
+						<div class="save-item"><strong><?php esc_html_e( 'WooCommerce Field', 'connect-woocommerce' );?></strong></div>
+					</div>
+					<?php
+					$size = isset( $settings_mergevars ) ? count( $settings_mergevars ) : 0;
+					for ( $idx = 0, $size; $idx <= $size; ++$idx ) {
+						$attrprod = isset( $saved_attr[ $idx ]['attrprod'] ) ? $saved_attr[ $idx ]['attrprod'] : '';
+						?>
+						<div class="product-mergevars repeating" style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
+							<div class="save-item">
+								<select name='<?php echo esc_html( $this->options['slug'] ); ?>_prod_mergevars[prod_mergevars][<?php echo esc_html( $idx ); ?>][attrprod]' class="attrprod-publish" data-row="<?php echo esc_html( $idx ); ?>">
+									<option value=''></option>
+									<?php
+									foreach ( $attribute_fields as $key => $value ) {
+										echo '<option value="' . esc_html( $key ) . '" ';
+										selected( $key, $attrprod );
+										echo '>' . esc_html( $value ) . '</option>';
+									}
+									?>
+								</select>
+							</div>
+							<span class="dashicons dashicons-arrow-right-alt2"></span>
+							<div class="save-item">
+								<?php 
+								$saved_custom_field = isset( $saved_attr[ $idx ]['custom_field'] ) ? $saved_attr[ $idx ]['custom_field'] : '';
+								$all_fields = array_merge( $product_fields, $custom_taxonomies, $custom_fields );
+								if ( ! array_key_exists( $saved_custom_field, $all_fields ) ) {
+									$custom_fields[] = $saved_custom_field;
+								}
+								?>
+								<select name='<?php echo esc_html( $this->options['slug'] ); ?>_prod_mergevars[prod_mergevars][<?php echo esc_html( $idx ); ?>][custom_field]' class="source-cf" onchange="chargeother(this)">
+									<option value=''></option>
+									<optgroup label="<?php esc_html_e( 'Product Fields', 'connect-woocommerce' ); ?>">
+										<?php
+										foreach ( $product_fields as $key => $value ) {
+											echo '<option value="' . esc_html( $key ) . '" ';
+											selected( $key, $saved_custom_field );
+											echo '>' . esc_html( $value ) . '</option>';
+										}
+										?>
+									</optgroup>
+									<optgroup label="<?php esc_html_e( 'Taxonomy Fields', 'connect-woocommerce' ); ?>">
+										<?php
+										foreach ( $custom_taxonomies as $key => $value ) {
+											echo '<option value="' . esc_html( $key ) . '" ';
+											selected( $key, $saved_custom_field );
+											echo '>' . esc_html( $value ) . '</option>';
+										}
+										?>
+									</optgroup>
+									<optgroup label="<?php esc_html_e( 'Custom Fields', 'connect-woocommerce' ); ?>">
+									<?php
+									foreach ( $custom_fields as $key ) {
+										echo '<option value="' . esc_html( $key ) . '" ';
+										selected( $key, $saved_custom_field );
+										echo '>' . esc_html( $key ) . '</option>';
+									}
+									echo '<option value="custom">' . esc_html__( 'Customized', 'connect-woocommerce' ) . '</option>';
+									?>
+									</optgroup>
+								</select>
+							</div>
+							<div class="save-item">
+								<a href="#" class="button alt remove"><span class="dashicons dashicons-remove"></span><?php esc_html_e( 'Remove', 'connect-woocommerce' ); ?></a>
+							</div>
+						</div>
+						<?php
+					}
+					?>
+					<a href="#" class="button repeat"><span class="dashicons dashicons-insert"></span><?php esc_html_e( 'Add Another', 'connect-woocommerce' ); ?></a>
+				</div>
+			</div>
 			<?php
 		}
 	
@@ -1725,7 +2032,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 * @return void
 		 */
 		function process_activation_premium() {
-			connwoo_create_table( $this->options['table_sync'] );
+			HELPER::create_sync_table( $this->options['table_sync'] );
 	
 			// Migrates options.
 			$old_settings = get_option( 'imhset' );

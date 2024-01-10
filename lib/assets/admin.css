@@ -1,71 +1,92 @@
-.wp-admin .wcpimh-plugin span.wcpimh-pro{ 
-	color: #b4b9be;
-}
-.wp-admin.wcpimh-plugin #wcpimh_catnp,
-.wp-admin.wcpimh-plugin #wcpimh_stock,
-.wp-admin.wcpimh-plugin #wcpimh_catsep {
-	width: 70px;
-}
-.wp-admin.wcpimh-plugin #wcpimh_idcentre,
-.wp-admin.wcpimh-plugin #wcpimh_sync_num {
-	width: 50px;
-}
-.wp-admin.wcpimh-plugin #wcpimh_prodst {
-	width: 150px;
-}
-.wp-admin.wcpimh-plugin #wcpimh_api,
-.wp-admin.wcpimh-plugin #wcpimh_taxinc {
-	width: 270px;
-}
-.wcpimh-plugin #logwrapper {
-	border: 1px solid #aaa;
-	margin: 10px auto;
-}
-.wcpimh-plugin fieldset {
-	padding: 20px;
-	width: auto;
-}
-.wcpimh-plugin #loglist {
-	border: 1px solid #AAAAAA;
-	height: 380px;
-	overflow: auto;
-}
-.wcpimh-plugin #loglist > p {
-	margin: 0;
-	padding: 3px 5px;
-}
-.wcpimh-plugin #loglist > p.odd {
-	background: #dfdfdf;
-}
-.wcpimh-plugin #loglist > p.finish {
-	background: #76d771;
-}
-.wcpimh-plugin .error {
-	color: red;
+.wp-admin #wcpimh_catnp,
+.wp-admin #wcpimh_stock,
+.wp-admin #wcpimh_catsep {
+  width: 70px;
 }
 
-.wcpimh-plugin .warning {
-	color: orange;
+.wp-admin #wcpimh_idcentre,
+.wp-admin #wcpimh_sync_num {
+  width: 50px;
+}
+
+.wp-admin #wcpimh_prodst {
+  width: 150px;
+}
+
+.wp-admin #wcpimh_api,
+.wp-admin #wcpimh_taxinc {
+  width: 270px;
+}
+
+.connwoo-sync-engine #logwrapper {
+  border: 1px solid #aaa;
+  margin: 10px auto;
+}
+
+.connwoo-sync-engine fieldset {
+  padding: 20px;
+  width: auto;
+}
+
+.connwoo-sync-engine #loglist {
+  border: 1px solid #AAAAAA;
+  height: 380px;
+  overflow: auto;
+}
+
+.connwoo-sync-engine #loglist>p {
+  margin: 0;
+  padding: 3px 5px;
+}
+
+.connwoo-sync-engine #loglist>p.odd {
+  background: #dfdfdf;
+}
+
+.connwoo-sync-engine #loglist>p.finish {
+  background: #76d771;
+}
+
+.connwoo-sync-engine .error {
+  color: red;
+}
+
+.connwoo-sync-engine .warning {
+  color: orange;
 }
 
 .connwoo-header {
-	background: #D33564 url( 'background.svg' );
-	margin-left: -20px;
-	padding: 20px 15%;
-	display: flex;
-	justify-content: space-between;
-	color: white;
-	background-repeat: no-repeat;
-	background-size: cover;
+  background: #D33564 url('background.svg');
+  margin-left: -20px;
+  padding: 20px 15%;
+  display: flex;
+  justify-content: space-between;
+  color: white;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .connwoo-header .logo {
-	min-width: 20%;
+  min-width: 20%;
 }
 
 .connwoo-header h2 {
-	float: right;
-	color: white;
-	padding: 10px 0 0 30px;
-	margin: 0;
+  float: right;
+  color: white;
+  padding: 10px 0 0 30px;
+  margin: 0;
+}
+
+.repeater-section .product-mergevars {
+	display: grid;
+	grid-template-columns: 3fr 1fr 3fr 1fr;
+}
+
+.repeater-section .dashicons {
+	padding-top: 4px;
+	padding-right: 5px;
+}
+
+.repeater-section .dashicons.dashicons-arrow-right-alt2 {
+	padding-top: 7px;
 }
