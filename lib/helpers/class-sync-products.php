@@ -477,7 +477,8 @@ class PROD {
 			} else {
 				$variation->set_manage_stock( false );
 			}
-			if ( $is_new_product ) {
+			$variation_prevent_id = self::find_product( $variant['sku'] );
+			if ( $is_new_product && empty( $variation_prevent_id ) ) {
 				$variation->set_sku( $variant['sku'] );
 			}
 			$variation->save();
@@ -614,7 +615,7 @@ class PROD {
 		$meta_key     = '_sku';
 		$result_query = $wpdb->get_var( $wpdb->prepare( "SELECT P.ID FROM $wpdb->posts AS P LEFT JOIN $wpdb->postmeta AS PM ON PM.post_id = P.ID WHERE P.post_type = '$post_type' AND PM.meta_key='$meta_key' AND PM.meta_value=%s AND P.post_status != 'trash' LIMIT 1", $sku ) );
 
-		return $result_query;
+		return (int) $result_query;
 	}
 
 	/**
