@@ -478,7 +478,15 @@ class PROD {
 				$variation->set_manage_stock( false );
 			}
 			$variation_prevent_id = self::find_product( $variant['sku'] );
-			if ( $is_new_product && empty( $variation_prevent_id ) ) {
+			if ( ! empty( $variation_prevent_id ) ) {
+				$message .= sprintf(
+					/* translators: %s: SKU */
+					__( 'Duplicated SKU: %s (not imported) ', 'connect-woocommerce' ),
+					$variant['sku']
+				);
+				continue;
+			}
+			if ( $is_new_product ) {
 				$variation->set_sku( $variant['sku'] );
 			}
 			$variation->save();
