@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 * Added: Merge vars for product custom fields, taxonomies and product fields importer.
 * Added: Import product from product view.
 * Fix: Orders with products without tax sending tax items.
+* Fix: Prevents fatal error in variations while have duplicated SKUs.
 
 ## 1.4.1
 
