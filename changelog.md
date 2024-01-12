@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.5.1
+
+* Fix: Required parameter $option_prefix follows optional.
+* Minor fixes.
+
 ## 1.5.0
 
 * Refactored library with static functions and javascript importer.

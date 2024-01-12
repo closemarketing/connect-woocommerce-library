@@ -88,5 +88,6 @@ require_once PREFIX_PLUGIN_PATH . 'includes/class-api-erp.php';
 
 // Connect WooCommerce Library.
 require_once PREFIX_PLUGIN_PATH . 'vendor/closemarketing/connect-woocommerce-library/loader.php';
+
 new Connect_WooCommerce( $connwoo_options_erp );
 ```
