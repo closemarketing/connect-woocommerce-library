@@ -103,15 +103,30 @@ class TAX {
 	}
 
 	/**
+	 * Set Terms Taxonomy
+	 *
+	 * @param string       $taxonomy Taxonomy name.
+	 * @param array|string $terms Terms to set.
+	 * @param int          $post_id Post id.
+	 *
+	 * @return void
+	 */
+	public static function set_terms_taxonomy( $taxonomy, $terms, $post_id ) {
+		$terms     = is_array( $terms ) ? $terms : array( $terms );
+		$terms_ids = self::find_categories_ids( $terms, $taxonomy );
+		wp_set_object_terms( $post_id, $terms_ids, $taxonomy );
+	}
+
+	/**
 	 * Finds product categories ids from array of names given
 	 *
-	 * @param array $product_cat_names Array of names.
+	 * @param array  $product_cat_names Array of names.
+	 * @param string $taxonomy_name Name of taxonomy.
 	 * @return string IDS of categories.
 	 */
-	private static function find_categories_ids( $product_cat_names ) {
-		$level         = 0;
-		$cats_ids      = array();
-		$taxonomy_name = 'product_cat';
+	private static function find_categories_ids( $product_cat_names, $taxonomy_name = 'product_cat' ) {
+		$level    = 0;
+		$cats_ids = array();
 
 		foreach ( $product_cat_names as $product_cat_name ) {
 			$cat_slug    = sanitize_title( $product_cat_name );

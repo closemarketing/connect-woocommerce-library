@@ -1286,10 +1286,13 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 
 			foreach ( $input['prod_mergevars'] as $mergevar ) {
 				if ( isset( $mergevar['attrprod'] ) && ! empty( $mergevar['custom_field'] ) ) {
+					if ( false === strpos( $mergevar['custom_field'], '|' ) ) {
+						$mergevar['custom_field'] = 'cf|' . $mergevar['custom_field'];
+					}
 					$sanitary_values['prod_mergevars'][ $mergevar['attrprod'] ] = sanitize_text_field( $mergevar['custom_field'] );
 				}
 			}
-	
+
 			return $sanitary_values;
 		}
 
@@ -1307,16 +1310,17 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 * @return void
 		 */
 		public function prod_mergevars_callback() {
-			$product_fields     = PROD::get_all_product_fields();
-			$custom_fields      = PROD::get_all_custom_fields();
-			$custom_taxonomies  = TAX::get_all_custom_taxonomies();
-			$attribute_fields   = $this->connapi_erp->get_product_attributes();
+			$product_fields    = PROD::get_all_product_fields();
+			$custom_fields     = PROD::get_all_custom_fields();
+			$custom_taxonomies = TAX::get_all_custom_taxonomies();
+			$attribute_fields  = $this->connapi_erp->get_product_attributes();
+			asort( $attribute_fields );
 			$settings_mergevars = ! empty( $this->settings_prod_mergevars['prod_mergevars'] ) ? $this->settings_prod_mergevars['prod_mergevars'] : array();
 
 			$saved_attr = array();
 			foreach ( $settings_mergevars as $key => $value ) {
 				$saved_attr[] = array(
-					'attrprod' => $key,
+					'attrprod'     => $key,
 					'custom_field' => $value,
 				);
 			}
@@ -1341,7 +1345,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 									foreach ( $attribute_fields as $key => $value ) {
 										echo '<option value="' . esc_html( $key ) . '" ';
 										selected( $key, $attrprod );
-										echo '>' . esc_html( $value ) . '</option>';
+										echo '>' . esc_html( $value ) . ' (' . esc_html( $key ) . ')</option>';
 									}
 									?>
 								</select>
@@ -1377,10 +1381,11 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 									</optgroup>
 									<optgroup label="<?php esc_html_e( 'Custom Fields', 'connect-woocommerce' ); ?>">
 									<?php
-									foreach ( $custom_fields as $key ) {
+									foreach ( $custom_fields as $key => $value ) {
+										$key = empty( $key ) ? $value : $key;
 										echo '<option value="' . esc_html( $key ) . '" ';
 										selected( $key, $saved_custom_field );
-										echo '>' . esc_html( $key ) . '</option>';
+										echo '>' . esc_html( $value ) . '</option>';
 									}
 									echo '<option value="custom">' . esc_html__( 'Customized', 'connect-woocommerce' ) . '</option>';
 									?>

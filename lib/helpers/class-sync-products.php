@@ -47,7 +47,7 @@ class PROD {
 		$msg_product_synced  = __( 'Product synced: ', 'connect-woocommerce' );
 
 		if ( ! $is_filtered && $item['sku'] && 'simple' === $item_kind ) {
-			$result_post = self::sync_product_simple( $settings, $item, false, $option_prefix, $api_erp );
+			$result_post = self::sync_product_simple( $settings, $item, $option_prefix, $api_erp );
 			$post_id     = $result_post['post_id'] ?? 0;
 			$message    .= $result_post['message'] ?? '';
 		} elseif ( ! $is_filtered && 'variants' === $item_kind ) {
@@ -73,7 +73,7 @@ class PROD {
 				$message .= __( 'Product not imported becouse any variant has got SKU: ', 'connect-woocommerce' ) . $item['name'] . '(' . $item_kind . ') <br/>';
 			} else {
 				// Update meta for product.
-				$result_prod = self::sync_product( $settings, $item, $post_parent, 'variable', null, $option_prefix, $api_erp );
+				$result_prod = self::sync_product( $settings, $item, $option_prefix, $api_erp, $post_parent, 'variable', null );
 				$post_id     = $result_prod['prod_id'] ?? 0;
 				$message    .= 0 === $post_parent || false === $post_parent ? $msg_product_created : $msg_product_synced;
 				$message    .= $item['name'] . '. SKU: ' . $item['sku'] . '(' . $item_kind . ') ' . $result_prod['message'] ?? '';
@@ -91,7 +91,7 @@ class PROD {
 				if ( isset( $item['packItems'] ) && ! empty( $item['packItems'] ) ) {
 					foreach ( $item['packItems'] as $pack_item ) {
 						$item_simple     = $api_erp->get_products( $pack_item['pid'] );
-						$product_pack_id = self::sync_product_simple( $settings, $item_simple, true, $option_prefix, $api_erp );
+						$product_pack_id = self::sync_product_simple( $settings, $item_simple, $option_prefix, $api_erp, true );
 						$pack_items     .= $product_pack_id . '/' . $pack_item['u'] . ',';
 						$message        .= ' x ' . $pack_item['u'];
 					}
@@ -100,7 +100,7 @@ class PROD {
 				}
 
 				// Update meta for product.
-				$result_prod = self::sync_product( $settings, $item, $post_id, 'pack', $pack_items, $option_prefix, $api_erp );
+				$result_prod = self::sync_product( $settings, $item, $option_prefix, $api_erp, $post_id, 'pack', $pack_items );
 				$post_id     = $result_prod['prod_id'] ?? 0;
 			} else {
 				return array(
@@ -150,15 +150,15 @@ class PROD {
 	 *
 	 * @param object $settings Product settings.
 	 * @param object $item Item Object from ERP.
+	 * @param string $option_prefix Slug of the plugin.
+	 * @param object $api_erp API Object.
 	 * @param string $product_id Product ID. If is null, is new product.
 	 * @param string $type Type of the product.
 	 * @param array  $pack_items Array of packs: post_id and qty.
-	 * @param string $option_prefix Slug of the plugin.
-	 * @param object $api_erp API Object.
 	 *
 	 * @return int $product_id Product ID.
 	 */
-	public static function sync_product( $settings, $item, $product_id = 0, $type = 'simple', $pack_items = null, $option_prefix, $api_erp ) {
+	public static function sync_product( $settings, $item, $option_prefix, $api_erp, $product_id = 0, $type = 'simple', $pack_items = null ) {
 		$import_stock     = ! empty( $settings['stock'] ) ? $settings['stock'] : 'no';
 		$is_virtual       = ! empty( $settings['virtual'] ) && 'yes' === $settings['virtual'] ? true : false;
 		$allow_backorders = ! empty( $settings['backorders'] ) ? $settings['backorders'] : 'yes';
@@ -224,6 +224,7 @@ class PROD {
 		$product->save();
 
 		$product_id = $product->get_id();
+		$item_stock = ! empty( $item['stock'] ) ? $item['stock'] : 0;
 
 		switch ( $type ) {
 			case 'simple':
@@ -236,14 +237,14 @@ class PROD {
 					$product_props['catalog_visibility'] = 'visible';
 					wp_remove_object_terms( $product_id, 'exclude-from-catalog', 'product_visibility' );
 					wp_remove_object_terms( $product_id, 'exclude-from-search', 'product_visibility' );
-				} elseif ( 'yes' === $import_stock && $item['stock'] > 0 ) {
+				} elseif ( 'yes' === $import_stock && $item_stock > 0 ) {
 					$product_props['manage_stock']       = true;
-					$product_props['stock_quantity']     = $item['stock'];
+					$product_props['stock_quantity']     = $item_stock;
 					$product_props['stock_status']       = 'instock';
 					$product_props['catalog_visibility'] = 'visible';
 					wp_remove_object_terms( $product_id, 'exclude-from-catalog', 'product_visibility' );
 					wp_remove_object_terms( $product_id, 'exclude-from-search', 'product_visibility' );
-				} elseif ( 'yes' === $import_stock && 0 === $item['stock'] ) {
+				} elseif ( 'yes' === $import_stock && 0 === $item_stock ) {
 					$product_props['manage_stock']       = true;
 					$product_props['catalog_visibility'] = 'hidden';
 					$product_props['stock_quantity']     = 0;
@@ -286,13 +287,12 @@ class PROD {
 				$field_key  = explode( '|', $custom_field );
 				$field_type = isset( $field_key[0] ) ? $field_key[0] : 'cf';
 				$field_slug = isset( $field_key[1] ) ? $field_key[1] : $field_key;
-
 				if ( isset( $item[ $custom_field ] ) && 'cf' === $field_type ) {
 					$product->update_meta_data( $field_slug, $item[ $custom_field ] );
 				} elseif ( isset( $item[ $custom_field ] ) && 'tax' === $field_type ) {
-					wp_set_object_terms( $product_id, $item[ $custom_field ], $field_slug );
+					TAX::set_terms_taxonomy( $field_slug, $item[ $custom_field ], $product_id );
 				} elseif ( isset( $item[ $custom_field ] ) && 'prod' === $field_type ) {
-					$product_value = $item[ $custom_field ];
+					$product_value               = $item[ $custom_field ];
 					$product_info[ $field_slug ] = mb_convert_encoding( $product_value, 'UTF-8', mb_detect_encoding( $product_value ) );
 				}
 			}
@@ -331,13 +331,13 @@ class PROD {
 	 *
 	 * @param object  $settings Product settings.
 	 * @param array   $item Item from ERP.
-	 * @param boolean $from_pack Item is a pack.
 	 * @param string  $option_prefix Slug of the plugin.
 	 * @param object  $api_erp API Object.
+	 * @param boolean $from_pack Item is a pack.
 	 *
 	 * @return array
 	 */
-	private static function sync_product_simple( $settings, $item, $from_pack = false, $option_prefix, $api_erp ) {
+	private static function sync_product_simple( $settings, $item, $option_prefix, $api_erp, $from_pack = false ) {
 		$message = '';
 		$post_id = self::find_product( $item['sku'] );
 		if ( ! $post_id ) {
@@ -347,7 +347,7 @@ class PROD {
 			wp_set_object_terms( $post_id, 'simple', 'product_type' );
 
 			// Update meta for product.
-			$result_prod = self::sync_product( $settings, $item, $post_id, 'simple', null, $option_prefix, $api_erp );
+			$result_prod = self::sync_product( $settings, $item, $option_prefix, $api_erp, $post_id, 'simple', null );
 			$post_id     = $result_prod['prod_id'] ?? 0;
 		}
 		if ( $from_pack ) {
@@ -738,7 +738,7 @@ class PROD {
 			return $attach_id;
 		}
 	}
-	
+
 	/**
 	 * Return all meta keys from WordPress database in post type
 	 *
@@ -768,7 +768,7 @@ class PROD {
 	 */
 	public static function get_all_product_fields() {
 		return array(
-			'prod|post_title' => __( 'Product Title', 'connect-woocommerce' ),
+			'prod|post_title'   => __( 'Product Title', 'connect-woocommerce' ),
 			'prod|post_content' => __( 'Product Description', 'connect-woocommerce' ),
 			'prod|post_excerpt' => __( 'Product Short Description', 'connect-woocommerce' ),
 		);
