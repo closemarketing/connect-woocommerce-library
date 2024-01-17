@@ -36,6 +36,7 @@ class ORDER {
 		$ec_invoice_id  = $order->get_meta( $meta_key_order );
 		$freeorder      = isset( $settings['freeorder'] ) ? $settings['freeorder'] : 'no';
 		$order_free_msg = __( 'Free order not created ', 'connect-woocommerce' );
+		$is_debug_log   = isset( $settings['debug_log'] ) && 'on' === $settings['debug_log'] ? true : false;
 
 		// Not create order if free.
 		if ( 'no' === $freeorder && empty( $order_total ) && empty( $ec_invoice_id ) ) {
@@ -62,14 +63,14 @@ class ORDER {
 				'message' => __( 'Connot create refund', 'connect-woocommerce' ),
 			);
 		}
-		$doctype    = isset( $settings['doctype'] ) ? $settings['doctype'] : 'invoice';
+		$doctype = isset( $settings['doctype'] ) ? $settings['doctype'] : 'invoice';
 
 		// Create the inovice.
+		$order_data = self::generate_order_data( $settings, $order, $option_prefix );
 		if ( empty( $ec_invoice_id ) || $force ) {
 			try {
 				$doc_id     = $order->get_meta( '_' . $option_prefix . '_doc_id' );
 				$invoice_id = $order->get_meta( $meta_key_order );
-				$order_data = self::generate_order_data( $settings, $order, $option_prefix );
 				$result     = $api_erp->create_order( $order_data, $doc_id, $invoice_id, $force );
 
 				$doc_id     = 'error' === $result['status'] ? '' : $result['document_id'];
@@ -82,20 +83,22 @@ class ORDER {
 				$order_msg = __( 'Order synced correctly with ERP, ID: ', 'connect-woocommerce-holded' ) . $invoice_id;
 
 				$order->add_order_note( $order_msg );
-				return $result;
-
 			} catch ( \Exception $e ) {
-				return array(
+				$result = array(
 					'status'  => 'error',
 					'message' => $e,
 				);
 			}
 		} else {
-			return array(
+			$result = array(
 				'status'  => 'error',
 				'message' => $doctype . ' ' . __( 'num: ', 'connect-woocommerce' ) . $ec_invoice_id,
 			);
 		}
+		if ( $is_debug_log ) {
+			HELPER::save_log( 'create_order', $order_data, $result, $option_prefix );
+		}
+		return $result;
 	}
 
 	/**
@@ -206,7 +209,7 @@ class ORDER {
 		$fields_items = array();
 		$index        = 0;
 		$index_bund   = 0;
-		$tax = new \WC_Tax();
+		$tax          = new \WC_Tax();
 
 		// Order Items.
 		foreach ( $order->get_items() as $item_id => $item ) {
@@ -253,13 +256,13 @@ class ORDER {
 					$fields_items[ $index_bund ]['tax']      = round( $vat_per, 0 );
 				}
 			} else {
-				$product  = $item->get_product();
+				$product    = $item->get_product();
 				$item_qty   = (int) $item->get_quantity();
 				$price_line = $item->get_subtotal() / $item_qty;
 				$has_tax    = $item->get_total() === $item->get_subtotal() ? false : true;
-				
+
 				// Taxes.
-				$taxes     = $tax->get_rates($product->get_tax_class());
+				$taxes     = $tax->get_rates( $product->get_tax_class() );
 				$rates     = array_shift( $taxes );
 				$item_rate = $has_tax ? round( array_shift( $rates ) ) : 0;
 
@@ -272,14 +275,14 @@ class ORDER {
 					'sku'      => ! empty( $product ) ? $product->get_sku() : '',
 				);
 
-				// Discount
-				$line_discount     = $item->get_subtotal() - $item->get_total();
+				// Discount.
+				$line_discount = $item->get_subtotal() - $item->get_total();
 				if ( $line_discount > 0 ) {
 					$item_subtotal            = $item->get_subtotal();
 					$item_discount_percentage = round( ( $line_discount * 100 ) / $item_subtotal, 2 );
 					$item_data['discount']    = $item_discount_percentage;
 				}
-				
+
 				$fields_items[] = $item_data;
 				$index++;
 			}
@@ -290,9 +293,7 @@ class ORDER {
 		if ( ! empty( $shipping_items ) ) {
 			foreach ( $shipping_items as $shipping_item ) {
 				$shipping_total = (float) $shipping_item->get_total();
-				$tax_percentage = ! empty( $shipping_total ) ? (float) $shipping_item->get_total_tax() * 100 / $shipping_total : 0;
-				$has_tax        = $shipping_item->get_total() === $shipping_item->get_subtotal() ? false : true;
-				$tax_rate       = $has_tax ? round( $tax_percentage, 0 ) : 0;
+				$tax_rate       = ! empty( $shipping_total ) ? (float) $shipping_item->get_total_tax() * 100 / $shipping_total : 0;
 				$fields_items[] = array(
 					'name'     => __( 'Shipping:', 'connect-woocommerce' ) . ' ' . $shipping_item->get_name(),
 					'desc'     => '',

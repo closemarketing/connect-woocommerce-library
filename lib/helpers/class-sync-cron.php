@@ -127,7 +127,7 @@ class CRON {
 	 *
 	 * @param string $table_sync Table name.
 	 * @param string $product_id Product ID that synced.
-	 * @param string $options_prefix Prefix of options.
+	 * @param string $option_prefix Prefix of options.
 	 *
 	 * @return void
 	 */
@@ -137,7 +137,7 @@ class CRON {
 			'prod_id' => $product_id,
 			'synced'  => true,
 		);
-		$update = $wpdb->update(
+		$update    = $wpdb->update(
 			$table_sync,
 			$db_values,
 			array(

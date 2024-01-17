@@ -44,7 +44,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Product_Widget' ) ) {
 		 */
 		public function metabox_products() {
 			add_meta_box(
-				'cw-product-checker',
+				$this->options['slug'] . '-product-checker',
 				__( 'Connect with ', 'connect-woocommerce' ) . $this->options['name'],
 				array( $this, 'metabox_show_product' ),
 				'product',
@@ -82,6 +82,5 @@ if ( ! class_exists( 'Connect_WooCommerce_Product_Widget' ) ) {
 
 			echo '</table>';
 		}
-
 	}
 }

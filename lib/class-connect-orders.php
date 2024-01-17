@@ -48,6 +48,8 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 
 		/**
 		 * Init and hook in the integration.
+		 *
+		 * @param array $options Options of plugin.
 		 */
 		public function __construct( $options ) {
 			$this->options        = $options;
@@ -188,10 +190,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 						$orders_synced = $sync_loop + 1;
 
 						if ( $orders_synced <= $orders_count ) {
-							$order_date = date( 'd-m-Y H:m', strtotime( $order->get_date_created() ) );
-							$message = '[' . date_i18n( 'H:i:s' ) . '] ' . $orders_synced . '/' . $orders_count . ' ' . __( 'orders. ', 'connect-woocommerce' ) .' ' . __( 'Created:', 'connect-woocommerce' ) . ' ' . $order_date . ' ' . $message;
+							$order_date = gmdate( 'd-m-Y H:m', strtotime( $order->get_date_created() ) );
+							$message    = '[' . date_i18n( 'H:i:s' ) . '] ' . $orders_synced . '/' . $orders_count . ' ' . __( 'orders. ', 'connect-woocommerce' ) . ' ' . __( 'Created:', 'connect-woocommerce' ) . ' ' . $order_date . ' ' . $message;
 							if ( $ec_invoice_id ) {
-								$link = get_bloginfo('wpurl') . '/wp-admin/admin.php?page=wc-orders&id=' . $item['id'] . '&action=edit';
+								$link     = get_bloginfo( 'wpurl' ) . '/wp-admin/admin.php?page=wc-orders&id=' . $item['id'] . '&action=edit';
 								$message .= ' <a href="' . $link . '" target="_blank">' . __( 'View', 'connect-woocommerce' ) . '</a>';
 							}
 							if ( $orders_synced == $orders_count ) {
