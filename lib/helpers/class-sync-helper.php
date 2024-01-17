@@ -103,8 +103,10 @@ class HELPER {
 		$logger      = wc_get_logger();
 		$source_data = is_array( $source_data ) ? $source_data : array( $source_data );
 		$result      = is_array( $result ) ? $result : array( $result );
-		$message     = $action . ': ' . wp_json_encode( $source_data ) . ' ' . wp_json_encode( $result );
+		$message     = $action . ': ' . wp_json_encode( $source_data );
+		$message_res = 'result: ' . wp_json_encode( $result );
 		$logger->debug( $message, array( 'source' => $option_prefix ) );
+		$logger->debug( $message_res, array( 'source' => $option_prefix ) );
 	}
 
 	/**

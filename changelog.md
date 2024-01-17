@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## 1.5.2
 
 * Added: Option to log problems in WooCommerce logs.
+* Fixed: error while updating order with shipping items.
 
 ## 1.5.1
 
