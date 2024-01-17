@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.5.2
+
+* Added: Option to log problems in WooCommerce logs.
+
 ## 1.5.1
 
 * Fix: Required parameter $option_prefix follows optional.
