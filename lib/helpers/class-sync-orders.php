@@ -209,7 +209,7 @@ class ORDER {
 		$fields_items = array();
 		$index        = 0;
 		$index_bund   = 0;
-		$tax = new \WC_Tax();
+		$tax          = new \WC_Tax();
 
 		// Order Items.
 		foreach ( $order->get_items() as $item_id => $item ) {
@@ -256,13 +256,13 @@ class ORDER {
 					$fields_items[ $index_bund ]['tax']      = round( $vat_per, 0 );
 				}
 			} else {
-				$product  = $item->get_product();
+				$product    = $item->get_product();
 				$item_qty   = (int) $item->get_quantity();
 				$price_line = $item->get_subtotal() / $item_qty;
 				$has_tax    = $item->get_total() === $item->get_subtotal() ? false : true;
-				
+
 				// Taxes.
-				$taxes     = $tax->get_rates($product->get_tax_class());
+				$taxes     = $tax->get_rates( $product->get_tax_class() );
 				$rates     = array_shift( $taxes );
 				$item_rate = $has_tax ? round( array_shift( $rates ) ) : 0;
 
@@ -275,14 +275,14 @@ class ORDER {
 					'sku'      => ! empty( $product ) ? $product->get_sku() : '',
 				);
 
-				// Discount
-				$line_discount     = $item->get_subtotal() - $item->get_total();
+				// Discount.
+				$line_discount = $item->get_subtotal() - $item->get_total();
 				if ( $line_discount > 0 ) {
 					$item_subtotal            = $item->get_subtotal();
 					$item_discount_percentage = round( ( $line_discount * 100 ) / $item_subtotal, 2 );
 					$item_data['discount']    = $item_discount_percentage;
 				}
-				
+
 				$fields_items[] = $item_data;
 				$index++;
 			}
@@ -293,9 +293,7 @@ class ORDER {
 		if ( ! empty( $shipping_items ) ) {
 			foreach ( $shipping_items as $shipping_item ) {
 				$shipping_total = (float) $shipping_item->get_total();
-				$tax_percentage = ! empty( $shipping_total ) ? (float) $shipping_item->get_total_tax() * 100 / $shipping_total : 0;
-				$has_tax        = $shipping_item->get_total() === $shipping_item->get_subtotal() ? false : true;
-				$tax_rate       = $has_tax ? round( $tax_percentage, 0 ) : 0;
+				$tax_rate       = ! empty( $shipping_total ) ? (float) $shipping_item->get_total_tax() * 100 / $shipping_total : 0;
 				$fields_items[] = array(
 					'name'     => __( 'Shipping:', 'connect-woocommerce' ) . ' ' . $shipping_item->get_name(),
 					'desc'     => '',
