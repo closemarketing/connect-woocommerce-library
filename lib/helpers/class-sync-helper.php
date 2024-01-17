@@ -92,13 +92,19 @@ class HELPER {
 	/**
 	 * Saves log in WooCommerce
 	 *
-	 * @param string $error Error to save.
+	 * @param string $action Action to save.
+	 * @param array  $source_data Source data.
+	 * @param array  $result Result of action.
+	 * @param string $option_prefix Prefix of option.
 	 *
 	 * @return void
 	 */
-	public static function save_log( $error ) {
-		$log = new \WC_Logger();
-		$log->log( 'connect-woocommerce', $error );
+	public static function save_log( $action, $source_data, $result, $option_prefix ) {
+		$logger      = wc_get_logger();
+		$source_data = is_array( $source_data ) ? $source_data : array( $source_data );
+		$result      = is_array( $result ) ? $result : array( $result );
+		$message     = $action . ': ' . wp_json_encode( $source_data ) . ' ' . wp_json_encode( $result );
+		$logger->debug( $message, array( 'source' => $option_prefix ) );
 	}
 
 	/**

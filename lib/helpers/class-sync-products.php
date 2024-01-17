@@ -731,7 +731,7 @@ class PROD {
 
 			if ( isset( $body_response['errors'] ) ) {
 				$message = isset( $body_response['errors'][0]['message'] ) ? $body_response['errors'][0]['message'] : __( 'There was an error while inserting new product!', 'connect-woocommerce' );
-				HELPER::save_log( $message );
+				HELPER::save_log( 'sync_product_image', $result_api, $message );
 				return false;
 			}
 

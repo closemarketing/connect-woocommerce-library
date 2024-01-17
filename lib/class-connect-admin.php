@@ -331,7 +331,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					'connect_woocommerce_setting_section'
 				);
 			}
-			
+
 			// Username.
 			if ( in_array( 'username', $settings_fields, true ) ) {
 				add_settings_field(
@@ -374,7 +374,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					'connect_woocommerce_setting_section'
 				);
 			}
-	
+
 			add_settings_field(
 				'wcpimh_prodst',
 				__( 'Default status for new products?', 'connect-woocommerce' ),
@@ -382,7 +382,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				$this->options['slug'] . '_admin',
 				'connect_woocommerce_setting_section'
 			);
-	
+
 			add_settings_field(
 				'wcpimh_virtual',
 				__( 'Virtual products?', 'connect-woocommerce' ),
@@ -390,7 +390,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				$this->options['slug'] . '_admin',
 				'connect_woocommerce_setting_section'
 			);
-	
+
 			add_settings_field(
 				'wcpimh_backorders',
 				__( 'Allow backorders?', 'connect-woocommerce' ),
@@ -398,7 +398,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				$this->options['slug'] . '_admin',
 				'connect_woocommerce_setting_section'
 			);
-	
+
 			add_settings_field(
 				'wcpimh_catsep',
 				__( 'Category separator', 'connect-woocommerce' ),
@@ -406,7 +406,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				$this->options['slug'] . '_admin',
 				'connect_woocommerce_setting_section'
 			);
-	
+
 			if ( 'connwoo_holded' === $this->options['slug'] ) {
 				add_settings_field(
 					'wcpimh_catattr',
@@ -416,7 +416,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					'connect_woocommerce_setting_section'
 				);
 			}
-	
+
 			add_settings_field(
 				'wcpimh_catnp',
 				__( 'Import category only in new products?', 'connect-woocommerce' ),
@@ -424,7 +424,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				$this->options['slug'] . '_admin',
 				'connect_woocommerce_setting_section'
 			);
-	
+
 			add_settings_field(
 				'wcpimh_filter',
 				__( 'Filter products by tags? (separated by comma and no space)', 'connect-woocommerce' ),
@@ -432,7 +432,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				$this->options['slug'] . '_admin',
 				'connect_woocommerce_setting_section'
 			);
-	
+
 			if ( $this->options['product_price_tax_option'] ) {
 				add_settings_field(
 					'wcpimh_tax_option',
@@ -442,7 +442,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					'connect_woocommerce_setting_section'
 				);
 			}
-	
+
 			if ( $this->options['product_price_rate_option'] ) {
 				$label_filter = __( 'Product price rate for this eCommerce', 'connect-woocommerce' );
 				$desc_tip     = __( 'Copy and paste the ID of the rates for publishing in the web', 'connect-woocommerce' );
@@ -454,7 +454,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					'connect_woocommerce_setting_section'
 				);
 			}
-	
+
 			if ( 'Holded' === $this->options['name'] ) {
 				$name_docorder = __( 'Document to create after order completed?', 'connect-woocommerce' );
 				add_settings_field(
@@ -464,7 +464,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					$this->options['slug'] . '_admin',
 					'connect_woocommerce_setting_section'
 				);
-	
+
 				$label_filter = __( 'Serie number', 'connect-woocommerce' );
 				add_settings_field(
 					'wcpimh_serie_number',
@@ -473,7 +473,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					$this->options['slug'] . '_admin',
 					'connect_woocommerce_setting_section'
 				);
-	
+
 				$name_docorder = __( 'Create document for free Orders?', 'connect-woocommerce' );
 				add_settings_field(
 					'wcpimh_freeorder',
@@ -482,7 +482,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					$this->options['slug'] . '_admin',
 					'connect_woocommerce_setting_section'
 				);
-	
+
 				$name_docorder = __( 'Status to sync Orders?', 'connect-woocommerce' );
 				add_settings_field(
 					'wcpimh_ecstatus',
@@ -491,7 +491,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					$this->options['slug'] . '_admin',
 					'connect_woocommerce_setting_section'
 				);
-	
+
 				$name_nif = __( 'ID Holded design for document', 'connect-woocommerce' );
 				add_settings_field(
 					'wcpimh_design_id',
@@ -502,7 +502,6 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				);
 			}
 
-	
 			if ( ! empty( $this->options['product_weight_equivalence'] ) ) {
 				add_settings_field(
 					'wcpimh_product_weight_equivalence',
@@ -512,11 +511,18 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					'connect_woocommerce_setting_section'
 				);
 			}
+			add_settings_field(
+				'wcpimh_debug_log',
+				__( 'Debug Mode', 'connect-woocommerce' ),
+				array( $this, 'debug_log_callback' ),
+				$this->options['slug'] . '_admin',
+				'connect_woocommerce_setting_section'
+			);
 
 			/**
 			 * ## Automate
 			 * --------------------------- */
-	
+
 			add_settings_section(
 				'connect_woocommerce_setting_automate',
 				__( 'Automate', 'connect-woocommerce' ),
@@ -731,7 +737,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</div>
 			<?php
 		}
-	
+
 		/**
 		 * Sanitize fiels before saves in DB
 		 *
@@ -741,7 +747,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		public function sanitize_fields_settings( $input ) {
 			$sanitary_values = array();
 			$imh_settings    = get_option( $this->options['slug'] );
-	
+
 			$admin_settings = array(
 				'api'            => '',
 				'idcentre'       => '',
@@ -767,9 +773,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'sync'           => 'no',
 				'sync_num'       => 5,
 				'sync_email'     => 'yes',
-				'prod_weight_eq' =>  '',
+				'prod_weight_eq' => '',
+				'debug_log'      => 'no',
 			);
-	
+
 			foreach ( $admin_settings as $setting => $default_value ) {
 				if ( isset( $input[ $setting ] ) ) {
 					$sanitary_values[ $setting ] = sanitize_text_field( $input[ $setting ] );
@@ -779,10 +786,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					$sanitary_values[ $setting ] = $default_value;
 				}
 			}
-	
+
 			return $sanitary_values;
 		}
-	
+
 		/**
 		 * Info for holded section.
 		 *
@@ -1164,7 +1171,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</select>
 			<?php
 		}
-	
+
 		/**
 		 * Send API depending order status
 		 *
@@ -1180,7 +1187,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</select>
 			<?php
 		}
-	
+
 		/**
 		 * Callback Billing nif key
 		 *
@@ -1188,11 +1195,11 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 */
 		public function wcpimh_design_id_callback() {
 			printf(
-				'<input class="regular-text" type="text" name="' . $this->options['slug'] . '[design_id]" id="wcpimh_design_id" value="%s">',
+				'<input class="regular-text" type="text" name="' . esc_attr( $this->options['slug'] ) . '[design_id]" id="wcpimh_design_id" value="%s">',
 				isset( $this->settings['design_id'] ) ? esc_attr( $this->settings['design_id'] ) : ''
 			);
 		}
-	
+
 		/**
 		 * Callback Billing nif key
 		 *
@@ -1216,7 +1223,21 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</select>
 			<?php
 		}
-	
+
+		/**
+		 * Callback Billing nif key
+		 *
+		 * @return void
+		 */
+		public function debug_log_callback() {
+			echo '<input type="checkbox" id="connwoo_debug_log_checkbox" name="' . esc_html( $this->options['slug'] ) . '[debug_log]" value="on"';
+			echo checked( $this->settings['debug_log'], 'on' );
+			echo '/>';
+			echo '<label for="connwoo_debug_log_checkbox" class="description">';
+			esc_html_e( 'Activates debug mode to save logs.', 'connect-woocommerce' );
+			echo '</label>';
+		}
+
 		/**
 		 * Callback sync field.
 		 *

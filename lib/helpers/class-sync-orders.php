@@ -36,6 +36,7 @@ class ORDER {
 		$ec_invoice_id  = $order->get_meta( $meta_key_order );
 		$freeorder      = isset( $settings['freeorder'] ) ? $settings['freeorder'] : 'no';
 		$order_free_msg = __( 'Free order not created ', 'connect-woocommerce' );
+		$is_debug_log   = isset( $settings['debug_log'] ) && 'on' === $settings['debug_log'] ? true : false;
 
 		// Not create order if free.
 		if ( 'no' === $freeorder && empty( $order_total ) && empty( $ec_invoice_id ) ) {
@@ -62,14 +63,14 @@ class ORDER {
 				'message' => __( 'Connot create refund', 'connect-woocommerce' ),
 			);
 		}
-		$doctype    = isset( $settings['doctype'] ) ? $settings['doctype'] : 'invoice';
+		$doctype = isset( $settings['doctype'] ) ? $settings['doctype'] : 'invoice';
 
 		// Create the inovice.
+		$order_data = self::generate_order_data( $settings, $order, $option_prefix );
 		if ( empty( $ec_invoice_id ) || $force ) {
 			try {
 				$doc_id     = $order->get_meta( '_' . $option_prefix . '_doc_id' );
 				$invoice_id = $order->get_meta( $meta_key_order );
-				$order_data = self::generate_order_data( $settings, $order, $option_prefix );
 				$result     = $api_erp->create_order( $order_data, $doc_id, $invoice_id, $force );
 
 				$doc_id     = 'error' === $result['status'] ? '' : $result['document_id'];
@@ -82,20 +83,22 @@ class ORDER {
 				$order_msg = __( 'Order synced correctly with ERP, ID: ', 'connect-woocommerce-holded' ) . $invoice_id;
 
 				$order->add_order_note( $order_msg );
-				return $result;
-
 			} catch ( \Exception $e ) {
-				return array(
+				$result = array(
 					'status'  => 'error',
 					'message' => $e,
 				);
 			}
 		} else {
-			return array(
+			$result = array(
 				'status'  => 'error',
 				'message' => $doctype . ' ' . __( 'num: ', 'connect-woocommerce' ) . $ec_invoice_id,
 			);
 		}
+		if ( $is_debug_log ) {
+			HELPER::save_log( 'create_order', $order_data, $result, $option_prefix );
+		}
+		return $result;
 	}
 
 	/**
