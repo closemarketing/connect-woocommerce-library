@@ -323,7 +323,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 
 			if ( check_ajax_referer( 'sync_erp_order_nonce', 'nonce' ) ) {
 				if ( 'erp-post' === $type ) {
-					$result = ORDER::create_invoice( $this->settings, $order_id, $this->meta_key_order, $this->options['slug'], $this->connapi_erp );
+					$result = ORDER::create_invoice( $this->settings, $order_id, $this->meta_key_order, $this->options['slug'], $this->connapi_erp, true );
 				}
 				wp_send_json_success(
 					array(
