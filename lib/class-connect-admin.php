@@ -474,24 +474,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					'connect_woocommerce_setting_section'
 				);
 
-				$name_docorder = __( 'Create document for free Orders?', 'connect-woocommerce' );
-				add_settings_field(
-					'wcpimh_freeorder',
-					$name_docorder,
-					array( $this, 'freeorder_callback' ),
-					$this->options['slug'] . '_admin',
-					'connect_woocommerce_setting_section'
-				);
-
-				$name_docorder = __( 'Status to sync Orders?', 'connect-woocommerce' );
-				add_settings_field(
-					'wcpimh_ecstatus',
-					$name_docorder,
-					array( $this, 'ecstatus_callback' ),
-					$this->options['slug'] . '_admin',
-					'connect_woocommerce_setting_section'
-				);
-
+				
 				$name_nif = __( 'ID Holded design for document', 'connect-woocommerce' );
 				add_settings_field(
 					'wcpimh_design_id',
@@ -501,6 +484,22 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					'connect_woocommerce_setting_section'
 				);
 			}
+
+			add_settings_field(
+				'wcpimh_freeorder',
+				__( 'Create document for free Orders?', 'connect-woocommerce' ),
+				array( $this, 'freeorder_callback' ),
+				$this->options['slug'] . '_admin',
+				'connect_woocommerce_setting_section'
+			);
+
+			add_settings_field(
+				'wcpimh_ecstatus',
+				__( 'Status to sync Orders?', 'connect-woocommerce' ),
+				array( $this, 'ecstatus_callback' ),
+				$this->options['slug'] . '_admin',
+				'connect_woocommerce_setting_section'
+			);
 
 			if ( ! empty( $this->options['product_weight_equivalence'] ) ) {
 				add_settings_field(
@@ -1182,6 +1181,8 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			?>
 			<select name="<?php echo esc_html( $this->options['slug'] ); ?>[ecstatus]" id="wcpimh_ecstatus">
 				<option value="all" <?php selected( $ecstatus, 'all' ); ?>><?php esc_html_e( 'All status orders', 'connect-woocommerce' ); ?></option>
+
+				<option value="paid" <?php selected( $ecstatus, 'paid' ); ?>><?php esc_html_e( 'Paid orders', 'connect-woocommerce' ); ?></option>
 
 				<option value="completed" <?php selected( $ecstatus, 'completed' ); ?>><?php esc_html_e( 'Only Completed', 'connect-woocommerce' ); ?></option>
 			</select>

@@ -69,6 +69,8 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 				add_action( 'woocommerce_order_status_refunded', array( $this, 'send_order_erp' ) );
 				add_action( 'woocommerce_order_status_cancelled', array( $this, 'send_order_erp' ) );
 				add_action( 'woocommerce_refund_created', array( $this, 'refunded_created' ), 10, 2 );
+			} elseif ( 'paid' === $ecstatus ) {
+				add_action( 'woocommerce_payment_complete', array( $this, 'send_order_erp' ) );
 			}
 			add_action( 'woocommerce_order_status_completed', array( $this, 'send_order_erp' ) );
 
