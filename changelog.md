@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.5.3
+
+* Added: Option to send orders to ERP when it's paid.
+* Fixed: error calculating taxes from order products.
+
 ## 1.5.2
 
 * Added: Option to log problems in WooCommerce logs.

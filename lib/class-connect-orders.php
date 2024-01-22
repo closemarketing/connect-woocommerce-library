@@ -69,6 +69,8 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 				add_action( 'woocommerce_order_status_refunded', array( $this, 'send_order_erp' ) );
 				add_action( 'woocommerce_order_status_cancelled', array( $this, 'send_order_erp' ) );
 				add_action( 'woocommerce_refund_created', array( $this, 'refunded_created' ), 10, 2 );
+			} elseif ( 'paid' === $ecstatus ) {
+				add_action( 'woocommerce_payment_complete', array( $this, 'send_order_erp' ) );
 			}
 			add_action( 'woocommerce_order_status_completed', array( $this, 'send_order_erp' ) );
 
@@ -323,7 +325,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 
 			if ( check_ajax_referer( 'sync_erp_order_nonce', 'nonce' ) ) {
 				if ( 'erp-post' === $type ) {
-					$result = ORDER::create_invoice( $this->settings, $order_id, $this->meta_key_order, $this->options['slug'], $this->connapi_erp );
+					$result = ORDER::create_invoice( $this->settings, $order_id, $this->meta_key_order, $this->options['slug'], $this->connapi_erp, true );
 				}
 				wp_send_json_success(
 					array(
