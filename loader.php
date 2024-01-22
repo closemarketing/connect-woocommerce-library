@@ -5,13 +5,13 @@
  * @package    WordPress
  * @author     David Perez <david@closemarketing.es>
  * @copyright  2022 Closemarketing
- * @version    1.5.2
+ * @version    1.5.3
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'CONNECT_WOOCOMMERCE_VERSION' ) ) {
-	define( 'CONNECT_WOOCOMMERCE_VERSION', '1.5.2' );
+	define( 'CONNECT_WOOCOMMERCE_VERSION', '1.5.3' );
 }
 
 if ( ! defined( 'CONNECT_WOOCOMMERCE_PLUGIN_URL' ) ) {
