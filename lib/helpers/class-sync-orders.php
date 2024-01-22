@@ -159,7 +159,6 @@ class ORDER {
 			'shippingCity'           => $order->get_shipping_city(),
 			'shippingProvince'       => $order->get_shipping_state(),
 			'shippingCountry'        => $order->get_shipping_country(),
-			'woocommerceTaxes'       => wp_json_encode( $order->get_tax_totals() ),
 		);
 
 		// DesignID.
@@ -306,7 +305,7 @@ class ORDER {
 		}
 
 		// Items Fee.
-		$items_fee = $order->get_items('fee');
+		$items_fee = $order->get_items( 'fee' );
 		if ( ! empty( $items_fee ) ) {
 			foreach ( $items_fee as $item_fee ) {
 				$total_fee = (float) $item_fee->get_total();
