@@ -174,8 +174,8 @@ class ORDER {
 			$order_data['numSerieId'] = $series_number;
 		}
 
-		$wc_payment_method = $order->get_payment_method();
-		$order_data['notes']  .= ' ';
+		$wc_payment_method    = $order->get_payment_method();
+		$order_data['notes'] .= ' ';
 		switch ( $wc_payment_method ) {
 			case 'cod':
 				$order_data['notes'] .= __( 'Paid by cash', 'connect-woocommerce' );
@@ -259,12 +259,12 @@ class ORDER {
 				$product    = $item->get_product();
 				$item_qty   = (int) $item->get_quantity();
 				$price_line = $item->get_subtotal() / $item_qty;
-				$has_tax    = $item->get_total() === $item->get_subtotal() ? false : true;
 
 				// Taxes.
+				$item_tax  = (float) $item->get_total_tax();
 				$taxes     = $tax->get_rates( $product->get_tax_class() );
 				$rates     = array_shift( $taxes );
-				$item_rate = $has_tax ? round( array_shift( $rates ) ) : 0;
+				$item_rate = ! empty( $item_tax ) ? round( array_shift( $rates ) ) : 0;
 
 				$item_data = array(
 					'name'     => $item->get_name(),
