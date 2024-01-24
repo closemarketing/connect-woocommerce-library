@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.5.4
+
+* Fixed: Taxes calculation in order.
+
 ## 1.5.3
 
 * Added: Option to send orders to ERP when it's paid.
