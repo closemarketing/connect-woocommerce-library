@@ -200,7 +200,9 @@ class ORDER {
 	/**
 	 * Review items
 	 *
-	 * @param object $ordered_items Items ordered.
+	 * @param object $order Order.
+	 * @param string $option_prefix Option prefix.
+	 *
 	 * @return object
 	 */
 	private static function review_items( $order, $option_prefix ) {
@@ -210,6 +212,20 @@ class ORDER {
 		$index_bund   = 0;
 		$tax          = new \WC_Tax();
 
+		$coupons         = $order->get_items( 'coupon' );
+		$order_discounts = array();
+		foreach ( $coupons as $item_coupon ) {
+			$coupon      = new \WC_Coupon( $item_coupon->get_code() );
+			$coupon_type = $coupon->get_discount_type();
+
+			$order_discounts[] = array(
+				'qty'      => $item_coupon->get_quantity(),
+				'type'     => $coupon_type,
+				'discount' => (string) $item_coupon->get_discount(),
+				'amount'   => 'percent' === $coupon_type ? (float) $coupon->get_amount() : (float) $item_coupon->get_discount(),
+				'tax'      => (float) $item_coupon->get_discount_tax(),
+			);
+		}
 		// Order Items.
 		foreach ( $order->get_items() as $item_id => $item ) {
 			$product = $item->get_product();
@@ -263,7 +279,7 @@ class ORDER {
 				$item_tax  = (float) $item->get_total_tax();
 				$taxes     = $tax->get_rates( $product->get_tax_class() );
 				$rates     = array_shift( $taxes );
-				$item_rate = ! empty( $item_tax ) ? round( array_shift( $rates ) ) : 0;
+				$item_rate = ! empty( $item_tax ) ? floor( array_shift( $rates ) ) : 0;
 
 				$item_data = array(
 					'name'     => $item->get_name(),
@@ -277,9 +293,12 @@ class ORDER {
 				// Discount.
 				$line_discount = $item->get_subtotal() - $item->get_total();
 				if ( $line_discount > 0 ) {
-					$item_subtotal            = $item->get_subtotal();
-					$item_discount_percentage = round( ( $line_discount * 100 ) / $item_subtotal, 2 );
-					$item_data['discount']    = $item_discount_percentage;
+					$coupon = array_search( (string) $line_discount, array_column( $order_discounts, 'discount' ), true );
+					if ( false !== $coupon ) {
+						$item_data['discount'] = 'percent' !== $order_discounts[ $coupon ]['type'] ? ( $item->get_subtotal() * $order_discounts[ $coupon ]['amount'] ) / 100 : $order_discounts[ $coupon ]['amount'];
+					} else {
+						$item_data['discount'] = round( ( $line_discount * 100 ) / $item->get_subtotal(), 0 );
+					}
 				}
 
 				$fields_items[] = $item_data;
@@ -291,14 +310,18 @@ class ORDER {
 		$shipping_items = $order->get_items( 'shipping' );
 		if ( ! empty( $shipping_items ) ) {
 			foreach ( $shipping_items as $shipping_item ) {
-				$shipping_total = (float) $shipping_item->get_total();
-				$tax_rate       = ! empty( $shipping_total ) ? (float) $shipping_item->get_total_tax() * 100 / $shipping_total : 0;
+				// Taxes.
+				$item_tax  = (float) $shipping_item->get_total_tax();
+				$taxes     = $tax->get_rates( $shipping_item->get_tax_class() );
+				$tax_rates = array_shift( $taxes );
+				$item_rate = ! empty( $item_tax ) ? floor( array_shift( $tax_rates ) ) : 0;
+
 				$fields_items[] = array(
 					'name'     => __( 'Shipping:', 'connect-woocommerce' ) . ' ' . $shipping_item->get_name(),
 					'desc'     => '',
 					'units'    => 1,
 					'subtotal' => (float) $shipping_item->get_total(),
-					'tax'      => $tax_rate,
+					'tax'      => $item_rate,
 					'sku'      => 'shipping',
 				);
 			}
@@ -308,14 +331,18 @@ class ORDER {
 		$items_fee = $order->get_items( 'fee' );
 		if ( ! empty( $items_fee ) ) {
 			foreach ( $items_fee as $item_fee ) {
-				$total_fee = (float) $item_fee->get_total();
-				$tax_percentage = ! empty( $total_fee ) ? (float) $item_fee->get_total_tax() * 100 / $total_fee : 0;
+				// Taxes.
+				$item_tax  = (float) $item_fee->get_total_tax();
+				$taxes     = $tax->get_rates( $item_fee->get_tax_class() );
+				$tax_rates = array_shift( $taxes );
+				$item_rate = ! empty( $item_tax ) ? floor( array_shift( $tax_rates ) ) : 0;
+
 				$fields_items[] = array(
 					'name'     => $item_fee->get_name(),
 					'desc'     => '',
 					'units'    => 1,
 					'subtotal' => (float) $item_fee->get_total(),
-					'tax'      => round( $tax_percentage, 0 ),
+					'tax'      => $item_rate,
 					'sku'      => 'fee',
 				);
 			}
