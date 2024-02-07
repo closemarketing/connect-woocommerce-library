@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.5.5
+
+* Added: Support to Paginated APIs.
+
 ## 1.5.4
 
 * Fixed: Taxes calculation in order.

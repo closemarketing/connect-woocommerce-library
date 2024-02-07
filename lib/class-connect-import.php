@@ -165,7 +165,9 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 		public function sync_products() {
 			$sync_loop      = isset( $_POST['loop'] ) ? (int) $_POST['loop'] : 0;
 			$product_erp_id = isset( $_POST['product_erp_id'] ) ? sanitize_text_field( $_POST['product_erp_id'] ) : 0;
-			$message   = '';
+			$message        = '';
+			$res_message    = '';
+			$api_pagination = ! empty( $this->options['api_pagination'] ) ? $this->options['api_pagination'] : false;
 
 			if ( ! check_ajax_referer( 'manual_import_nonce', 'nonce' ) ) {
 				wp_send_json_error( array( 'message' => 'Error' ) );
@@ -184,9 +186,15 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 			if ( ! session_id() ) {
 				session_start();
 			}
-			if ( 0 === $sync_loop ) {
-				$api_products = $this->connapi_erp->get_products();
+			if ( $api_pagination ) {
+				$loop_page = $sync_loop % $api_pagination;
+				$page      = intval( $sync_loop / $api_pagination, 0 );
+			}
+
+			if ( 0 === $sync_loop || ( $api_pagination && 0 === $loop_page ) ) {
+				$api_products             = $this->connapi_erp->get_products( null, $sync_loop );
 				$_SESSION['api_products'] = $api_products;
+				$res_message             .= __( 'Connecting with API...', 'connect-woocommerce' ) . '<br/>';
 			} elseif ( 0 < $sync_loop ) {
 				$api_products = $_SESSION['api_products'];
 			}
@@ -196,16 +204,9 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 			}
 
 			$products_count           = count( $api_products );
-			$item                     = $api_products[ $sync_loop ];
+			$item                     = $api_products[ $sync_loop - ( $api_pagination * $page ) ];
 			$this->msg_error_products = array();
 
-			if ( $sync_loop > $products_count ) {
-					wp_send_json_error(
-						array(
-							'msg' => __( 'No products to import', 'connect-woocommerce' ),
-						)
-					);
-			}
 			$result_sync = PROD::sync_product_item( $this->settings, $item, $this->connapi_erp, $this->options['slug'] );
 			$post_id     = $result_sync['post_id'] ?? 0;
 			if ( 'error' === $result_sync['status'] ) {
@@ -216,14 +217,20 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 					'error'   => $result_sync['message'],
 				);
 			}
-			$message = $result_sync['message'];
+			$message .= $result_sync['message'];
 
 			$products_synced = $sync_loop + 1;
-			$finish          = $products_synced === $products_count ? true : false;
-			$finish          = -1 === $sync_loop ? true : $finish;
-			$res_message     = '[' . date_i18n( 'H:i:s' ) . '] ';
+			if ( $api_pagination ) {
+				$finish = $products_count < $api_pagination && $products_count === $sync_loop ? true : false;
+			} else {
+				$finish = $products_count === $sync_loop ? true : false;
+			}
+			$finish       = -1 === $sync_loop ? true : $finish;
+			$res_message .= '[' . date_i18n( 'H:i:s' ) . ']';
 			if ( 0 < $sync_loop ) {
-				$res_message    .= $products_synced . '/' . $products_count . ' ' . __( 'products. ', 'connect-woocommerce' );
+				$res_message .= '[' . $products_synced;
+				$res_message .= empty( $api_pagination ) ? '/' . $products_count : '';
+				$res_message .= '] ';
 			}
 			$res_message .= $message;
 
@@ -240,18 +247,16 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 					$res_message .= ' <a href="' . get_edit_post_link( $post_id ) . '" target="_blank">' . __( 'View', 'connect-woocommerce' ) . '</a>';
 				}
 			}
-			if ( $products_synced === $products_count ) {
+			if ( $finish ) {
 				$res_message .= '<p class="finish">' . __( 'All caught up!', 'connect-woocommerce' ) . '</p>';
 			}
 
 			$args = array(
+				'loop'          => $sync_loop + 1,
 				'message'       => $res_message,
 				'finish'        => $finish,
 				'product_count' => $products_count,
 			);
-			if ( $products_synced < $products_count ) {
-				$args['loop'] = $sync_loop + 1;
-			}
 			if ( $finish && 0 < $sync_loop ) {
 				// Email errors.
 				HELPER::send_product_errors( $this->error_product_import, $this->options['slug'] );
