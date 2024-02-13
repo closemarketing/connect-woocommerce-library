@@ -1231,8 +1231,9 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 * @return void
 		 */
 		public function debug_log_callback() {
+			$debug_log = isset( $this->settings['debug_log'] ) ? $this->settings['debug_log'] : 'no';
 			echo '<input type="checkbox" id="connwoo_debug_log_checkbox" name="' . esc_html( $this->options['slug'] ) . '[debug_log]" value="on"';
-			echo checked( $this->settings['debug_log'], 'on' );
+			echo checked( $debug_log, 'on' );
 			echo '/>';
 			echo '<label for="connwoo_debug_log_checkbox" class="description">';
 			esc_html_e( 'Activates debug mode to save logs.', 'connect-woocommerce' );
