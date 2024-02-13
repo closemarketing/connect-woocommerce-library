@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.5.6
+
+* Fix repeatable fields.
+* Order select custom fields
+* Fix: prevent error debug option.
+
 ## 1.5.5
 
 * Added: Support to Paginated APIs.
