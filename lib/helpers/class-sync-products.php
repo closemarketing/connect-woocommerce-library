@@ -756,8 +756,12 @@ class PROD {
 		$meta_keys = $wpdb->get_col( $sql );
 
 		foreach ( $meta_keys as $meta_key ) {
+			if ( false !== strpos( $meta_key, '_oembed_' ) ) {
+				continue;
+			}
 			$fields[ 'cf|' . $meta_key ] = $meta_key;
 		}
+		asort( $fields );
 		return $fields;
 	}
 
