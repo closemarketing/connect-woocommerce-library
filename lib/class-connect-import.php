@@ -164,7 +164,8 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 		 */
 		public function sync_products() {
 			$sync_loop      = isset( $_POST['loop'] ) ? (int) $_POST['loop'] : 0;
-			$product_erp_id = isset( $_POST['product_erp_id'] ) ? sanitize_text_field( $_POST['product_erp_id'] ) : 0;
+			$product_erp_id = isset( $_POST['product_erp_id'] ) ? sanitize_text_field( $_POST['product_erp_id'] ) : '';
+			$product_sku    = isset( $_POST['product_sku'] ) ? sanitize_text_field( $_POST['product_sku'] ) : '';
 			$message        = '';
 			$res_message    = '';
 			$api_pagination = ! empty( $this->options['api_pagination'] ) ? $this->options['api_pagination'] : false;
@@ -176,6 +177,12 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 			// Action for one product.
 			if ( ! empty( $product_erp_id ) ) {
 				$result_api = $this->connapi_erp->get_products( $product_erp_id );
+				if ( empty( $result_api ) ) {
+					wp_send_json_error( array( 'message' => 'No products' ) );
+				}
+				$api_products = array( -1 => $result_api );
+			} elseif ( ! empty( $product_sku ) && method_exists( $this->connapi_erp, 'get_product_by_sku' ) ) {
+				$result_api = $this->connapi_erp->get_product_by_sku( $product_sku );
 				if ( empty( $result_api ) ) {
 					wp_send_json_error( array( 'message' => 'No products' ) );
 				}

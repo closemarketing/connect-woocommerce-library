@@ -4,13 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## 1.5.6
 
-* Fix repeatable fields.
-* Order select custom fields
-* Fix: prevent error debug option.
+* Products widgets allow search product by SKU.
 
 ## 1.5.5
 
 * Added: Support to Paginated APIs.
+* Added: Coupons sends to the API.
 
 ## 1.5.4
 

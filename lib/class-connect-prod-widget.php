@@ -68,15 +68,12 @@ if ( ! class_exists( 'Connect_WooCommerce_Product_Widget' ) ) {
 			// Send Product.
 			echo '<tr><td><strong>' . esc_html__( 'Product:', 'connect-woocommerce' ) . '</strong></td>';
 			echo '<td>';
-			if ( empty( $product_erp_id ) ) {
-				echo '<div class="button button-primary" disabled>' . esc_html__( 'No synced before', 'connect-woocommerce' ) . '</div>';
-			} else {
-				echo '<div name="connwoo-sync-product" id="sync-erp-products-' . esc_html( $product_id ) . '" ';
-				echo 'class="button button-primary" onclick="syncProductERP(this,\'';
-				echo esc_html( $this->options['slug'] ) . '_sync_products\',';
-				echo '\'' . esc_html( $product_erp_id ) . '\',';
-				echo 'this.id)">' . esc_html__( 'Sync', 'connect-woocommerce' ) . '</div>';
-			}
+			echo '<div name="connwoo-sync-product" id="sync-erp-products-' . esc_html( $product_id ) . '" ';
+			echo 'class="button button-primary" onclick="syncProductERP(this,\'';
+			echo esc_html( $this->options['slug'] ) . '_sync_products\',';
+			echo '\'' . esc_html( $product_erp_id ) . '\',';
+			echo '\'' . esc_html( $product->get_sku() ) . '\',';
+			echo 'this.id)">' . esc_html__( 'Sync', 'connect-woocommerce' ) . '</div>';
 			echo '</td>';
 			echo '</tr>';
 
