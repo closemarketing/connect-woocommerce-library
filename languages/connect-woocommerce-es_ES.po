@@ -4,41 +4,212 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Plugins - Connect WooCommerce Holded - Stable (latest "
 "release)\n"
-"POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-10-29 09:47+0200\n"
-"Last-Translator: David <david@closemarketing.es>\n"
+"POT-Creation-Date: 2024-03-18 12:47+0100\n"
+"PO-Revision-Date: 2024-03-18 12:48+0100\n"
+"Last-Translator: David Pérez <david@close.marketing>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 3.2\n"
+"X-Generator: Poedit 3.4.2\n"
 
-#: includes/class-wcpimh-admin.php:883
+#: connect-woocommerce-clientify.php:50
+#, php-format
 msgid ""
-"Please select the following settings in order customize your eCommerce. "
+"Put the connection ID Centre and API key settings in order to connect and "
+"sync products. You have to contract before to <a href=\"%s\" "
+"target=\"_blank\">Clientify</a>. "
 msgstr ""
-"Por favor, selecciona los siguientes ajustes para personalizar tu tienda "
-"electrónico. "
+"Pon el Centro de ID de conexión y la configuración de clave de API con el "
+"fin de conectar y sincronizar los productos. Tienes que contratar antes a <a "
+"href=\"%s\" target=\"_blank\">Clientify</a>. "
 
-#: includes/class-wcpimh-admin.php:568
-msgid "Actual Automate status:"
-msgstr "Estado real de automatización:"
+#: includes/class-api-clientify.php:294
+msgid "Error items not valid in the order."
+msgstr "Error artículos no válidos en el pedido."
 
-#: includes/class-wcpimh-admin.php:565
-msgid "Make your settings to automate the sync."
-msgstr "Realiza la configuración para automatizar la sincronización."
+#: includes/class-api-clientify.php:301
+msgid "Order synced correctly with Clientify, ID: "
+msgstr "Pedido sincronizado correctamente con Clientify, ID: "
 
-#: includes/class-wcpimh-admin.php:562
-msgid "total"
-msgstr "total"
+#: includes/class-api-clientify.php:305
+#: includes/connect-woocommerce/lib/class-connect-orders.php:217
+msgid "num: "
+msgstr "num: "
 
-#: includes/class-wcpimh-admin.php:561
-msgid "filtered"
-msgstr "filtrados"
+#: includes/class-api-clientify.php:308
+msgid "Order error syncing with Clientify. Error: "
+msgstr "Error de sincronización del pedido con Clientify. Error: "
 
-#: includes/class-wcpimh-admin.php:534
+#: includes/connect-woocommerce/lib/class-connect-admin.php:44
+msgid "(ONLY PRO VERSION)"
+msgstr "(SÓLO VERSIÓN PRO)"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:60
+msgid "Connect WooCommerce"
+msgstr "Conectar WooCommerce"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:61
+msgid "Connect "
+msgstr "Conectar "
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:86
+msgid "WooCommerce Connection Settings with "
+msgstr "Configuración de la conexión de WooCommerce con "
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:99
+msgid "Sync products"
+msgstr "Sincronizar productos"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:100
+#: includes/connect-woocommerce/lib/class-connect-admin.php:458
+msgid "Sync Orders"
+msgstr "Sincronizar pedidos"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:101
+#: includes/connect-woocommerce/lib/class-connect-admin.php:352
+msgid "Automate"
+msgstr "Automatización"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:102
+msgid "Settings"
+msgstr "Ajustes"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:103
+msgid "Frontend Settings"
+msgstr "Ajustes de la portada"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:107
+msgid "License"
+msgstr "Licencia"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:122
+msgid "Save settings"
+msgstr "Guardar los ajustes"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:137
+msgid "Save automate"
+msgstr "Guardar la automatización"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:151
+msgid "Save public"
+msgstr "Guardar parte pública"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:186
+msgid "Settings for Importing in WooCommerce"
+msgstr "Ajustes para importar en WooCommerce"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:194
+msgid "NEO ID Centre"
+msgstr "CENTRO NEO ID"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:203
+msgid "API Key"
+msgstr "Clave de la API"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:212
+msgid "Import stock?"
+msgstr "¿Importar el inventario?"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:221
+msgid "Default status for new products?"
+msgstr "¿Estado por defecto para los nuevos productos?"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:229
+msgid "Virtual products?"
+msgstr "¿Produtos virtuales?"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:237
+msgid "Allow backorders?"
+msgstr "¿Permitir reservas?"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:243
+msgid "Category separator"
+msgstr "Separador de categorías"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:257
+msgid "Filter products by tags? (separated by comma and no space)"
+msgstr "¿Filtrar productos por etiquetas? (separadas por coma y sin espacio)"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:267
+msgid "Get prices with Tax?"
+msgstr "¿Obtener precios con impuestos?"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:275
+msgid "Product price rate for this eCommerce"
+msgstr "Tarifa de precios de producto para esta tienda"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:276
+msgid "Copy and paste the ID of the rates for publishing in the web"
+msgstr "Copiar y pegar el ID de las tarifas para publicar en la web"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:289
+msgid "Import category only in new products?"
+msgstr "¿Importar la categoría solo en nuevos productos?"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:301
+msgid "Document to create after order completed?"
+msgstr "¿Documento a crear una vez completado el pedido?"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:312
+msgid "Create document for free Orders?"
+msgstr "¿Crear un documento para pedidos gratuitos?"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:323
+msgid "Status to sync Orders?"
+msgstr "¿Estado para sincronizar pedidos?"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:334
+msgid "ID Holded design for document"
+msgstr "ID Diseño de Holded para el documento"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:357
+msgid "When do you want to sync?"
+msgstr "¿Cuándo quieres sincronizar?"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:368
+msgid "How many products do you want to sync each time?"
+msgstr "¿Cuántos productos quieres sincronizar cada vez?"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:381
+msgid "Do you want to receive an email when all products are synced?"
+msgstr ""
+"¿Quieres recibir un correo electrónico cuando todos los productos se hayan "
+"sincronizado?"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:404
+msgid "Settings for Woocommerce Shop"
+msgstr "Ajustes de la tienda WooCommerce"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:411
+msgid "Ask for VAT in Checkout?"
+msgstr "¿Pedir el CIF/NIF al finalizar la compra?"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:418
+msgid "VAT info mandatory?"
+msgstr "¿Hacer obligatorio NIF/CIF?"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:426
+msgid "Show Company field?"
+msgstr "¿Mostrar el campo Empresa?"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:434
+msgid "Remove other shipping methods when free is possible?"
+msgstr "¿Eliminar otros métodos de envío cuando es posible la gratuita?"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:442
+msgid "Adds terms and conditions in registration page?"
+msgstr "¿Se añaden los términos y condiciones en la página de registro?"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:459
+#: includes/connect-woocommerce/lib/class-connect-admin.php:590
+msgid "Section only for PRO version"
+msgstr "Sección solo para la versión PRO"
+
+#: includes/connect-woocommerce/lib/class-connect-admin.php:517
+#, php-format
 msgid ""
 "<a href=\"%s\" target=\"_blank\">Get Pro version</a> to enable "
 "functionalities."
@@ -46,351 +217,277 @@ msgstr ""
 "<a href=\"%s\" target=\"_blank\">Consigue la versión PRO</a> para activar "
 "nuevas funcionalidades."
 
-#: includes/class-wcpimh-admin.php:405
-msgid "Adds terms and conditions in registration page?"
-msgstr "¿Se añaden los términos y condiciones en la página de registro?"
+#: includes/connect-woocommerce/lib/class-connect-admin.php:544
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:769
+msgid "filtered"
+msgstr "filtrados"
 
-#: includes/class-wcpimh-admin.php:397
-msgid "Remove other shipping methods when free is possible?"
-msgstr "¿Eliminar otros métodos de envío cuando es posible la gratuita?"
+#: includes/connect-woocommerce/lib/class-connect-admin.php:545
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:770
+msgid "total"
+msgstr "total"
 
-#: includes/class-wcpimh-admin.php:389
-msgid "Show Company field?"
-msgstr "¿Mostrar el campo Empresa?"
+#: includes/connect-woocommerce/lib/class-connect-admin.php:548
+msgid "Make your settings to automate the sync."
+msgstr "Realiza la configuración para automatizar la sincronización."
 
-#: includes/class-wcpimh-admin.php:381
-msgid "VAT info mandatory?"
-msgstr "¿Hacer obligatorio NIF/CIF?"
+#: includes/connect-woocommerce/lib/class-connect-admin.php:551
+msgid "Actual Automate status:"
+msgstr "Estado real de automatización:"
 
-#: includes/class-wcpimh-admin.php:374
-msgid "Ask for VAT in Checkout?"
-msgstr "¿Pedir el CIF/NIF al finalizar la compra?"
+#: includes/connect-woocommerce/lib/class-connect-admin.php:553
+msgid "products synced with "
+msgstr "productos sincronizados con "
 
-#: includes/class-wcpimh-admin.php:367
-msgid "Settings for Woocommerce Shop"
-msgstr "Ajustes de la tienda WooCommerce"
+#: includes/connect-woocommerce/lib/class-connect-admin.php:633
+#: includes/connect-woocommerce/lib/class-connect-admin.php:661
+#: includes/connect-woocommerce/lib/class-connect-admin.php:672
+#: includes/connect-woocommerce/lib/class-connect-admin.php:732
+#: includes/connect-woocommerce/lib/class-connect-admin.php:769
+#: includes/connect-woocommerce/lib/class-connect-admin.php:841
+#: includes/connect-woocommerce/lib/class-connect-admin.php:910
+#: includes/connect-woocommerce/lib/class-connect-admin.php:930
+#: includes/connect-woocommerce/lib/class-connect-admin.php:950
+#: includes/connect-woocommerce/lib/class-connect-admin.php:970
+#: includes/connect-woocommerce/lib/class-connect-admin.php:990
+msgid "Yes"
+msgstr "Sí"
 
-#: includes/class-wcpimh-admin.php:344
-msgid "Do you want to receive an email when all products are synced?"
-msgstr ""
-"¿Quieres recibir un correo electrónico cuando todos los productos se hayan "
-"sincronizado?"
+#: includes/connect-woocommerce/lib/class-connect-admin.php:635
+#: includes/connect-woocommerce/lib/class-connect-admin.php:659
+#: includes/connect-woocommerce/lib/class-connect-admin.php:670
+#: includes/connect-woocommerce/lib/class-connect-admin.php:734
+#: includes/connect-woocommerce/lib/class-connect-admin.php:766
+#: includes/connect-woocommerce/lib/class-connect-admin.php:810
+#: includes/connect-woocommerce/lib/class-connect-admin.php:843
+#: includes/connect-woocommerce/lib/class-connect-admin.php:906
+#: includes/connect-woocommerce/lib/class-connect-admin.php:926
+#: includes/connect-woocommerce/lib/class-connect-admin.php:946
+#: includes/connect-woocommerce/lib/class-connect-admin.php:966
+#: includes/connect-woocommerce/lib/class-connect-admin.php:986
+msgid "No"
+msgstr "No"
 
-#: includes/class-wcpimh-admin.php:331
-msgid "How many products do you want to sync each time?"
-msgstr "¿Cuántos productos quieres sincronizar cada vez?"
+#: includes/connect-woocommerce/lib/class-connect-admin.php:644
+msgid "Draft"
+msgstr "Borrador"
 
-#: includes/class-wcpimh-admin.php:299
-msgid "ID Holded design for document"
-msgstr "ID Diseño de Holded para el documento"
+#: includes/connect-woocommerce/lib/class-connect-admin.php:646
+msgid "Publish"
+msgstr "Publicado"
 
-#: includes/class-wcpimh-admin.php:277
-msgid "Create document for free Orders?"
-msgstr "¿Crear un documento para pedidos gratuitos?"
+#: includes/connect-woocommerce/lib/class-connect-admin.php:648
+msgid "Pending"
+msgstr "Pendiente"
 
-#: includes/class-wcpimh-admin.php:236
-msgid "Filter products by tags? (separated by comma and no space)"
-msgstr "¿Filtrar productos por etiquetas? (separadas por coma y sin espacio)"
+#: includes/connect-woocommerce/lib/class-connect-admin.php:650
+msgid "Private"
+msgstr "Privado"
 
-#: includes/class-wcpimh-admin.php:138
-msgid "Save public"
-msgstr "Guardar parte pública"
+#: includes/connect-woocommerce/lib/class-connect-admin.php:674
+msgid "Notify"
+msgstr "Avisar"
 
-#: includes/class-wcpimh-admin.php:94
-msgid "License deactivation"
-msgstr "Desactivación de la licencia"
+#: includes/connect-woocommerce/lib/class-connect-admin.php:702
+msgid "Yes, tax included"
+msgstr "Sí, impuestos incluidos"
 
-#: includes/class-wcpimh-admin.php:93
-msgid "License activation"
-msgstr "Activación de la licencia"
+#: includes/connect-woocommerce/lib/class-connect-admin.php:705
+msgid "No, tax not included"
+msgstr "No, impuestos no incluidos"
 
-#: includes/class-wcpimh-admin.php:89
-msgid "Frontend Settings"
-msgstr "Ajustes de la portada"
-
-#: includes/class-wcpimh-admin.php:78
-msgid "WooCommerce Connection Settings with Holded"
-msgstr "Configuración de la conexión de WooCommerce con Holded"
-
-#: includes/class-wcpimh-admin.php:60
-msgid "Connect Holded"
-msgstr "Conectar Holded"
-
-#: includes/class-wcpimh-admin.php:44
-msgid "(ONLY PRO VERSION)"
-msgstr "(SÓLO VERSIÓN PRO)"
-
-#: includes/class-public.php:220
-msgid "Terms and condition are not checked!"
-msgstr "¡No se han aceptado los términos y condiciones!"
-
-#: includes/class-public.php:202
-msgid ""
-"I&rsquo;ve read and accept the <a href=\"%s\" target=\"_blank\" class="
-"\"woocommerce-terms-and-conditions-link\">terms &amp; conditions</a>"
-msgstr ""
-"He leído y acepto los <a href=\"%s\" target=\"_blank\" class=\"woocommerce-"
-"terms-and-conditions-link\">términos &amp; condiciones</a>"
-
-#: includes/class-public.php:139
-msgid "VAT info:"
-msgstr "Información sobre NIF/CIF:"
-
-#: includes/class-public.php:84 includes/class-public.php:85
-#: includes/class-public.php:110 includes/class-public.php:128
-msgid "VAT No"
-msgstr "NIF/CIF"
-
-#: import-holded-products-woocommerce.php:70
-msgid "Purchase PRO Version"
-msgstr "Comprar la versión PRO"
-
-#: import-holded-products-woocommerce.php:68
-msgid ""
-"Connect WooCommerce Holded PRO now brings you to sync Orders after they are "
-"completed. And send the invoice/document generated by Holded."
-msgstr ""
-"Connect WooCommerce Holded PRO ahora te permite sincronizar los pedidos una "
-"vez completados. Y enviar el documento adjunto generado por Holded."
-
-#. Author URI of the plugin
-msgid "https://close.technology/"
-msgstr "https://close.technology/"
-
-#. Description of the plugin
-msgid "Imports simple products and stock from Holded to WooCommerce."
-msgstr "Importa productos simples y stock de Holded a WooCommerce."
-
-#. Plugin URI of the plugin
-msgid ""
-"https://close.technology/wordpress-plugins/integra-tienda-online-"
-"woocommerce-holded/"
-msgstr ""
-"https://close.technology/wordpress-plugins/integra-tienda-online-"
-"woocommerce-holded/"
-
-#. Plugin Name of the plugin
-#: includes/class-wcpimh-admin.php:59
-msgid "Connect WooCommerce Holded"
-msgstr "Connect WooCommerce Holded"
-
-#: includes/class-api-erp.php:114 includes/class-api-erp.php:161
-msgid ""
-"WooCommerce Holded: Plugin is enabled but no api key or secret provided. "
-"Please enter your api key and secret <a href=\"%s\">here</a>."
-msgstr ""
-"WooCommerce Holded: El plugin está habilitado pero no se ha proporcionado "
-"la clave API o el secreto. Por favor, introduce la clave API y su secreto "
-"<a href=\"%s\">aquí</a>."
-
-#: includes/class-wcpimh-import.php:656
-msgid "View"
-msgstr "Ver"
-
-#: includes/class-wcpimh-import.php:620
-msgid "Product needs Plugin to import: "
-msgstr "El producto necesita un plugin para ser importado: "
-
-#: includes/class-wcpimh-import.php:445
-msgid "Subproduct synced: "
-msgstr "Subproducto sincronizado: "
-
-#: includes/class-wcpimh-import.php:443
-msgid "Subproduct created: "
-msgstr "Subproducto creado: "
-
-#: includes/class-wcpimh-admin.php:774
-msgid "Only Completed"
-msgstr "Sólo completados"
-
-#: includes/class-wcpimh-admin.php:771
-msgid "All status orders"
-msgstr "Todos los estados de pedido"
-
-#: includes/class-wcpimh-admin.php:747
-msgid "Waybill"
-msgstr "Albarán"
-
-#: includes/class-wcpimh-admin.php:744
-msgid "Sales order"
-msgstr "Pedido de venta"
-
-#: includes/class-wcpimh-admin.php:741
-msgid "Sales receipt"
-msgstr "Recibo de venta"
-
-#: includes/class-wcpimh-admin.php:738
-msgid "Invoice"
-msgstr "Factura"
-
-#: includes/class-wcpimh-admin.php:735
+#: includes/connect-woocommerce/lib/class-connect-admin.php:744
 msgid "Not sync"
 msgstr "No sincronizar"
 
-#: includes/class-wcpimh-admin.php:288
-msgid "Status to sync Orders?"
-msgstr "¿Estado para sincronizar pedidos?"
+#: includes/connect-woocommerce/lib/class-connect-admin.php:747
+msgid "Invoice"
+msgstr "Factura"
 
-#: includes/class-wcpimh-admin.php:266
-msgid "Document to create after order completed?"
-msgstr "¿Documento a crear una vez completado el pedido?"
+#: includes/connect-woocommerce/lib/class-connect-admin.php:750
+msgid "Sales receipt"
+msgstr "Recibo de venta"
 
-#: includes/class-wcpimh-admin.php:86 includes/class-wcpimh-admin.php:421
-msgid "Sync Orders"
-msgstr "Sincronizar pedidos"
+#: includes/connect-woocommerce/lib/class-connect-admin.php:753
+msgid "Sales order"
+msgstr "Pedido de venta"
 
-#: includes/class-wcpimh-admin.php:85
-msgid "Sync products"
-msgstr "Sincronizar productos"
+#: includes/connect-woocommerce/lib/class-connect-admin.php:756
+msgid "Waybill"
+msgstr "Albarán"
 
-#: includes/class-wcpimh-admin.php:422 includes/class-wcpimh-admin.php:606
-msgid "Section only for PRO version"
-msgstr "Sección solo para la versión PRO"
+#: includes/connect-woocommerce/lib/class-connect-admin.php:780
+msgid "All status orders"
+msgstr "Todos los estados de pedido"
 
-#: includes/class-wcpimh-admin.php:124
-msgid "Save automate"
-msgstr "Guardar la automatización"
+#: includes/connect-woocommerce/lib/class-connect-admin.php:783
+msgid "Only Completed"
+msgstr "Sólo completados"
 
-#: includes/class-wcpimh-admin.php:109
-msgid "Save settings"
-msgstr "Guardar los ajustes"
-
-#: includes/class-wcpimh-admin.php:87 includes/class-wcpimh-admin.php:315
-msgid "Automate"
-msgstr "Automatización"
-
-#: includes/class-wcpimh-admin.php:570
-msgid "products synced with Holded."
-msgstr "productos sincronizados con Holded."
-
-#: includes/class-wcpimh-import.php:818
-msgid "Connecting with Holded and syncing Products ..."
-msgstr "Conectando con Holded y sincronizando productos …"
-
-#: includes/class-wcpimh-admin.php:320
-msgid "When do you want to sync?"
-msgstr "¿Cuándo quieres sincronizar?"
-
-#: includes/class-wcpimh-admin.php:177
-msgid "Settings for Importing in WooCommerce"
-msgstr "Ajustes para importar en WooCommerce"
-
-#: includes/class-wcpimh-import.php:813
-msgid "Log"
-msgstr "Registro"
-
-#: includes/class-wcpimh-import.php:719
-msgid "Error in Products Synced in"
-msgstr "Error al sincronizar productos en"
-
-#: includes/class-wcpimh-import.php:714
-msgid "Edit:"
-msgstr "Editar:"
-
-#: includes/class-wcpimh-import.php:712
-msgid "Name:"
-msgstr "Nombre:"
-
-#: includes/class-wcpimh-import.php:711
-msgid "SKU:"
-msgstr "SKU:"
-
-#: includes/class-wcpimh-import.php:710
-msgid "Error:"
-msgstr "Error:"
-
-#: includes/class-wcpimh-import.php:654
-msgid "products. "
-msgstr "productos. "
-
-#: includes/class-wcpimh-import.php:635
-msgid "SKU not finded in Simple product. Product not imported. "
+#: includes/connect-woocommerce/lib/class-connect-admin.php:892
+msgid ""
+"Please select the following settings in order customize your eCommerce. "
 msgstr ""
-"SKU no encontrado en el producto simple. No se ha importado el producto. "
+"Por favor, selecciona los siguientes ajustes para personalizar tu tienda "
+"electrónico. "
 
-#: includes/class-wcpimh-import.php:629
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:393
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:395
+msgid "Variation error: "
+msgstr "Error de variación: "
+
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:613
+#: includes/connect-woocommerce/lib/class-connect-import.php:528
+msgid "Product not imported becouse any variant has got SKU: "
+msgstr "Producto no importado porque ninguna variante tiene SKU: "
+
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:620
+msgid "SKU not finded in Simple product. Product not imported "
+msgstr ""
+"SKU no encontrado en el producto simple. No se ha importado el producto: "
+
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:623
+msgid "Product type not supported. Product not imported "
+msgstr "El tipo de producto no es compatible. Producto no importado: "
+
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:761
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:763
+msgid "All products synced with "
+msgstr "Todos los productos están sincronizados con "
+
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:764
+msgid "Total products:"
+msgstr "Total de productos:"
+
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:773
+msgid "Time:"
+msgstr "Hora:"
+
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:778
+msgid "Total Time:"
+msgstr "Tiempo Total:"
+
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:785
+msgid "Errors founded"
+msgstr "Errores encontrados"
+
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:789
+msgid "Product id: "
+msgstr "ID del producto: "
+
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:792
+msgid "View in Holded"
+msgstr "Ver en Holded"
+
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:794
+msgid "Product name: "
+msgstr "Nombre del producto: "
+
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:795
+msgid "Product sku: "
+msgstr "SKU del producto: "
+
+#: includes/connect-woocommerce/lib/class-connect-import-pro.php:796
+msgid "Product type: "
+msgstr "Tipo de Producto: "
+
+#: includes/connect-woocommerce/lib/class-connect-import.php:423
+msgid "Subproduct created: "
+msgstr "Subproducto creado: "
+
+#: includes/connect-woocommerce/lib/class-connect-import.php:425
+msgid "Subproduct synced: "
+msgstr "Subproducto sincronizado: "
+
+#: includes/connect-woocommerce/lib/class-connect-import.php:429
+#: includes/connect-woocommerce/lib/class-connect-import.php:458
+msgid "Product created: "
+msgstr "Producto creado: "
+
+#: includes/connect-woocommerce/lib/class-connect-import.php:431
+#: includes/connect-woocommerce/lib/class-connect-import.php:459
+msgid "Product synced: "
+msgstr "Producto sincronizado: "
+
+#: includes/connect-woocommerce/lib/class-connect-import.php:495
+#: includes/connect-woocommerce/lib/class-connect-import.php:499
+#: includes/connect-woocommerce/lib/class-connect-import.php:647
+#: includes/connect-woocommerce/lib/class-connect-import.php:649
+msgid "No products to import"
+msgstr "No hay productos para importar"
+
+#: includes/connect-woocommerce/lib/class-connect-import.php:567
+#: includes/connect-woocommerce/lib/class-connect-import.php:571
+msgid "There was an error while inserting new product!"
+msgstr "¡Ha habido un error al insertar el nuevo producto!"
+
+#: includes/connect-woocommerce/lib/class-connect-import.php:581
+msgid "Product needs Plugin to import: "
+msgstr "El producto necesita un plugin para ser importado: "
+
+#: includes/connect-woocommerce/lib/class-connect-import.php:587
+msgid "Product filtered to not import: "
+msgstr "Producto filtrado para que no sea importado: "
+
+#: includes/connect-woocommerce/lib/class-connect-import.php:590
 msgid "SKU not finded in Simple product. Product not imported: "
 msgstr ""
 "SKU no encontrado en el producto simple. No se ha importado el producto: "
 
-#: includes/class-wcpimh-import.php:626
-msgid "Product filtered to not import: "
-msgstr "Producto filtrado para que no sea importado: "
+#: includes/connect-woocommerce/lib/class-connect-import.php:596
+msgid "SKU not finded in Simple product. Product not imported. "
+msgstr ""
+"SKU no encontrado en el producto simple. No se ha importado el producto. "
 
-#: includes/class-wcpimh-import.php:567
-msgid "Product not imported becouse any variant has got SKU: "
-msgstr "Producto no importado porque ninguna variante tiene SKU: "
-
-#: includes/class-wcpimh-import.php:451 includes/class-wcpimh-import.php:486
-msgid "Product synced: "
-msgstr "Producto sincronizado: "
-
-#: includes/class-wcpimh-import.php:449 includes/class-wcpimh-import.php:485
-msgid "Product created: "
-msgstr "Producto creado: "
-
-#: includes/class-wcpimh-admin.php:677
-msgid "Notify"
-msgstr "Avisar"
-
-#: includes/class-wcpimh-admin.php:255
-msgid "Import category only in new products?"
-msgstr "¿Importar la categoría solo en nuevos productos?"
-
-#: includes/class-wcpimh-admin.php:243
-msgid "Copy and paste the ID of the rates for publishing in the web"
-msgstr "Copiar y pegar el ID de las tarifas para publicar en la web"
-
-#: includes/class-wcpimh-admin.php:242
-msgid "Product price rate for this eCommerce"
-msgstr "Tarifa de precios de producto para esta tienda"
-
-#: includes/class-wcpimh-admin.php:216
-msgid "Allow backorders?"
-msgstr "¿Permitir reservas?"
-
-#: includes/class-wcpimh-admin.php:208
-msgid "Virtual products?"
-msgstr "¿Produtos virtuales?"
-
-#: includes/class-wcpimh-admin.php:88
-msgid "Settings"
-msgstr "Ajustes"
-
-#: includes/class-api-erp.php:59
-msgid "Default price"
-msgstr "Precio por defecto"
-
-#. Author of the plugin
-msgid "closemarketing"
-msgstr "closemarketing"
-
-#: includes/class-wcpimh-admin.php:222
-msgid "Category separator"
-msgstr "Separador de categorías"
-
-#: includes/class-wcpimh-import.php:659
-msgid "All caught up!"
-msgstr "¡Todo atrapado!"
-
-#: includes/class-wcpimh-import.php:639 includes/class-wcpimh-import.php:645
+#: includes/connect-woocommerce/lib/class-connect-import.php:600
+#: includes/connect-woocommerce/lib/class-connect-import.php:606
 msgid "Product type not supported. Product not imported: "
 msgstr "El tipo de producto no es compatible. Producto no importado: "
 
-#: includes/class-wcpimh-import.php:606 includes/class-wcpimh-import.php:610
-msgid "There was an error while inserting new product!"
-msgstr "¡Ha habido un error al insertar el nuevo producto!"
+#: includes/connect-woocommerce/lib/class-connect-import.php:615
+msgid "products. "
+msgstr "productos. "
 
-#: includes/class-wcpimh-import.php:534 includes/class-wcpimh-import.php:538
-#: includes/class-wcpimh-import.php:686 includes/class-wcpimh-import.php:688
-msgid "No products to import"
-msgstr "No hay productos para importar"
+#: includes/connect-woocommerce/lib/class-connect-import.php:617
+#: includes/connect-woocommerce/lib/class-connect-orders.php:320
+msgid "View"
+msgstr "Ver"
 
-#: includes/class-wcpimh-import.php:813
-msgid "Start Import"
-msgstr "Iniciar la importación"
+#: includes/connect-woocommerce/lib/class-connect-import.php:620
+#: includes/connect-woocommerce/lib/class-connect-orders.php:323
+msgid "All caught up!"
+msgstr "¡Todo atrapado!"
 
-#: includes/class-wcpimh-import.php:813
+#: includes/connect-woocommerce/lib/class-connect-import.php:674
+msgid "Error:"
+msgstr "Error:"
+
+#: includes/connect-woocommerce/lib/class-connect-import.php:675
+msgid "SKU:"
+msgstr "SKU:"
+
+#: includes/connect-woocommerce/lib/class-connect-import.php:676
+msgid "Name:"
+msgstr "Nombre:"
+
+#: includes/connect-woocommerce/lib/class-connect-import.php:680
+msgid "Edit:"
+msgstr "Editar:"
+
+#: includes/connect-woocommerce/lib/class-connect-import.php:682
+msgid "Prod ID:"
+msgstr "Prod ID:"
+
+#: includes/connect-woocommerce/lib/class-connect-import.php:695
+msgid "Error in Products Synced in"
+msgstr "Error al sincronizar productos en"
+
+#: includes/connect-woocommerce/lib/class-connect-import.php:794
+#, php-format
+msgid "Import Products from %s"
+msgstr "Importar productos de %s"
+
+#: includes/connect-woocommerce/lib/class-connect-import.php:794
 msgid ""
 "After you fillup the API settings, use the button below to import the "
 "products. The importing process may take a while and you need to keep this "
@@ -400,61 +497,169 @@ msgstr ""
 "importar los productos. El proceso de importación puede tardar un tiempo y "
 "debes mantener esta página abierta para completarlo."
 
-#: includes/class-wcpimh-import.php:813
-msgid "Import Products from Holded"
-msgstr "Importar productos de Holded"
+#: includes/connect-woocommerce/lib/class-connect-import.php:794
+#: includes/connect-woocommerce/lib/class-connect-orders.php:389
+msgid "Start Import"
+msgstr "Iniciar la importación"
 
-#: includes/class-wcpimh-admin.php:653
-msgid "Private"
-msgstr "Privado"
+#: includes/connect-woocommerce/lib/class-connect-import.php:794
+#: includes/connect-woocommerce/lib/class-connect-orders.php:389
+msgid "Log"
+msgstr "Registro"
 
-#: includes/class-wcpimh-admin.php:651
-msgid "Pending"
-msgstr "Pendiente"
+#: includes/connect-woocommerce/lib/class-connect-import.php:799
+msgid "Connecting with API and syncing Products ..."
+msgstr "Conectar con API y sincronizar Productos ..."
 
-#: includes/class-wcpimh-admin.php:649
-msgid "Publish"
-msgstr "Publicado"
+#: includes/connect-woocommerce/lib/class-connect-orders.php:195
+msgid "Free order not created in "
+msgstr "Pedido gratuito no creada en "
 
-#: includes/class-wcpimh-admin.php:647
-msgid "Draft"
-msgstr "Borrador"
+#: includes/connect-woocommerce/lib/class-connect-orders.php:294
+#: includes/connect-woocommerce/lib/class-connect-orders.php:298
+#: includes/connect-woocommerce/lib/class-connect-orders.php:350
+#: includes/connect-woocommerce/lib/class-connect-orders.php:352
+msgid "No orders to import"
+msgstr "No hay pedidos para importar"
 
-#: includes/class-wcpimh-admin.php:200
-msgid "Default status for new products?"
-msgstr "¿Estado por defecto para los nuevos productos?"
+#: includes/connect-woocommerce/lib/class-connect-orders.php:304
+msgid "Order already exported to API ID:"
+msgstr "Pedido ya exportado a API ID:"
 
-#: includes/class-wcpimh-admin.php:638 includes/class-wcpimh-admin.php:662
-#: includes/class-wcpimh-admin.php:673 includes/class-wcpimh-admin.php:725
-#: includes/class-wcpimh-admin.php:757 includes/class-wcpimh-admin.php:801
-#: includes/class-wcpimh-admin.php:834 includes/class-wcpimh-admin.php:897
-#: includes/class-wcpimh-admin.php:918 includes/class-wcpimh-admin.php:938
-#: includes/class-wcpimh-admin.php:958 includes/class-wcpimh-admin.php:978
-msgid "No"
-msgstr "No"
+#: includes/connect-woocommerce/lib/class-connect-orders.php:308
+msgid "Order Created."
+msgstr "Pedido creado."
 
-#: includes/class-wcpimh-admin.php:636 includes/class-wcpimh-admin.php:664
-#: includes/class-wcpimh-admin.php:675 includes/class-wcpimh-admin.php:723
-#: includes/class-wcpimh-admin.php:760 includes/class-wcpimh-admin.php:832
-#: includes/class-wcpimh-admin.php:901 includes/class-wcpimh-admin.php:922
-#: includes/class-wcpimh-admin.php:942 includes/class-wcpimh-admin.php:962
-#: includes/class-wcpimh-admin.php:982
-msgid "Yes"
-msgstr "Sí"
+#: includes/connect-woocommerce/lib/class-connect-orders.php:308
+msgid "Order not created."
+msgstr "Pedido no creado."
 
-#: includes/class-wcpimh-admin.php:192
-msgid "Import stock?"
-msgstr "¿Importar el inventario?"
+#: includes/connect-woocommerce/lib/class-connect-orders.php:318
+msgid "orders. "
+msgstr "pedidos. "
 
-#: includes/class-wcpimh-admin.php:184
-msgid "Holded API Key"
-msgstr "Clave de la API de Holded"
+#: includes/connect-woocommerce/lib/class-connect-orders.php:389
+msgid "Sync Completed Orders to "
+msgstr "Sincronizar pedidos completados con "
 
-#: includes/class-wcpimh-admin.php:618
+#: includes/connect-woocommerce/lib/class-connect-orders.php:389
 msgid ""
-"Put the connection API key settings in order to connect and sync products. "
-"You can go here <a href = \"%s\" target = \"_blank\">App Holded API</a>. "
+"After you fillup the API settings, use the button below to import the "
+"products. The importing process may take a while and you need to keep this "
+"page open to complete it. Only COMPLETED Orders will be synced."
 msgstr ""
-"Pon los ajustes de conexión de la clave de la API para conectar y "
-"sincronizar los productos. Puedes ir aquí <a href=\"%s\" target=\"_blank"
-"\">App Holded API</a>. "
+"Después de rellenar los ajustes de la API, utilice el botón de abajo para "
+"importar los productos. El proceso de importación puede tardar un poco y "
+"necesita mantener esta página abierta para completarlo. Sólo se "
+"sincronizarán los pedidos COMPLETADOS."
+
+#: includes/connect-woocommerce/lib/class-connect-orders.php:394
+msgid "Connecting and syncing orders ..."
+msgstr "Conexión y sincronización de pedidos ..."
+
+#: includes/connect-woocommerce/lib/class-connect-public.php:84
+#: includes/connect-woocommerce/lib/class-connect-public.php:85
+#: includes/connect-woocommerce/lib/class-connect-public.php:110
+#: includes/connect-woocommerce/lib/class-connect-public.php:128
+msgid "VAT No"
+msgstr "NIF/CIF"
+
+#: includes/connect-woocommerce/lib/class-connect-public.php:139
+msgid "VAT info:"
+msgstr "Información sobre NIF/CIF:"
+
+#: includes/connect-woocommerce/lib/class-connect-public.php:202
+#, php-format
+msgid ""
+"I&rsquo;ve read and accept the <a href=\"%s\" target=\"_blank\" "
+"class=\"woocommerce-terms-and-conditions-link\">terms &amp; conditions</a>"
+msgstr ""
+"He leído y acepto los <a href=\"%s\" target=\"_blank\" class=\"woocommerce-"
+"terms-and-conditions-link\">términos &amp; condiciones</a>"
+
+#: includes/connect-woocommerce/lib/class-connect-public.php:220
+msgid "Terms and condition are not checked!"
+msgstr "¡No se han aceptado los términos y condiciones!"
+
+#: includes/connect-woocommerce/lib/helpers-cron.php:19
+msgid "Every 5 minutes"
+msgstr "Cada 5 minutos"
+
+#: includes/connect-woocommerce/lib/helpers-cron.php:25
+msgid "Every 15 minutes"
+msgstr "Cada 15 minutos"
+
+#: includes/connect-woocommerce/lib/helpers-cron.php:31
+msgid "Every 30 Minutes"
+msgstr "Cada 30 minutos"
+
+#: includes/connect-woocommerce/lib/helpers-cron.php:37
+msgid "Every 1 Hour"
+msgstr "Cada 1 hora"
+
+#: includes/connect-woocommerce/lib/helpers-cron.php:43
+msgid "Every 3 Hours"
+msgstr "Cada 3 Horas"
+
+#: includes/connect-woocommerce/lib/helpers-cron.php:49
+msgid "Every 6 Hours"
+msgstr "Cada 6 horas"
+
+#: includes/connect-woocommerce/lib/helpers-cron.php:55
+msgid "Every 12 Hours"
+msgstr "Cada 12 Horas"
+
+#. Plugin Name of the plugin/theme
+msgid "Connect WooCommerce Clientify"
+msgstr "Conectar WooCommerce Clientify"
+
+#. Plugin URI of the plugin/theme
+#| msgid ""
+#| "https://close.technology/wordpress-plugins/integra-tienda-online-"
+#| "woocommerce-holded/"
+msgid ""
+"https://close.technology/wordpress-plugins/connect-woocommerce-clientify/"
+msgstr ""
+"https://close.technology/wordpress-plugins/connect-woocommerce-clientify/"
+
+#. Description of the plugin/theme
+msgid "Imports Products and data from Clientify to WooCommerce."
+msgstr "Importa productos y datos de Clientify a WooCommerce."
+
+#. Author of the plugin/theme
+msgid "Closetechnology"
+msgstr "Closetechnology"
+
+#. Author URI of the plugin/theme
+msgid "https://close.technology/"
+msgstr "https://close.technology/"
+
+#~ msgid "License deactivation"
+#~ msgstr "Desactivación de la licencia"
+
+#~ msgid "License activation"
+#~ msgstr "Activación de la licencia"
+
+#~ msgid "Purchase PRO Version"
+#~ msgstr "Comprar la versión PRO"
+
+#~ msgid ""
+#~ "Connect WooCommerce Holded PRO now brings you to sync Orders after they "
+#~ "are completed. And send the invoice/document generated by Holded."
+#~ msgstr ""
+#~ "Connect WooCommerce Holded PRO ahora te permite sincronizar los pedidos "
+#~ "una vez completados. Y enviar el documento adjunto generado por Holded."
+
+#~ msgid ""
+#~ "WooCommerce Holded: Plugin is enabled but no api key or secret provided. "
+#~ "Please enter your api key and secret <a href=\"%s\">here</a>."
+#~ msgstr ""
+#~ "WooCommerce Holded: El plugin está habilitado pero no se ha proporcionado "
+#~ "la clave API o el secreto. Por favor, introduce la clave API y su secreto "
+#~ "<a href=\"%s\">aquí</a>."
+
+#~ msgid "Default price"
+#~ msgstr "Precio por defecto"
+
+#~ msgid "closemarketing"
+#~ msgstr "closemarketing"

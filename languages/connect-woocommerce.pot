@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Connect WooCommerce Clientify\n"
-"POT-Creation-Date: 2022-10-29 09:47+0200\n"
+"POT-Creation-Date: 2024-03-18 12:47+0100\n"
 "PO-Revision-Date: 2022-10-29 09:45+0200\n"
 "Last-Translator: David <david@closemarketing.es>\n"
 "Language-Team: David <david@closemarketing.es>\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
-"X-Generator: Poedit 3.2\n"
+"X-Generator: Poedit 3.4.2\n"
 "X-Poedit-Basepath: ../../..\n"
 "X-Poedit-Flags-xgettext: --add-comments=translators:\n"
 "X-Poedit-WPHeader: connect-woocommerce-clientify.php\n"
@@ -20,14 +20,16 @@ msgstr ""
 "_n_noop:1,2;_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
 "X-Poedit-SearchPath-0: includes/connect-woocommerce\n"
 "X-Poedit-SearchPath-1: .\n"
+"X-Poedit-SearchPath-2: connect-woocommerce-test/connect-woocommerce-"
+"library\n"
 "X-Poedit-SearchPathExcluded-0: *.min.js\n"
 
 #: connect-woocommerce-clientify.php:50
 #, php-format
 msgid ""
 "Put the connection ID Centre and API key settings in order to connect and "
-"sync products. You have to contract before to <a href=\"%s\" target=\"_blank"
-"\">Clientify</a>. "
+"sync products. You have to contract before to <a href=\"%s\" "
+"target=\"_blank\">Clientify</a>. "
 msgstr ""
 
 #: includes/class-api-clientify.php:294
@@ -559,8 +561,8 @@ msgstr ""
 #: includes/connect-woocommerce/lib/class-connect-public.php:202
 #, php-format
 msgid ""
-"I&rsquo;ve read and accept the <a href=\"%s\" target=\"_blank\" class="
-"\"woocommerce-terms-and-conditions-link\">terms &amp; conditions</a>"
+"I&rsquo;ve read and accept the <a href=\"%s\" target=\"_blank\" "
+"class=\"woocommerce-terms-and-conditions-link\">terms &amp; conditions</a>"
 msgstr ""
 
 #: includes/connect-woocommerce/lib/class-connect-public.php:220
