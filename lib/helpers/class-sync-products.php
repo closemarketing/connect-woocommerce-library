@@ -298,7 +298,7 @@ class PROD {
 			}
 
 			if ( ! empty( $product_info ) ) {
-				$product_info['ID']        = $product_id;
+				$product_info['ID'] = $product_id;
 				wp_update_post(
 					$product_info,
 				);
