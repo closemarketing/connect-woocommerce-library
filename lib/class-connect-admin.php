@@ -537,23 +537,23 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				$this->options['slug'] . '_automate',
 				'connect_woocommerce_setting_automate'
 			);
-	
-			$name_sync = __( 'How many products do you want to sync each time?', 'connect-woocommerce' );
-			add_settings_field(
-				'wcpimh_sync_num',
-				$name_sync,
-				array( $this, 'sync_num_callback' ),
-				$this->options['slug'] . '_automate',
-				'connect_woocommerce_setting_automate'
-			);
-	
-			add_settings_field(
-				'wcpimh_sync_email',
-				__( 'Do you want to receive an email when all products are synced?', 'connect-woocommerce' ),
-				array( $this, 'sync_email_callback' ),
-				$this->options['slug'] . '_automate',
-				'connect_woocommerce_setting_automate'
-			);
+
+			if ( ! empty( $this->options['table_sync'] ) ) {
+				add_settings_field(
+					'wcpimh_sync_num',
+					__( 'How many products do you want to sync each time?', 'connect-woocommerce' ),
+					array( $this, 'sync_num_callback' ),
+					$this->options['slug'] . '_automate',
+					'connect_woocommerce_setting_automate'
+				);
+				add_settings_field(
+					'wcpimh_sync_email',
+					__( 'Do you want to receive an email when all products are synced?', 'connect-woocommerce' ),
+					array( $this, 'sync_email_callback' ),
+					$this->options['slug'] . '_automate',
+					'connect_woocommerce_setting_automate'
+				);
+			}
 
 			/**
 			 * ## Merge Vars

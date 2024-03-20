@@ -89,8 +89,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 
 			// Schedule.
 			if ( $this->sync_period && 'no' !== $this->sync_period ) {
-				// Add action Schedule.
-				add_action( 'init', array( $this, 'action_scheduler' ) );
+				add_action( 'init', array( $this, 'cron_products' ) );
 				add_action( $this->sync_period, array( $this, 'cron_sync_products' ) );
 			}
 		}
@@ -276,7 +275,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 		 *
 		 * @return void
 		 */
-		public function action_scheduler() {
+		public function cron_products() {
+			if ( ! function_exists( 'as_has_scheduled_action' ) ) {
+				return;
+			}
 			$pos = array_search( $this->sync_period, array_column( $this->options['cron'], 'cron' ), true );
 			if ( false !== $pos ) {
 				$cron_option = $this->options['cron'][ $pos ];
@@ -293,20 +295,25 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 		 * @return void
 		 */
 		public function cron_sync_products() {
-			$products_sync = CRON::get_products_sync( $this->settings, $this->options['table_sync'] );
+			$is_table_sync = ! empty( $this->options['table_sync'] ) ? true : false;
+			$products_sync = CRON::get_products_sync( $this->settings, $this->options, $this->connapi_erp );
 
-			HELPER::check_table_sync( $this->options['table_sync'] );
+			if ( $is_table_sync ) {
+				HELPER::check_table_sync( $this->options['table_sync'] );
+			}
 
-			if ( false === $products_sync ) {
+			if ( empty( $products_sync ) && $is_table_sync ) {
 				CRON::send_sync_ended_products( $this->settings, $this->options['table_sync'], $this->options['name'], $this->options['slug'] );
 				CRON::fill_table_sync( $this->settings, $this->options['table_sync'], $this->connapi_erp, $this->options['slug'] );
-			} else {
+			} elseif ( ! empty( $products_sync ) ) {
 				foreach ( $products_sync as $product_sync ) {
-					$product_id = $product_sync['prod_id'];
+					$product_id = isset( $product_sync['prod_id'] ) ? $product_sync['prod_id'] : $product_sync;
 
 					$product_api = $this->connapi_erp->get_products( $product_id );
 					$result      = PROD::sync_product_item( $this->settings, $product_api, $this->connapi_erp, $this->options['slug'] );
-					CRON::save_product_sync( $this->options['table_sync'], $result['prod_id'], $this->options['slug'] );
+					if ( $is_table_sync ) {
+						CRON::save_product_sync( $this->options['table_sync'], $result['prod_id'], $this->options['slug'] );
+					}
 				}
 			}
 		}

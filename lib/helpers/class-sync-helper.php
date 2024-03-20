@@ -139,6 +139,9 @@ class HELPER {
 	 * @return void
 	 */
 	public static function check_table_sync( $table_name ) {
+		if ( empty( $table_name ) ) {
+			return;
+		}
 		global $wpdb;
 		$check_table = $wpdb->get_var( "SHOW TABLES LIKE '$table_name'" );
 

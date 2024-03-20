@@ -83,17 +83,33 @@ class CRON {
 	 * Get products to sync
 	 *
 	 * @param array  $settings Settings of plugin.
-	 * @param string $table_sync Table name.
+	 * @param string $options Options of plugin.
+	 * @param object $connapi_erp API Object.
 	 *
 	 * @return array results;
 	 */
-	public static function get_products_sync( $settings, $table_sync ) {
+	public static function get_products_sync( $settings, $options, $connapi_erp ) {
+		$table_sync = isset( $options['table_sync'] ) ? $options['table_sync'] : '';
+		// Method with modified products.
+		if ( empty( $table_sync ) ) {
+			$sync_period = isset( $settings['sync'] ) ? strval( $settings['sync'] ) : 'no';
+			$pos         = array_search( $sync_period, array_column( $options['cron'], 'cron' ), true );
+			if ( false !== $pos ) {
+				$cron_option = $options['cron'][ $pos ];
+			}
+			$modified_since_date = isset( $cron_option['interval'] ) ? strtotime( '-' . $cron_option['interval'] . ' seconds' ) : strtotime( '-1 day' );
+			if ( ! method_exists( $connapi_erp, 'get_products_ids_since' ) ) {
+				return false;
+			}
+			return $connapi_erp->get_products_ids_since( $modified_since_date );
+		}
+		// Method with table sync.
 		global $wpdb;
 		$limit = isset( $settings['sync_num'] ) ? $settings['sync_num'] : 5;
 
 		$results = $wpdb->get_results( "SELECT prod_id FROM $table_sync WHERE synced = 0 LIMIT $limit", ARRAY_A );
 
-		if ( count( $results ) > 0 ) {
+		if ( ! empty( $results ) ) {
 			return $results;
 		}
 
