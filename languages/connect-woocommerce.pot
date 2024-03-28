@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Connect WooCommerce Clientify\n"
-"POT-Creation-Date: 2024-03-18 12:47+0100\n"
+"POT-Creation-Date: 2024-03-27 12:03+0100\n"
 "PO-Revision-Date: 2022-10-29 09:45+0200\n"
 "Last-Translator: David <david@closemarketing.es>\n"
 "Language-Team: David <david@closemarketing.es>\n"
@@ -20,8 +20,7 @@ msgstr ""
 "_n_noop:1,2;_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
 "X-Poedit-SearchPath-0: includes/connect-woocommerce\n"
 "X-Poedit-SearchPath-1: .\n"
-"X-Poedit-SearchPath-2: connect-woocommerce-test/connect-woocommerce-"
-"library\n"
+"X-Poedit-SearchPath-2: closemarketing/connect-woocommerce-library\n"
 "X-Poedit-SearchPathExcluded-0: *.min.js\n"
 
 #: connect-woocommerce-clientify.php:50
