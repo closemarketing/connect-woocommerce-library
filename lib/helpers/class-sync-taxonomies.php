@@ -129,8 +129,9 @@ class TAX {
 		$cats_ids = array();
 
 		foreach ( $product_cat_names as $product_cat_name ) {
-			$cat_slug    = sanitize_title( $product_cat_name );
-			$product_cat = get_term_by( 'slug', $cat_slug, $taxonomy_name );
+			$product_cat_name = is_array( $product_cat_name ) ? $product_cat_name['value'] : $product_cat_name;
+			$cat_slug         = sanitize_title( $product_cat_name );
+			$product_cat      = get_term_by( 'slug', $cat_slug, $taxonomy_name );
 
 			if ( $product_cat ) {
 				// Finds the category.
