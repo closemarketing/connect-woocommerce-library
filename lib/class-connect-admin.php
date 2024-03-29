@@ -407,15 +407,13 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'connect_woocommerce_setting_section'
 			);
 
-			if ( 'connwoo_holded' === $this->options['slug'] ) {
-				add_settings_field(
-					'wcpimh_catattr',
-					__( 'Attribute to use as category', 'connect-woocommerce' ),
-					array( $this, 'catattr_callback' ),
-					$this->options['slug'] . '_admin',
-					'connect_woocommerce_setting_section'
-				);
-			}
+			add_settings_field(
+				'wcpimh_catattr',
+				__( 'Attribute to use as category', 'connect-woocommerce' ),
+				array( $this, 'catattr_callback' ),
+				$this->options['slug'] . '_admin',
+				'connect_woocommerce_setting_section'
+			);
 
 			add_settings_field(
 				'wcpimh_catnp',

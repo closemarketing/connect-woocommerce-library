@@ -267,6 +267,8 @@ class PROD {
 				$product_props = self::sync_product_pack( $settings, $product, $item, $pack_items, $option_prefix );
 				break;
 		}
+
+		// Set categories.
 		$attributes = ! empty( $item['attributes'] ) && is_array( $item['attributes'] ) ? $item['attributes'] : array();
 		$item_type  = array_search( $attribute_cat_id, array_column( $attributes, 'id', 'value' ) );
 		if ( $item_type ) {
