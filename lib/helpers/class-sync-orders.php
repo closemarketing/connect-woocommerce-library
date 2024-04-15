@@ -111,9 +111,9 @@ class ORDER {
 	 * @return array
 	 */
 	private static function generate_order_data( $setttings, $order, $option_prefix ) {
-		$order_id = is_multisite() ? get_current_blog_id() . '-' . $order->get_id() : $order->get_id();
-		$doclang  = $order->get_billing_country() !== 'ES' ? 'en' : 'es';
-		$url_test = wc_get_endpoint_url( 'shop' );
+		$order_label_id = is_multisite() ? get_current_blog_id() . '-' . $order->get_id() : $order->get_id();
+		$doclang        = $order->get_billing_country() !== 'ES' ? 'en' : 'es';
+		$url_test       = wc_get_endpoint_url( 'shop' );
 
 		if ( empty( $order->get_billing_company() ) ) {
 			$contact_name = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
@@ -125,7 +125,7 @@ class ORDER {
 		$billing_country_code = $order->get_billing_country();
 		$billing_state_code   = $order->get_billing_state();
 		$billing_state        = WC()->countries->get_states( $billing_country_code )[ $billing_state_code ];
-		$order_description    = get_bloginfo( 'name', 'display' ) . ' WooCommerce ' . $order_id;
+		$order_description    = get_bloginfo( 'name', 'display' ) . ' WooCommerce ' . $order_label_id;
 
 		/**
 		 * ## Fields
@@ -136,7 +136,7 @@ class ORDER {
 			'woocommerceCustomer'    => $order->get_user()->data->user_login,
 			'marketplace'            => 'woocommerce',
 			'woocommerceOrderStatus' => $order->get_status(),
-			'woocommerceOrderId'     => $order_id,
+			'woocommerceOrderId'     => $order_label_id,
 			'woocommerceUrl'         => $url_test,
 			'woocommerceStore'       => get_bloginfo( 'name', 'display' ),
 			'contactEmail'           => $order->get_billing_email(),
