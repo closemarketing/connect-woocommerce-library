@@ -111,7 +111,7 @@ class ORDER {
 	 * @return array
 	 */
 	private static function generate_order_data( $setttings, $order, $option_prefix ) {
-		$order_id = $order->get_id();
+		$order_id = is_multisite() ? get_current_blog_id() . '-' . $order->get_id() : $order->get_id();
 		$doclang  = $order->get_billing_country() !== 'ES' ? 'en' : 'es';
 		$url_test = wc_get_endpoint_url( 'shop' );
 
