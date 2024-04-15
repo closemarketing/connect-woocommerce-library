@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Connect WooCommerce Clientify\n"
-"POT-Creation-Date: 2024-03-27 12:03+0100\n"
+"POT-Creation-Date: 2024-04-09 16:11+0200\n"
 "PO-Revision-Date: 2022-10-29 09:45+0200\n"
 "Last-Translator: David <david@closemarketing.es>\n"
 "Language-Team: David <david@closemarketing.es>\n"
