@@ -313,8 +313,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 				);
 				CRON::save_after_cron_log( $time_start, $message, $this->options['slug'] );
 			} elseif ( ! empty( $products_sync ) ) {
+				$res_product_ids = array();
 				foreach ( $products_sync as $product_sync ) {
 					$product_id = isset( $product_sync['prod_id'] ) ? $product_sync['prod_id'] : $product_sync;
+					$res_product_ids[] = $product_id;
 
 					$product_api = $this->connapi_erp->get_products( $product_id );
 					$result      = PROD::sync_product_item( $this->settings, $product_api, $this->connapi_erp, $this->options['slug'] );
@@ -324,8 +326,9 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 				}
 				$message = sprintf( 
 					/* translators: %d: Number of products */
-					__( 'Synced %d products', 'connect-woocommerce' ),
-					count( $products_sync )
+					__( 'Synced %1$s products. IDS: %2$s', 'connect-woocommerce' ),
+					count( $products_sync ),
+					implode( ', ', $res_product_ids )
 				);
 				CRON::save_after_cron_log( $time_start, $message, $this->options['slug'] );
 			} else {
