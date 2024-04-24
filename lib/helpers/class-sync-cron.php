@@ -83,8 +83,7 @@ class CRON {
 	 * Get products to sync
 	 *
 	 * @param array  $settings Settings of plugin.
-	 * @param string $options Options of plugin.
-	 * @param object $connapi_erp API Object.
+	 * @param string $table_sync Table name.
 	 *
 	 * @return array results;
 	 */
@@ -237,5 +236,45 @@ class CRON {
 			}
 			wp_mail( get_option( 'admin_email' ), $subject, $body, $headers );
 		}
+	}
+
+	/**
+	 * Saves a log of the cron
+	 *
+	 * @param int    $time_start Time start.
+	 * @param string $message Message.
+	 * @param string $option_prefix Prefix of options.
+	 * @return void
+	 */
+	public static function save_after_cron_log( $time_start, $message, $option_prefix ) {
+		$cron_log = get_option( $option_prefix . '_cron_log' );
+		if ( empty( $cron_log ) ) {
+			$cron_log = array();
+		}
+		$cron_log[] = gmdate( 'Y-m-d H:i:s' ) . ' - ' . self::get_time( $time_start ) . ' - ' . $message;
+		if ( count( $cron_log ) > 10 ) {
+			array_shift( $cron_log );
+		}
+		update_option( $option_prefix . '_cron_log', $cron_log );
+	}
+	/**
+	 * Get time
+	 *
+	 * @param int $time_start time start.
+	 * @return string
+	 */
+	private static function get_time( $time_start ) {
+		$time_end = microtime( true );
+
+		$execution_time = round( $time_end - $time_start, 2 );
+		$end            = 'seg';
+		if ( $execution_time > 3600 ) {
+			$execution_time = round( $execution_time / 3600, 2 );
+			$end            = 'horas';
+		} elseif ( $execution_time > 60 ) {
+			$execution_time = round( $execution_time / 60, 2 );
+			$end            = 'min';
+		}
+		return $execution_time . ' ' . $end;
 	}
 }

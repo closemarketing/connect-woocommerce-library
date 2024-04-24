@@ -185,8 +185,9 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 							);
 						?>
 					</form>
-				<?php } ?>
-				<?php	if ( 'automate' === $active_tab ) { ?>
+					<?php
+				}
+				if ( 'automate' === $active_tab ) { ?>
 					<form method="post" action="options.php">
 						<?php
 						settings_fields( $this->settings_slug );
@@ -198,8 +199,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 						);
 						?>
 					</form>
-				<?php } ?>
-				<?php	if ( 'public' === $active_tab ) { ?>
+					<?php
+					$this->page_sync_log();
+				}
+				if ( 'public' === $active_tab ) { ?>
 					<form method="post" action="options.php">
 						<?php
 						settings_fields( $this->options['slug'] . '_settings_public' );
@@ -794,63 +797,100 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 */
 		public function section_automate() {
 			global $wpdb;
-			$table_sync = $this->options['table_sync'];
-			HELPER::check_table_sync( $table_sync );
-			$count        = $wpdb->get_var( "SELECT COUNT(*) FROM $table_sync WHERE synced = 1" );
-			$total_count  = $wpdb->get_var( "SELECT COUNT(*) FROM $table_sync" );
-			$count_return = $count . ' / ' . $total_count;
-	
-			$total_api_products = (int) get_option( $this->options['slug'] . '_total_api_products' );
-			if ( $total_api_products || $total_count !== $total_api_products ) {
-				$count_return .= ' ' . esc_html__( 'filtered', 'connect-woocommerce' );
-				$count_return .= ' ( ' . $total_api_products . ' ' . esc_html__( 'total', 'connect-woocommerce' ) . ' )';
+			$table_sync    = $this->options['table_sync'];
+			$is_table_sync = ! empty( $this->options['table_sync'] ) ? true : false;
+
+			if ( $is_table_sync ) {
+				HELPER::check_table_sync( $table_sync );
+				$count        = $wpdb->get_var( "SELECT COUNT(*) FROM $table_sync WHERE synced = 1" );
+				$total_count  = $wpdb->get_var( "SELECT COUNT(*) FROM $table_sync" );
+				$count_return = $count . ' / ' . $total_count;
+
+				$total_api_products = (int) get_option( $this->options['slug'] . '_total_api_products' );
+				if ( $total_api_products || $total_count !== $total_api_products ) {
+					$count_return .= ' ' . esc_html__( 'filtered', 'connect-woocommerce' );
+					$count_return .= ' ( ' . $total_api_products . ' ' . esc_html__( 'total', 'connect-woocommerce' ) . ' )';
+				}
+				$percentage = 0 < $total_count ? intval( $count / $total_count * 100 ) : 0;
+				esc_html_e( 'Make your settings to automate the sync.', 'connect-woocommerce' );
+				echo '<div class="sync-status" style="text-align:right;">';
+				echo '<strong>';
+				esc_html_e( 'Actual Automate status:', 'connect-woocommerce' );
+				echo '</strong> ' . esc_html( $count_return ) . ' ';
+				esc_html_e( 'products synced with ', 'connect-woocommerce' );
+				echo esc_html( $this->options['name'] );
+				echo '</div>';
+				echo '
+				<style>
+				.progress-bar {
+					background-color: #1a1a1a;
+					height: 16px;
+					padding: 5px;
+					width: 100%;
+					margin: 5px 0;
+					border-radius: 5px;
+					box-shadow: 0 1px 5px #000 inset, 0 1px 0 #444;
+					}
+					.progress-bar span {
+					display: inline-block;
+					float: left;
+					height: 100%;
+					border-radius: 3px;
+					box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset;
+					transition: width .4s ease-in-out;
+					}
+					.blue span {
+					background-color: #2271b1;
+					}
+					.progress-text {
+					text-align: right;
+					color: white;
+					margin: 0;
+					font-size: 18px;
+					position: absolute;
+					right: 18px;
+					}
+				</style>
+				<div class="progress-bar blue">
+				<span style="width:' . esc_html( $percentage ) . '%"></span>
+				<div class="progress-text">' . esc_html( $percentage ) . '%</div>
+				</div>';
 			}
-			$percentage = 0 < $total_count ? intval( $count / $total_count * 100 ) : 0;
-			esc_html_e( 'Make your settings to automate the sync.', 'connect-woocommerce' );
-			echo '<div class="sync-status" style="text-align:right;">';
-			echo '<strong>';
-			esc_html_e( 'Actual Automate status:', 'connect-woocommerce' );
-			echo '</strong> ' . esc_html( $count_return ) . ' ';
-			esc_html_e( 'products synced with ', 'connect-woocommerce' );
-			echo esc_html( $this->options['name'] );
-			echo '</div>';
-			echo '
-			<style>
-			.progress-bar {
-				background-color: #1a1a1a;
-				height: 16px;
-				padding: 5px;
-				width: 100%;
-				margin: 5px 0;
-				border-radius: 5px;
-				box-shadow: 0 1px 5px #000 inset, 0 1px 0 #444;
-				}
-				.progress-bar span {
-				display: inline-block;
-				float: left;
-				height: 100%;
-				border-radius: 3px;
-				box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset;
-				transition: width .4s ease-in-out;
-				}
-				.blue span {
-				background-color: #2271b1;
-				}
-				.progress-text {
-				text-align: right;
-				color: white;
-				margin: 0;
-				font-size: 18px;
-				position: absolute;
-				right: 18px;
-				}
-			</style>
-			<div class="progress-bar blue">
-			<span style="width:' . esc_html( $percentage ) . '%"></span>
-			<div class="progress-text">' . esc_html( $percentage ) . '%</div>
-			</div>';
 		}
-	
+
+		/**
+		 * Info from last logs.
+		 *
+		 * @return void
+		 */
+		public function page_sync_log() {
+			$cron_log        = get_option( $this->options['slug'] . '_cron_log' );
+			$products_errors = get_option( $this->options['slug'] . '_sync_errors' );
+			?>
+			<div id="sync-log">
+				<fieldset id="logwrapper">
+					<legend><?php esc_html_e( 'Log', 'connect-woocommerce' ); ?></legend>
+					<div id="loglist">
+						<?php
+						if ( ! empty( $cron_log ) ) {
+							echo '<h3>' . esc_html__( 'Lasts Cron Log', 'connect-woocommerce' ) . '</h3>';
+							foreach ( $cron_log as $log ) {
+								echo '<p>' . esc_html( $log ) . '</p>';
+							}
+						}
+						if ( ! empty( $products_errors ) ) {
+							echo '<h3>' . esc_html__( 'Lasts Errors', 'connect-woocommerce' ) . '</h3>';
+							foreach ( $products_errors as $error ) {
+								echo '<p>' . esc_html( implode( ' ', $error ) ) . '</p>';
+							}
+						}
+						?>
+					</div>
+				</fieldset>
+			</div>
+			<?php
+		}
+
 		/**
 		 * Info for holded automate section.
 		 *
@@ -1425,11 +1465,11 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</div>
 			<?php
 		}
-	
+
 		/**
 		 * ## Public
 		 * --------------------------- */
-	
+
 		/**
 		 * Sanitize fiels before saves in DB
 		 *
@@ -1438,15 +1478,15 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 */
 		public function sanitize_fields_public( $input ) {
 			$sanitary_values = array();
-	
+
 			if ( isset( $input['vat_show'] ) ) {
 				$sanitary_values['vat_show'] = sanitize_text_field( $input['vat_show'] );
 			}
-	
+
 			if ( isset( $input['vat_mandatory'] ) ) {
 				$sanitary_values['vat_mandatory'] = $input['vat_mandatory'];
 			}
-	
+
 			if ( isset( $input['company_field'] ) ) {
 				$sanitary_values['company_field'] = $input['company_field'];
 			}
@@ -1454,18 +1494,18 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			if ( isset( $input['opt_checkout'] ) ) {
 				$sanitary_values['opt_checkout'] = $input['opt_checkout'];
 			}
-	
+
 			if ( isset( $input['terms_registration'] ) ) {
 				$sanitary_values['terms_registration'] = $input['terms_registration'];
 			}
-	
+
 			if ( isset( $input['remove_free'] ) ) {
 				$sanitary_values['remove_free'] = $input['remove_free'];
 			}
-	
+
 			return $sanitary_values;
 		}
-	
+
 		/**
 		 * Info for holded automate section.
 		 *
@@ -1474,7 +1514,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		public function section_info_public() {
 			esc_html_e( 'Please select the following settings in order customize your eCommerce. ', 'connect-woocommerce' );
 		}
-	
+
 		/**
 		 * Vat show setting
 		 *

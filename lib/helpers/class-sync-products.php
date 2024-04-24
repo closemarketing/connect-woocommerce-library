@@ -731,9 +731,9 @@ class PROD {
 			$attach_id  = wp_insert_attachment( $attachment, $result_api['upload']['file'], 0 );
 			add_post_meta( $product_id, '_thumbnail_id', $attach_id, true );
 
-			if ( isset( $body_response['errors'] ) ) {
-				$message = isset( $body_response['errors'][0]['message'] ) ? $body_response['errors'][0]['message'] : __( 'There was an error while inserting new product!', 'connect-woocommerce' );
-				HELPER::save_log( 'sync_product_image', $result_api, $message );
+			if ( isset( $result_api['errors'] ) ) {
+				$message = isset( $result_api['errors'][0]['message'] ) ? $result_api['errors'][0]['message'] : __( 'There was an error while inserting new product!', 'connect-woocommerce' );
+				HELPER::save_log( 'sync_product_image', $result_api, $message, 'connect_woocommerce' );
 				return false;
 			}
 
