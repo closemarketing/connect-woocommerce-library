@@ -173,7 +173,8 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					$this->page_get_sync( $active_tab );
 				}
 
-				if ( 'settings' === $active_tab ) { ?>
+				if ( 'settings' === $active_tab ) {
+					?>
 					<form method="post" action="options.php">
 						<?php
 							settings_fields( $this->settings_slug );
@@ -187,7 +188,8 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					</form>
 					<?php
 				}
-				if ( 'automate' === $active_tab ) { ?>
+				if ( 'automate' === $active_tab ) {
+					?>
 					<form method="post" action="options.php">
 						<?php
 						settings_fields( $this->settings_slug );
@@ -202,7 +204,8 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					<?php
 					$this->page_sync_log();
 				}
-				if ( 'public' === $active_tab ) { ?>
+				if ( 'public' === $active_tab ) {
+					?>
 					<form method="post" action="options.php">
 						<?php
 						settings_fields( $this->options['slug'] . '_settings_public' );
@@ -295,14 +298,14 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				$this->options['slug'],
 				array( $this, 'sanitize_fields_settings' )
 			);
-	
+
 			add_settings_section(
 				'connect_woocommerce_setting_section',
 				__( 'Settings for Importing in WooCommerce', 'connect-woocommerce' ),
 				array( $this, 'connect_woocommerce_section_info' ),
 				$this->options['slug'] . '_admin'
 			);
-	
+
 			if ( 'connwoo_neo' === $this->options['slug'] ) {
 				add_settings_field(
 					'wcpimh_idcentre',
@@ -312,7 +315,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					'connect_woocommerce_setting_section'
 				);
 			}
-	
+
 			// URL.
 			if ( in_array( 'url', $settings_fields, true ) ) {
 				add_settings_field(
@@ -475,7 +478,6 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					'connect_woocommerce_setting_section'
 				);
 
-				
 				$name_nif = __( 'ID Holded design for document', 'connect-woocommerce' );
 				add_settings_field(
 					'wcpimh_design_id',
@@ -684,7 +686,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'connect_woocommerce_license',
 			);
 		}
-	
+
 		/**
 		 * Page get Merge Product variables
 		 *
@@ -905,7 +907,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			);
 			echo wp_kses( $this->options['settings_admin_message'], $arr );
 		}
-	
+
 		/**
 		 * NEO ID Centre
 		 *
@@ -917,7 +919,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				isset( $this->settings['idcentre'] ) ? esc_attr( $this->settings['idcentre'] ) : ''
 			);
 		}
-	
+
 		/**
 		 * URL input
 		 *
@@ -929,7 +931,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				isset( $this->settings['url'] ) ? esc_attr( $this->settings['url'] ) : ''
 			);
 		}
-	
+
 		/**
 		 * Username input
 		 *
@@ -941,7 +943,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				isset( $this->settings['username'] ) ? esc_attr( $this->settings['username'] ) : ''
 			);
 		}
-	
+
 		/**
 		 * DB Name input
 		 *
@@ -953,7 +955,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				isset( $this->settings['dbname'] ) ? esc_attr( $this->settings['dbname'] ) : ''
 			);
 		}
-	
+
 		/**
 		 * Password input
 		 *
@@ -965,7 +967,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				isset( $this->settings['password'] ) ? esc_attr( $this->settings['password'] ) : ''
 			);
 		}
-	
+
 		/**
 		 * API input
 		 * API field
@@ -978,7 +980,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				isset( $this->settings['api'] ) ? esc_attr( $this->settings['api'] ) : ''
 			);
 		}
-	
+
 		/**
 		 * Stock field
 		 *
@@ -993,7 +995,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</select>
 			<?php
 		}
-	
+
 		/**
 		 * Product status
 		 *
@@ -1010,7 +1012,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</select>
 			<?php
 		}
-	
+
 		/**
 		 * Virtual products
 		 *
@@ -1025,7 +1027,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</select>
 			<?php
 		}
-	
+
 		/**
 		 * Back orders
 		 *
@@ -1041,7 +1043,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</select>
 			<?php
 		}
-	
+
 		/**
 		 * Call back for category separation
 		 *
@@ -1053,7 +1055,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				isset( $this->settings['catsep'] ) ? esc_attr( $this->settings['catsep'] ) : ''
 			);
 		}
-	
+
 		/**
 		 * Get categories to use as attributes
 		 *
@@ -1077,7 +1079,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</select>
 			<?php
 		}
-	
+
 		/**
 		 * Filter products
 		 *
@@ -1089,7 +1091,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				isset( $this->settings['filter'] ) ? esc_attr( $this->settings['filter'] ) : ''
 			);
 		}
-	
+
 		/**
 		 * Tax option
 		 *
@@ -1104,7 +1106,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</select>
 			<?php
 		}
-	
+
 		/**
 		 * Rates option from API
 		 *
@@ -1127,7 +1129,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</select>
 			<?php
 		}
-	
+
 		/**
 		 * Rates option from API
 		 *
@@ -1153,7 +1155,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</select>
 			<?php
 		}
-	
+
 		/**
 		 * Category for new products
 		 *
@@ -1169,7 +1171,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</select>
 			<?php
 		}
-	
+
 		/**
 		 * Document type
 		 *
@@ -1191,7 +1193,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</select>
 			<?php
 		}
-	
+
 		/**
 		 * Freeorder option to send API
 		 *
@@ -1300,7 +1302,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</select>
 			<?php
 		}
-	
+
 		/**
 		 * Callback sync field.
 		 *
@@ -1312,7 +1314,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				isset( $this->settings['sync_num'] ) ? esc_attr( $this->settings['sync_num'] ) : 5
 			);
 		}
-	
+
 		/**
 		 * Sync email options
 		 *
@@ -1530,7 +1532,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</select>
 			<?php
 		}
-	
+
 		/**
 		 * Vat show mandatory setting
 		 *
@@ -1546,7 +1548,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</select>
 			<?php
 		}
-	
+
 		/**
 		 * Vat show company field
 		 *
@@ -1562,7 +1564,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</select>
 			<?php
 		}
-	
+
 		/**
 		 * Vat show term conditions
 		 *
@@ -1578,7 +1580,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</select>
 			<?php
 		}
-	
+
 		/**
 		 * Vat show free shipping
 		 *
@@ -1594,7 +1596,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</select>
 			<?php
 		}
-	
+
 		/**
 		 * # Library Updater
 		 * ---------------------------------------------------------------------------------------------------- */
@@ -1615,7 +1617,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 	
 			$this->validate_license( $_POST );
 		}
-	
+
 		/**
 		 * Callback for Setting License API Key
 		 *
@@ -1625,7 +1627,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			$value = get_option( $this->options['slug'] . '_license_apikey' );
 			echo '<input type="text" class="regular-text" name="' . esc_html( $this->options['slug'] ) . '_license_apikey" id="connwoo_license_apikey" value="' . esc_html( $value ) . '">';
 		}
-	
+
 		/**
 		 * Callback for Setting license Folder
 		 *
@@ -1635,7 +1637,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			$value = get_option( $this->options['slug'] . '_license_product_id' );
 			echo '<input type="text" class="regular-text" name="' . esc_html( $this->options['slug'] ) . '_license_product_id" size="25" id="connwoo_license_product_id" value="' . esc_html( $value ) . '">';
 		}
-	
+
 		/**
 		 * Callback for Setting license API key
 		 *
@@ -1652,7 +1654,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 	
 			echo esc_attr( $license_status_check );
 		}
-	
+
 		/**
 		 * Callback for Setting license Secret key
 		 *
@@ -1782,7 +1784,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 	
 			return wp_remote_retrieve_body( $request );
 		}
-	
+
 		/**
 		 * Sends the request to deactivate to the API Manager.
 		 *
@@ -1847,7 +1849,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			 */
 			return get_option( $this->options['slug'] . '_license_activated' ) == 'Activated';
 		}
-	
+
 		/**
 		 * Returns the API Key status by querying the Status API function from the WooCommerce API Manager on the server.
 		 *
@@ -1858,7 +1860,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 	
 			return ! empty( $status ) ? json_decode( $this->status(), true ) : $status;
 		}
-	
+
 		/**
 		 * Sends the status check request to the API Manager.
 		 *
@@ -1880,7 +1882,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 	
 			return wp_remote_retrieve_body( $request );
 		}
-	
+
 		/**
 		 * Get license defaults
 		 *
@@ -1906,7 +1908,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 	
 			return $defaults;
 		}
-	
+
 		/**
 		 * Builds the URL containing the API query string for activation, deactivation, and status requests.
 		 *
@@ -1917,7 +1919,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		public function create_software_api_url( $args ) {
 			return add_query_arg( 'wc-api', 'wc-am-api', $this->options['api_url'] ) . '&' . http_build_query( $args );
 		}
-	
+
 		/**
 		 * Generate the default data.
 		 */
@@ -1928,7 +1930,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				update_option( $this->options['slug'] . '_license_instance', wp_generate_password( 20, false ) );
 			}
 		}
-	
+
 		/**
 		 * Deactivate the current API Key before activating the new API Key
 		 *
@@ -1941,7 +1943,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 	
 			$this->license_deactivate( $args );
 		}
-	
+
 		/**
 		 * Sends and receives data to and from the server API
 		 *
@@ -1963,7 +1965,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 	
 			return ! empty( $response ) ? $response : false;
 		}
-	
+
 		/**
 		 * Check for updates against the remote server.
 		 *
@@ -2020,7 +2022,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 	
 			return $transient;
 		}
-	
+
 		/**
 		 * API request for informatin.
 		 *
@@ -2061,7 +2063,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 	
 			return $result;
 		}
-	
+
 		/**
 		 * Check for external blocking contstant.
 		 */
