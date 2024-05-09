@@ -295,7 +295,6 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 		 * @return void
 		 */
 		public function cron_sync_products() {
-			$time_start    = microtime( true );
 			$is_table_sync = ! empty( $this->options['table_sync'] ) ? true : false;
 			$products_sync = CRON::get_products_sync( $this->settings, $this->options, $this->connapi_erp );
 
@@ -306,17 +305,9 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 			if ( empty( $products_sync ) && $is_table_sync ) {
 				CRON::send_sync_ended_products( $this->settings, $this->options['table_sync'], $this->options['name'], $this->options['slug'] );
 				CRON::fill_table_sync( $this->settings, $this->options['table_sync'], $this->connapi_erp, $this->options['slug'] );
-				$message = sprintf( 
-					/* translators: %d: Number of products */
-					__( 'Created table to sync products', 'connect-woocommerce' ),
-					count( $products_sync )
-				);
-				CRON::save_after_cron_log( $time_start, $message, $this->options['slug'] );
 			} elseif ( ! empty( $products_sync ) ) {
-				$res_product_ids = array();
 				foreach ( $products_sync as $product_sync ) {
 					$product_id = isset( $product_sync['prod_id'] ) ? $product_sync['prod_id'] : $product_sync;
-					$res_product_ids[] = $product_id;
 
 					$product_api = $this->connapi_erp->get_products( $product_id );
 					$result      = PROD::sync_product_item( $this->settings, $product_api, $this->connapi_erp, $this->options['slug'] );
@@ -324,16 +315,6 @@ if ( ! class_exists( 'Connect_WooCommerce_Import' ) ) {
 						CRON::save_product_sync( $this->options['table_sync'], $result['prod_id'], $this->options['slug'] );
 					}
 				}
-				$message = sprintf( 
-					/* translators: %d: Number of products */
-					__( 'Synced %1$s products. IDS: %2$s', 'connect-woocommerce' ),
-					count( $products_sync ),
-					implode( ', ', $res_product_ids )
-				);
-				CRON::save_after_cron_log( $time_start, $message, $this->options['slug'] );
-			} else {
-				$message = __( 'No products to sync', 'connect-woocommerce' );
-				CRON::save_after_cron_log( $time_start, $message, $this->options['slug'] );
 			}
 		}
 	}
