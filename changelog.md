@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 * Products widgets allow search product by SKU.
 * Added: Sync with APIs with modified date.
 * Added: Publish status in Merge Vars.
+* Added: Split Categories in merge vars.
 
 ## 1.5.5
 

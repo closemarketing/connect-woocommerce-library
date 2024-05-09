@@ -292,7 +292,7 @@ class PROD {
 				if ( isset( $item[ $custom_field ] ) && 'cf' === $field_type ) {
 					$product->update_meta_data( $field_slug, $item[ $custom_field ] );
 				} elseif ( isset( $item[ $custom_field ] ) && 'tax' === $field_type ) {
-					TAX::set_terms_taxonomy( $field_slug, $item[ $custom_field ], $product_id );
+					TAX::set_terms_taxonomy( $settings, $field_slug, $item[ $custom_field ], $product_id );
 				} elseif ( isset( $item[ $custom_field ] ) && 'prod' === $field_type ) {
 					$product_value               = $item[ $custom_field ];
 					$product_info[ $field_slug ] = mb_convert_encoding( $product_value, 'UTF-8', mb_detect_encoding( $product_value ) );
