@@ -133,6 +133,8 @@ class ORDER {
 		$order_data = array(
 			'contactCode'            => $order->get_meta( '_billing_vat' ),
 			'contactName'            => $contact_name,
+			'contactFirstName'       => $order->get_billing_first_name(),
+			'contactLastName'        => $order->get_billing_last_name(),
 			'woocommerceCustomer'    => $order->get_user()->data->user_login,
 			'marketplace'            => 'woocommerce',
 			'woocommerceOrderStatus' => $order->get_status(),
