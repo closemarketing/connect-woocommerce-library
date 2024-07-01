@@ -313,7 +313,7 @@ class ORDER {
 				// Taxes.
 				$item_tax  = (float) $shipping_item->get_total_tax();
 				$taxes     = $tax->get_rates( $shipping_item->get_tax_class() );
-				$item_rate = ! empty( $item_tax ) ? floor( array_shift( $tax_rates ) ) : 0;
+				$item_rate = ! empty( $item_tax ) && is_array( $item_tax ) ? floor( array_shift( $tax_rates ) ) : 0;
 
 				$fields_items[] = array(
 					'name'     => __( 'Shipping:', 'connect-woocommerce' ) . ' ' . $shipping_item->get_name(),
