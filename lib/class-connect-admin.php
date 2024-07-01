@@ -292,14 +292,14 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				$this->options['slug'],
 				array( $this, 'sanitize_fields_settings' )
 			);
-	
+
 			add_settings_section(
 				'connect_woocommerce_setting_section',
 				__( 'Settings for Importing in WooCommerce', 'connect-woocommerce' ),
 				array( $this, 'connect_woocommerce_section_info' ),
 				$this->options['slug'] . '_admin'
 			);
-	
+
 			if ( 'connwoo_neo' === $this->options['slug'] ) {
 				add_settings_field(
 					'wcpimh_idcentre',
@@ -309,7 +309,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					'connect_woocommerce_setting_section'
 				);
 			}
-	
+
 			// URL.
 			if ( in_array( 'url', $settings_fields, true ) ) {
 				add_settings_field(
@@ -472,7 +472,6 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					'connect_woocommerce_setting_section'
 				);
 
-				
 				$name_nif = __( 'ID Holded design for document', 'connect-woocommerce' );
 				add_settings_field(
 					'wcpimh_design_id',
@@ -498,6 +497,16 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				$this->options['slug'] . '_admin',
 				'connect_woocommerce_setting_section'
 			);
+
+			if ( ! empty( $this->options['order_tags'] ) ) {
+				add_settings_field(
+					'wcpimh_order_tags',
+					__( 'Order Tag by default?', 'connect-woocommerce' ),
+					array( $this, 'order_tags_callback' ),
+					$this->options['slug'] . '_admin',
+					'connect_woocommerce_setting_section'
+				);
+			}
 
 			if ( ! empty( $this->options['product_weight_equivalence'] ) ) {
 				add_settings_field(
@@ -556,20 +565,20 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			/**
 			 * ## Merge Vars
 			 * --------------------------- */
-	
-			register_setting(
+
+			 register_setting(
 				$this->options['slug'] . '_settings_prod_mergevars',
 				$this->options['slug'] . '_prod_mergevars',
 				array( $this, 'sanitize_fields_prod_mergevars' )
 			);
-	
+
 			add_settings_section(
 				'imhset_prod_mergevars_setting_section',
 				__( 'Merge variables from product attributes to custom fields', 'connect-woocommerce' ),
 				array( $this, 'section_info_prod_mergevars' ),
 				$this->options['slug'] . '_prod_mergevars'
 			);
-	
+
 			add_settings_field(
 				'wcpimh_prod_mergevars',
 				__( 'Merge fields with product', 'connect-woocommerce' ),
@@ -577,24 +586,24 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				$this->options['slug'] . '_prod_mergevars',
 				'imhset_prod_mergevars_setting_section'
 			);
-	
+
 			/**
 			 * ## Public
 			 * --------------------------- */
-	
-			register_setting(
+
+			 register_setting(
 				$this->options['slug'] . '_settings_public',
 				$this->options['slug'] . '_public',
 				array( $this, 'sanitize_fields_public' )
 			);
-	
+
 			add_settings_section(
 				'imhset_pub_setting_section',
 				__( 'Settings for Woocommerce Shop', 'connect-woocommerce' ),
 				array( $this, 'section_info_public' ),
 				$this->options['slug'] . '_public'
 			);
-	
+
 			add_settings_field(
 				'wcpimh_vat_show',
 				__( 'Ask for VAT in Checkout?', 'connect-woocommerce' ),
@@ -609,7 +618,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				$this->options['slug'] . '_public',
 				'imhset_pub_setting_section'
 			);
-	
+
 			add_settings_field(
 				'wcpimh_company_field',
 				__( 'Show Company field?', 'connect-woocommerce' ),
@@ -617,7 +626,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				$this->options['slug'] . '_public',
 				'imhset_pub_setting_section'
 			);
-	
+
 			add_settings_field(
 				'wcpimh_remove_free_others',
 				__( 'Remove other shipping methods when free is possible?', 'connect-woocommerce' ),
@@ -625,7 +634,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				$this->options['slug'] . '_public',
 				'imhset_pub_setting_section'
 			);
-	
+
 			add_settings_field(
 				'wcpimh_terms_registration',
 				__( 'Adds terms and conditions in registration page?', 'connect-woocommerce' ),
@@ -633,12 +642,12 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				$this->options['slug'] . '_public',
 				'imhset_pub_setting_section'
 			);
-	
+
 			/**
 			 * ## License
 			 * --------------------------- */
-	
-			register_setting(
+
+			 register_setting(
 				'connect_woocommerce_license',
 				$this->options['slug'] . '_license',
 				array( $this, 'sanitize_fields_license' )
@@ -656,7 +665,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'connwoo_settings_admin_license',
 				'connect_woocommerce_license',
 			);
-	
+
 			add_settings_field(
 				$this->options['slug'] . '_license_product_id',
 				__( 'License Product ID', 'connect-woocommerce' ),
@@ -664,7 +673,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'connwoo_settings_admin_license',
 				'connect_woocommerce_license',
 			);
-	
+
 			add_settings_field(
 				$this->options['slug'] . '_license_status',
 				__( 'License Status', 'connect-woocommerce' ),
@@ -672,7 +681,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'connwoo_settings_admin_license',
 				'connect_woocommerce_license',
 			);
-	
+
 			add_settings_field(
 				$this->options['slug'] . '_license_deactivate',
 				__( 'Deactivate License', 'connect-woocommerce' ),
@@ -680,9 +689,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'connwoo_settings_admin_license',
 				'connect_woocommerce_license',
 			);
-		}
-	
-		/**
+		}/**
 		 * Page get Merge Product variables
 		 *
 		 * @return void
@@ -766,6 +773,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'series'         => '',
 				'freeorder'      => 'no',
 				'ecstatus'       => 'all',
+				'order_tags'     => '',
 				'design_id'      => '',
 				'sync'           => 'no',
 				'sync_num'       => 5,
@@ -799,7 +807,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			$count        = $wpdb->get_var( "SELECT COUNT(*) FROM $table_sync WHERE synced = 1" );
 			$total_count  = $wpdb->get_var( "SELECT COUNT(*) FROM $table_sync" );
 			$count_return = $count . ' / ' . $total_count;
-	
+
 			$total_api_products = (int) get_option( $this->options['slug'] . '_total_api_products' );
 			if ( $total_api_products || $total_count !== $total_api_products ) {
 				$count_return .= ' ' . esc_html__( 'filtered', 'connect-woocommerce' );
@@ -849,9 +857,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			<span style="width:' . esc_html( $percentage ) . '%"></span>
 			<div class="progress-text">' . esc_html( $percentage ) . '%</div>
 			</div>';
-		}
-	
-		/**
+		}/**
 		 * Info for holded automate section.
 		 *
 		 * @return void
@@ -864,9 +870,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				),
 			);
 			echo wp_kses( $this->options['settings_admin_message'], $arr );
-		}
-	
-		/**
+		}/**
 		 * NEO ID Centre
 		 *
 		 * @return void
@@ -876,9 +880,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'<input class="regular-text" type="text" name="' . esc_html( $this->options['slug'] ) . '[idcentre]" id="wcpimh_idcentre" value="%s">',
 				isset( $this->settings['idcentre'] ) ? esc_attr( $this->settings['idcentre'] ) : ''
 			);
-		}
-	
-		/**
+		}/**
 		 * URL input
 		 *
 		 * @return void
@@ -888,9 +890,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'<input class="regular-text" type="url" name="' . $this->options['slug'] . '[url]" id="wcpimh_url" value="%s">',
 				isset( $this->settings['url'] ) ? esc_attr( $this->settings['url'] ) : ''
 			);
-		}
-	
-		/**
+		}/**
 		 * Username input
 		 *
 		 * @return void
@@ -900,9 +900,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'<input class="regular-text" type="text" name="' . $this->options['slug'] . '[username]" id="wcpimh_username" value="%s">',
 				isset( $this->settings['username'] ) ? esc_attr( $this->settings['username'] ) : ''
 			);
-		}
-	
-		/**
+		}/**
 		 * DB Name input
 		 *
 		 * @return void
@@ -912,9 +910,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'<input class="regular-text" type="text" name="' . $this->options['slug'] . '[dbname]" id="wcpimh_dbname" value="%s">',
 				isset( $this->settings['dbname'] ) ? esc_attr( $this->settings['dbname'] ) : ''
 			);
-		}
-	
-		/**
+		}/**
 		 * Password input
 		 *
 		 * @return void
@@ -924,9 +920,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'<input class="regular-text" type="password" name="' . $this->options['slug'] . '[password]" id="wcpimh_password" value="%s">',
 				isset( $this->settings['password'] ) ? esc_attr( $this->settings['password'] ) : ''
 			);
-		}
-	
-		/**
+		}/**
 		 * API input
 		 * API field
 		 *
@@ -937,9 +931,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'<input class="regular-text" type="password" name="' . esc_html( $this->options['slug'] ) . '[api]" id="wcpimh_api" value="%s">',
 				isset( $this->settings['api'] ) ? esc_attr( $this->settings['api'] ) : ''
 			);
-		}
-	
-		/**
+		}/**
 		 * Stock field
 		 *
 		 * @return void
@@ -952,9 +944,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				<option value="no" <?php selected( $stock_option, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 			</select>
 			<?php
-		}
-	
-		/**
+		}/**
 		 * Product status
 		 *
 		 * @return void
@@ -969,9 +959,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				<option value="private" <?php selected( $product_status, 'private' ); ?>><?php esc_html_e( 'Private', 'connect-woocommerce' ); ?></option>
 			</select>
 			<?php
-		}
-	
-		/**
+		}/**
 		 * Virtual products
 		 *
 		 * @return void
@@ -984,9 +972,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				<option value="yes" <?php selected( $virtual_option, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
 			</select>
 			<?php
-		}
-	
-		/**
+		}/**
 		 * Back orders
 		 *
 		 * @return void
@@ -1000,9 +986,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				<option value="notify" <?php selected( $backorders, 'notify' ); ?>><?php esc_html_e( 'Notify', 'connect-woocommerce' ); ?></option>
 			</select>
 			<?php
-		}
-	
-		/**
+		}/**
 		 * Call back for category separation
 		 *
 		 * @return void
@@ -1012,9 +996,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'<input class="regular-text" type="text" name="' . $this->options['slug'] . '[catsep]" id="wcpimh_catsep" value="%s">',
 				isset( $this->settings['catsep'] ) ? esc_attr( $this->settings['catsep'] ) : ''
 			);
-		}
-	
-		/**
+		}/**
 		 * Get categories to use as attributes
 		 *
 		 * @return void
@@ -1037,7 +1019,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			</select>
 			<?php
 		}
-	
+
 		/**
 		 * Filter products
 		 *
@@ -1049,7 +1031,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				isset( $this->settings['filter'] ) ? esc_attr( $this->settings['filter'] ) : ''
 			);
 		}
-	
+
 		/**
 		 * Tax option
 		 *
@@ -1063,9 +1045,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				<option value="no" <?php selected( $tax_price, 'no' ); ?>><?php esc_html_e( 'No, tax not included', 'connect-woocommerce' ); ?></option>
 			</select>
 			<?php
-		}
-	
-		/**
+		}/**
 		 * Rates option from API
 		 *
 		 * @return void
@@ -1086,9 +1066,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				?>
 			</select>
 			<?php
-		}
-	
-		/**
+		}/**
 		 * Rates option from API
 		 *
 		 * @return void
@@ -1112,9 +1090,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				?>
 			</select>
 			<?php
-		}
-	
-		/**
+		}/**
 		 * Category for new products
 		 *
 		 * @return void
@@ -1123,14 +1099,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			$categorynp = isset( $this->settings['catnp'] ) ? $this->settings['catnp'] : 'yes';
 			?>
 			<select name="<?php echo esc_html( $this->options['slug'] ); ?>[catnp]" id="wcpimh_catnp">
-				<option value="yes" <?php selected( $categorynp, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
-	
-				<option value="no" <?php selected( $categorynp, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
+				<option value="yes" <?php selected( $categorynp, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>		<option value="no" <?php selected( $categorynp, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
 			</select>
 			<?php
-		}
-	
-		/**
+		}/**
 		 * Document type
 		 *
 		 * @return void
@@ -1139,20 +1111,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			$doctype = isset( $this->settings['doctype'] ) ? $this->settings['doctype'] : 'invoice';
 			?>
 			<select name="<?php echo esc_html( $this->options['slug'] ); ?>[doctype]" id="wcpimh_doctype">
-				<option value="nosync" <?php selected( $doctype, 'nosync' ); ?>><?php esc_html_e( 'Not sync', 'connect-woocommerce' ); ?></option>
-	
-				<option value="invoice" <?php selected( $doctype, 'invoice' ); ?>><?php esc_html_e( 'Invoice', 'connect-woocommerce' ); ?></option>
-	
-				<option value="salesreceipt" <?php selected( $doctype, 'salesreceipt' ); ?>><?php esc_html_e( 'Sales receipt', 'connect-woocommerce' ); ?></option>
-	
-				<option value="salesorder" <?php selected( $doctype, 'salesorder' ); ?>><?php esc_html_e( 'Sales order', 'connect-woocommerce' ); ?></option>
-	
-				<option value="waybill" <?php selected( $doctype, 'waybill' ); ?>><?php esc_html_e( 'Waybill', 'connect-woocommerce' ); ?></option>
+				<option value="nosync" <?php selected( $doctype, 'nosync' ); ?>><?php esc_html_e( 'Not sync', 'connect-woocommerce' ); ?></option>		<option value="invoice" <?php selected( $doctype, 'invoice' ); ?>><?php esc_html_e( 'Invoice', 'connect-woocommerce' ); ?></option>			<option value="salesreceipt" <?php selected( $doctype, 'salesreceipt' ); ?>><?php esc_html_e( 'Sales receipt', 'connect-woocommerce' ); ?></option>			<option value="salesorder" <?php selected( $doctype, 'salesorder' ); ?>><?php esc_html_e( 'Sales order', 'connect-woocommerce' ); ?></option>			<option value="waybill" <?php selected( $doctype, 'waybill' ); ?>><?php esc_html_e( 'Waybill', 'connect-woocommerce' ); ?></option>
 			</select>
 			<?php
-		}
-	
-		/**
+		}/**
 		 * Freeorder option to send API
 		 *
 		 * @return void
@@ -1161,11 +1123,9 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			$freeorder = isset( $this->settings['freeorder'] ) ? $this->settings['freeorder'] : 'no';
 			?>
 			<select name="<?php echo esc_html( $this->options['slug'] ); ?>[freeorder]" id="wcpimh_freeorder">
-				<option value="no" <?php selected( $freeorder, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
-	
-				<option value="yes" <?php selected( $freeorder, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
-	
-			</select>
+				<option value="no" <?php selected( $freeorder, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>		<option value="yes" <?php selected( $freeorder, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
+
+				</select>
 			<?php
 		}
 
@@ -1185,6 +1145,18 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				<option value="completed" <?php selected( $ecstatus, 'completed' ); ?>><?php esc_html_e( 'Only Completed', 'connect-woocommerce' ); ?></option>
 			</select>
 			<?php
+		}
+
+		/**
+		 * Filter products
+		 *
+		 * @return void
+		 */
+		public function order_tags_callback() {
+			printf(
+				'<input class="regular-text" type="text" name="' . esc_attr( $this->options['slug'] ) . '[order_tags]" id="wcpimh_order_tags" value="%s">',
+				isset( $this->settings['order_tags'] ) ? esc_attr( $this->settings['order_tags'] ) : ''
+			);
 		}
 
 		/**
@@ -1259,9 +1231,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				?>
 			</select>
 			<?php
-		}
-	
-		/**
+		}/**
 		 * Callback sync field.
 		 *
 		 * @return void
@@ -1271,9 +1241,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'<input class="regular-text" type="text" name="' . $this->options['slug'] . '[sync_num]" id="wcpimh_sync_num" value="%s">',
 				isset( $this->settings['sync_num'] ) ? esc_attr( $this->settings['sync_num'] ) : 5
 			);
-		}
-	
-		/**
+		}/**
 		 * Sync email options
 		 *
 		 * @return void
@@ -1424,13 +1392,9 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				</div>
 			</div>
 			<?php
-		}
-	
-		/**
+		}/**
 		 * ## Public
-		 * --------------------------- */
-	
-		/**
+		 * --------------------------- *//**
 		 * Sanitize fiels before saves in DB
 		 *
 		 * @param array $input Input fields.
@@ -1438,44 +1402,40 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 */
 		public function sanitize_fields_public( $input ) {
 			$sanitary_values = array();
-	
+
 			if ( isset( $input['vat_show'] ) ) {
 				$sanitary_values['vat_show'] = sanitize_text_field( $input['vat_show'] );
 			}
-	
+
 			if ( isset( $input['vat_mandatory'] ) ) {
 				$sanitary_values['vat_mandatory'] = $input['vat_mandatory'];
 			}
-	
+
 			if ( isset( $input['company_field'] ) ) {
 				$sanitary_values['company_field'] = $input['company_field'];
 			}
-	
+
 			if ( isset( $input['opt_checkout'] ) ) {
 				$sanitary_values['opt_checkout'] = $input['opt_checkout'];
 			}
-	
+
 			if ( isset( $input['terms_registration'] ) ) {
 				$sanitary_values['terms_registration'] = $input['terms_registration'];
 			}
-	
+
 			if ( isset( $input['remove_free'] ) ) {
 				$sanitary_values['remove_free'] = $input['remove_free'];
 			}
-	
+
 			return $sanitary_values;
-		}
-	
-		/**
+		}/**
 		 * Info for holded automate section.
 		 *
 		 * @return void
 		 */
 		public function section_info_public() {
 			esc_html_e( 'Please select the following settings in order customize your eCommerce. ', 'connect-woocommerce' );
-		}
-	
-		/**
+		}/**
 		 * Vat show setting
 		 *
 		 * @return void
@@ -1484,14 +1444,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			$vat_show = isset( $this->settings_public['vat_show'] ) ? $this->settings_public['vat_show'] : 'yes';
 			?>
 			<select name="<?php echo esc_html( $this->options['slug'] ); ?>_public[vat_show]" id="vat_show">
-				<option value="no" <?php selected( $vat_show, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
-	
-				<option value="yes" <?php selected( $vat_show, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
+				<option value="no" <?php selected( $vat_show, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>		<option value="yes" <?php selected( $vat_show, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
 			</select>
 			<?php
-		}
-	
-		/**
+		}/**
 		 * Vat show mandatory setting
 		 *
 		 * @return void
@@ -1500,14 +1456,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			$vat_mandatory = isset( $this->settings_public['vat_mandatory'] ) ? $this->settings_public['vat_mandatory'] : 'no';
 			?>
 			<select name="<?php echo esc_html( $this->options['slug'] ); ?>_public[vat_mandatory]" id="vat_mandatory">
-				<option value="no" <?php selected( $vat_mandatory, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
-	
-				<option value="yes" <?php selected( $vat_mandatory, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
+				<option value="no" <?php selected( $vat_mandatory, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>		<option value="yes" <?php selected( $vat_mandatory, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
 			</select>
 			<?php
-		}
-	
-		/**
+		}/**
 		 * Vat show company field
 		 *
 		 * @return void
@@ -1516,14 +1468,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			$company_field = isset( $this->settings_public['company_field'] ) ? $this->settings_public['company_field'] : 'no';
 			?>
 			<select name="<?php echo esc_html( $this->options['slug'] ); ?>_public[company_field]" id="company_field">
-				<option value="no" <?php selected( $company_field, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
-	
-				<option value="yes" <?php selected( $company_field, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
+				<option value="no" <?php selected( $company_field, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>		<option value="yes" <?php selected( $company_field, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
 			</select>
 			<?php
-		}
-	
-		/**
+		}/**
 		 * Vat show term conditions
 		 *
 		 * @return void
@@ -1532,14 +1480,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			$terms_registration = isset( $this->settings_public['terms_registration'] ) ? $this->settings_public['terms_registration'] : 'no';
 			?>
 			<select name="<?php echo esc_html( $this->options['slug'] ); ?>_public[terms_registration]" id="terms_registration">
-				<option value="no" <?php selected( $terms_registration, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
-	
-				<option value="yes" <?php selected( $terms_registration, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
+				<option value="no" <?php selected( $terms_registration, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>		<option value="yes" <?php selected( $terms_registration, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
 			</select>
 			<?php
-		}
-	
-		/**
+		}/**
 		 * Vat show free shipping
 		 *
 		 * @return void
@@ -1548,14 +1492,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			$remove_free = isset( $this->settings_public['remove_free'] ) ? $this->settings_public['remove_free'] : 'yes';
 			?>
 			<select name="<?php echo esc_html( $this->options['slug'] ); ?>_public[remove_free]" id="remove_free">
-				<option value="no" <?php selected( $remove_free, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>
-	
-				<option value="yes" <?php selected( $remove_free, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
+				<option value="no" <?php selected( $remove_free, 'no' ); ?>><?php esc_html_e( 'No', 'connect-woocommerce' ); ?></option>		<option value="yes" <?php selected( $remove_free, 'yes' ); ?>><?php esc_html_e( 'Yes', 'connect-woocommerce' ); ?></option>
 			</select>
 			<?php
-		}
-	
-		/**
+		}/**
 		 * # Library Updater
 		 * ---------------------------------------------------------------------------------------------------- */
 		/**
@@ -1568,15 +1508,13 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			if ( isset( $_POST[ $this->options['slug'] . '_license_apikey' ] ) ) {
 				update_option( $this->options['slug'] . '_license_apikey', sanitize_text_field( $input[ $this->options['slug'] . '_license_apikey' ] ) );
 			}
-	
+
 			if ( isset( $_POST[ $this->options['slug'] . '_license_product_id' ] ) ) {
 				update_option( $this->options['slug'] . '_license_product_id', sanitize_text_field( $input[ $this->options['slug'] . '_license_product_id' ] ) );
 			}
-	
+
 			$this->validate_license( $_POST );
-		}
-	
-		/**
+		}/**
 		 * Callback for Setting License API Key
 		 *
 		 * @return void
@@ -1584,9 +1522,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		public function license_apikey_callback() {
 			$value = get_option( $this->options['slug'] . '_license_apikey' );
 			echo '<input type="text" class="regular-text" name="' . esc_html( $this->options['slug'] ) . '_license_apikey" id="connwoo_license_apikey" value="' . esc_html( $value ) . '">';
-		}
-	
-		/**
+		}/**
 		 * Callback for Setting license Folder
 		 *
 		 * @return void
@@ -1594,9 +1530,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		public function license_product_id_callback() {
 			$value = get_option( $this->options['slug'] . '_license_product_id' );
 			echo '<input type="text" class="regular-text" name="' . esc_html( $this->options['slug'] ) . '_license_product_id" size="25" id="connwoo_license_product_id" value="' . esc_html( $value ) . '">';
-		}
-	
-		/**
+		}/**
 		 * Callback for Setting license API key
 		 *
 		 * @return void
@@ -1609,11 +1543,9 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			} else {
 				$license_status_check = esc_html__( 'Deactivated', 'connect-woocommerce' );
 			}
-	
+
 			echo esc_attr( $license_status_check );
-		}
-	
-		/**
+		}/**
 		 * Callback for Setting license Secret key
 		 *
 		 * @return void
@@ -1638,34 +1570,30 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			$activation_status = get_option( $this->options['slug'] . '_license_activated' );
 			$checkbox_status   = get_option( $this->options['slug'] . '_license_deactivate_checkbox' );
 			$current_api_key   = ! empty( get_option( $this->options['slug'] . '_license_apikey' ) ) ? get_option( $this->options['slug'] . '_license_apikey' ) : '';
-	
+
 			// @since 2.3
 			if ( isset( $input[ $this->options['slug'] . '_license_product_id' ] ) ) {
-				$new_product_id = absint( $input[ $this->options['slug'] . '_license_product_id' ] );
-	
-				if ( ! empty( $new_product_id ) ) {
+				$new_product_id = absint( $input[ $this->options['slug'] . '_license_product_id' ] );		if ( ! empty( $new_product_id ) ) {
 					update_option( $this->options['slug'] . '_license_product_id', $new_product_id );
 				}
 			}
-	
+
 			// Deactivates API Key key activation.
 			if ( isset( $input[ $this->options['slug'] . '_license_deactivate_checkbox' ] ) && 'on' === $input[ $this->options['slug'] . '_license_deactivate_checkbox' ] ) {
 				$args = array(
 					'api_key' => ! empty( $api_key ) ? $api_key : '',
 				);
-				$deactivation_result = $this->license_deactivate( $args );
-	
-				if ( ! empty( $deactivation_result ) ) {
-	
-					if ( true === $deactivation_result['success'] && true === $deactivation_result['deactivated'] ) {
+				$deactivation_result = $this->license_deactivate( $args );		if ( ! empty( $deactivation_result ) ) {
+		
+						if ( true === $deactivation_result['success'] && true === $deactivation_result['deactivated'] ) {
 						update_option( $this->options['slug'] . '_license_activated', 'Deactivated' );
 						update_option( $this->options['slug'] . '_license_apikey', '' );
 						update_option( $this->options['slug'] . '_license_product_id', '' );
 						add_settings_error( 'wc_am_deactivate_text', 'deactivate_msg', esc_html__( 'License Connect WooCommerce deactivated. ', 'connect-woocommerce' ) . esc_attr( "{$deactivation_result['activations_remaining']}." ), 'updated' );
-	
+			
 						return;
 					}
-	
+		
 					if ( isset( $deactivation_result['data']['error_code'] ) && ! empty( $this->data ) && ! empty( $this->options['slug'] . '_license_activated' ) ) {
 						add_settings_error( 'wc_am_client_error_text', 'wc_am_client_error', esc_attr( "{$deactivation_result['data']['error']}" ), 'error' );
 						update_option( $this->options['slug'] . '_license_activated', 'Deactivated' );
@@ -1677,36 +1605,30 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				update_option( $this->options['slug'] . '_license_product_id', '' );
 				return;
 			}
-	
+
 			// Should match the settings_fields() value.
-			if ( 'Deactivated' == $activation_status || '' == $activation_status || '' == $api_key || 'on' == $checkbox_status || $current_api_key != $api_key ) {
-	
-				/**
+			if ( 'Deactivated' == $activation_status || '' == $activation_status || '' == $api_key || 'on' == $checkbox_status || $current_api_key != $api_key ) {		/**
 				* If this is a new key, and an existing key already exists in the database,
 				* try to deactivate the existing key before activating the new key.
 				*/
 				if ( ! empty( $current_api_key ) && $current_api_key != $api_key ) {
 					$this->replace_license_key( $current_api_key );
-				}
-	
-				$activation_result = $this->license_activate( $api_key );
-	
-				if ( ! empty( $activation_result ) ) {
+				}		$activation_result = $this->license_activate( $api_key );			if ( ! empty( $activation_result ) ) {
 					$activate_results = json_decode( $activation_result, true );
-	
+		
 					if ( true === $activate_results['success'] && true === $activate_results['activated'] ) {
 						add_settings_error( 'activate_text', 'activate_msg', __( 'Connect WooCommerce activated. ', 'connect-woocommerce' ) . esc_attr( "{$activate_results['message']}." ), 'updated' );
-	
+			
 						update_option( $this->options['slug'] . '_license_apikey', $api_key );
 						update_option( $this->options['slug'] . '_license_activated', 'Activated' );
 						update_option( $this->options['slug'] . '_license_deactivate_checkbox', 'off' );
 					}
-	
+		
 					if ( false == $activate_results && ! empty( get_option( $this->options['slug'] . '_license_activated' ) ) ) {
 						add_settings_error( 'api_key_check_text', 'api_key_check_error', esc_html__( 'Connection failed to the License Key API server. Try again later. There may be a problem on your server preventing outgoing requests, or the store is blocking your request to activate the plugin/theme.', 'connect-woocommerce' ), 'error' );
 						update_option( $this->options['slug'] . '_license_activated', 'Deactivated' );
 					}
-	
+		
 					if ( isset( $activate_results['data']['error_code'] ) && ! empty( get_option( $this->options['slug'] . '_license_activated' ) ) ) {
 						add_settings_error( 'wc_am_client_error_text', 'wc_am_client_error', esc_attr( "{$activate_results['data']['error']}" ), 'error' );
 						update_option( $this->options['slug'] . '_license_activated', 'Deactivated' );
@@ -1725,25 +1647,21 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 */
 		public function license_activate( $api_key ) {
 			if ( empty( $api_key ) ) {
-				add_settings_error( 'not_activated_text', 'not_activated_error', esc_html__( 'The API Key is missing from the deactivation request.', 'connect-woocommerce' ), 'updated' );
-	
-				return '';
+				add_settings_error( 'not_activated_text', 'not_activated_error', esc_html__( 'The API Key is missing from the deactivation request.', 'connect-woocommerce' ), 'updated' );		return '';
 			}
-	
+
 			$defaults            = $this->get_license_defaults( 'activate', true );
 			$defaults['api_key'] = $api_key;
 			$target_url          = esc_url_raw( $this->create_software_api_url( $defaults ) );
 			$request             = wp_safe_remote_post( $target_url, array( 'timeout' => 15 ) );
-	
+
 			if ( is_wp_error( $request ) || wp_remote_retrieve_response_code( $request ) != 200 ) {
 				// Request failed.
 				return '';
 			}
-	
+
 			return wp_remote_retrieve_body( $request );
-		}
-	
-		/**
+		}/**
 		 * Sends the request to deactivate to the API Manager.
 		 *
 		 * @param array $args Arguments to deactive.
@@ -1752,20 +1670,18 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 */
 		public function license_deactivate( $args ) {
 			if ( empty( $args ) ) {
-				add_settings_error( 'not_deactivated_text', 'not_deactivated_error', esc_html__( 'The API Key is missing from the deactivation request.', 'connect-woocommerce' ), 'updated' );
-	
-				return '';
+				add_settings_error( 'not_deactivated_text', 'not_deactivated_error', esc_html__( 'The API Key is missing from the deactivation request.', 'connect-woocommerce' ), 'updated' );		return '';
 			}
-	
+
 			$defaults   = $this->get_license_defaults( 'deactivate' );
 			$args       = wp_parse_args( $defaults, $args );
 			$target_url = esc_url_raw( $this->create_software_api_url( $args ) );
 			$request    = wp_safe_remote_post( $target_url, array( 'timeout' => 15 ) );
 			$body_json  = wp_remote_retrieve_body( $request );
 			$result_api = json_decode( $body_json, true );
-	
+
 			$error = ! empty( $result_api['error'] ) ? $result_api['error'] : '';
-	
+
 			if ( is_wp_error( $request ) || wp_remote_retrieve_response_code( $request ) != 200 || $error ) {
 				// Request failed.
 				add_settings_error(
@@ -1776,7 +1692,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				);
 				return;
 			}
-	
+
 			return $result_api;
 		}
 		/**
@@ -1796,10 +1712,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			 */
 			if ( $live ) {
 				$license_status = $this->license_key_status();
-	
+
 				return ! empty( $license_status ) && ! empty( $license_status['data']['activated'] ) && $license_status['data']['activated'];
 			}
-	
+
 			/**
 			 * If $live === false.
 			 *
@@ -1807,7 +1723,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			 */
 			return get_option( $this->options['slug'] . '_license_activated' ) == 'Activated';
 		}
-	
+
 		/**
 		 * Returns the API Key status by querying the Status API function from the WooCommerce API Manager on the server.
 		 *
@@ -1815,10 +1731,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 */
 		public function license_key_status() {
 			$status = $this->status();
-	
+
 			return ! empty( $status ) ? json_decode( $this->status(), true ) : $status;
 		}
-	
+
 		/**
 		 * Sends the status check request to the API Manager.
 		 *
@@ -1828,19 +1744,19 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			if ( empty( get_option( $this->options['slug'] . '_license_apikey' ) ) ) {
 				return '';
 			}
-	
+
 			$defaults   = $this->get_license_defaults( 'status' );
 			$target_url = esc_url_raw( $this->create_software_api_url( $defaults ) );
 			$request    = wp_safe_remote_post( $target_url, array( 'timeout' => 15 ) );
-	
+
 			if ( is_wp_error( $request ) || wp_remote_retrieve_response_code( $request ) != 200 ) {
 				// Request failed.
 				return '';
 			}
-	
+
 			return wp_remote_retrieve_body( $request );
 		}
-	
+
 		/**
 		 * Get license defaults
 		 *
@@ -1851,7 +1767,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		private function get_license_defaults( $action, $software_version = false ) {
 			$api_key    = get_option( $this->options['slug'] . '_license_apikey' );
 			$product_id = get_option( $this->options['slug'] . '_license_product_id' );
-	
+
 			$defaults = array(
 				'wc_am_action' => $action,
 				'api_key'      => $api_key,
@@ -1859,14 +1775,14 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'instance'     => get_option( $this->options['slug'] . '_license_instance' ),
 				'object'       => str_ireplace( array( 'http://', 'https://' ), '', home_url() ),
 			);
-	
+
 			if ( $software_version ) {
 				$defaults['software_version'] = $this->options['version'];
 			}
-	
+
 			return $defaults;
 		}
-	
+
 		/**
 		 * Builds the URL containing the API query string for activation, deactivation, and status requests.
 		 *
@@ -1876,20 +1792,16 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 */
 		public function create_software_api_url( $args ) {
 			return add_query_arg( 'wc-api', 'wc-am-api', $this->options['api_url'] ) . '&' . http_build_query( $args );
-		}
-	
-		/**
+		}/**
 		 * Generate the default data.
 		 */
 		public function license_instance_activation() {
 			$instance_exists = get_option( $this->options['slug'] . '_license_instance' );
-	
+
 			if ( ! $instance_exists ) {
 				update_option( $this->options['slug'] . '_license_instance', wp_generate_password( 20, false ) );
 			}
-		}
-	
-		/**
+		}/**
 		 * Deactivate the current API Key before activating the new API Key
 		 *
 		 * @param string $current_api_key current api key.
@@ -1898,11 +1810,9 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			$args = array(
 				'api_key' => $current_api_key,
 			);
-	
+
 			$this->license_deactivate( $args );
-		}
-	
-		/**
+		}/**
 		 * Sends and receives data to and from the server API
 		 *
 		 * @since  2.0
@@ -1914,17 +1824,15 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		public function send_query( $args ) {
 			$target_url = esc_url_raw( add_query_arg( 'wc-api', 'wc-am-api', $this->options['api_url'] ) . '&' . http_build_query( $args ) );
 			$request    = wp_safe_remote_post( $target_url, array( 'timeout' => 15 ) );
-	
+
 			if ( is_wp_error( $request ) || wp_remote_retrieve_response_code( $request ) != 200 ) {
 				return false;
 			}
-	
+
 			$response = wp_remote_retrieve_body( $request );
-	
+
 			return ! empty( $response ) ? $response : false;
-		}
-	
-		/**
+		}/**
 		 * Check for updates against the remote server.
 		 *
 		 * @since  2.0
@@ -1937,7 +1845,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			if ( empty( $transient->checked ) ) {
 				return $transient;
 			}
-	
+
 			$args = array(
 				'wc_am_action' => 'update',
 				'slug'         => $this->options['plugin_slug'],
@@ -1947,19 +1855,17 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'api_key'      => get_option( $this->options['slug'] . '_license_apikey' ),
 				'instance'     => get_option( $this->options['slug'] . '_license_instance' ),
 			);
-	
+
 			// Check for a plugin update.
 			$response = json_decode( $this->send_query( $args ), true );
-	
+
 			if ( isset( $response['data']['error_code'] ) ) {
 				add_settings_error( 'wc_am_client_error_text', 'wc_am_client_error', "{$response['data']['error']}", 'error' );
 			}
-	
+
 			if ( false !== $response && true === $response['success'] ) {
 				$new_version  = (string) $response['data']['package']['new_version'];
-				$curr_version = (string) $this->options['version'];
-	
-				$package = array(
+				$curr_version = (string) $this->options['version'];		$package = array(
 					'id'             => $response['data']['package']['id'],
 					'slug'           => $response['data']['package']['slug'],
 					'plugin'         => $response['data']['package']['plugin'],
@@ -1968,20 +1874,16 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 					'tested'         => $response['data']['package']['tested'],
 					'package'        => $response['data']['package']['package'],
 					'upgrade_notice' => $response['data']['package']['upgrade_notice'],
-				);
-	
-				if ( isset( $new_version ) && isset( $curr_version ) ) {
+				);		if ( isset( $new_version ) && isset( $curr_version ) ) {
 					if ( version_compare( $new_version, $curr_version, '>' ) ) {
 						$transient->response[ $this->options['plugin_name'] ] = (object) $package;
 						unset( $transient->no_update[ $this->options['plugin_name'] ] );
 					}
 				}
 			}
-	
+
 			return $transient;
-		}
-	
-		/**
+		}/**
 		 * API request for informatin.
 		 *
 		 * If `$action` is 'query_plugins' or 'plugin_information', an object MUST be passed.
@@ -2002,7 +1904,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			} else {
 				return $result;
 			}
-	
+
 			$args = array(
 				'wc_am_action' => 'plugininformation',
 				'plugin_name'  => $this->options['plugin_slug'],
@@ -2012,16 +1914,16 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'instance'     => get_option( $this->options['slug'] . '_license_instance' ),
 				'object'       => str_ireplace( array( 'http://', 'https://' ), '', home_url() ),
 			);
-	
+
 			$response = unserialize( $this->send_query( $args ) );
-	
+
 			if ( isset( $response ) && is_object( $response ) && false !== $response ) {
 				return $response;
 			}
-	
+
 			return $result;
 		}
-	
+
 		/**
 		 * Check for external blocking contstant.
 		 */
@@ -2030,7 +1932,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			if ( defined( 'WP_HTTP_BLOCK_EXTERNAL' ) && true === WP_HTTP_BLOCK_EXTERNAL ) {
 				// check if our API endpoint is in the allowed hosts.
 				$host = parse_url( $this->options['api_url'], PHP_URL_HOST );
-	
+
 				if ( ! defined( 'WP_ACCESSIBLE_HOSTS' ) || stristr( WP_ACCESSIBLE_HOSTS, $host ) === false ) {
 					?>
 					<div class="notice notice-error">
@@ -2059,7 +1961,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 		 */
 		function process_activation_premium() {
 			HELPER::create_sync_table( $this->options['table_sync'] );
-	
+
 			// Migrates options.
 			$old_settings = get_option( 'imhset' );
 			if ( ! empty( $old_settings ) ) {
@@ -2067,11 +1969,11 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				foreach ( $old_settings as $key => $value ) {
 					$new_settings[ str_replace( 'wcpimh_', '', $key ) ] = $value;
 				}
-	
+
 				update_option( $this->options['slug'], $new_settings );
 				delete_option( 'imhset' );
 			}
-	
+
 			$old_settings_public = get_option( 'imhset_public' );
 			if ( ! empty( $old_settings_public ) ) {
 				update_option( $this->options['slug'] . '_public', $old_settings_public );
