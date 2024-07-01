@@ -501,7 +501,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			if ( ! empty( $this->options['order_tags'] ) ) {
 				add_settings_field(
 					'wcpimh_order_tags',
-					__( 'Order Tag by default?', 'connect-woocommerce' ),
+					__( 'Order Tag by default (separated by coma)?', 'connect-woocommerce' ),
 					array( $this, 'order_tags_callback' ),
 					$this->options['slug'] . '_admin',
 					'connect_woocommerce_setting_section'
