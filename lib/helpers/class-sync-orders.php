@@ -153,6 +153,7 @@ class ORDER {
 			'datestart'              => strtotime( $order->get_date_created() ),
 			'notes'                  => $order->get_customer_note(),
 			'saleschannel'           => null,
+			'currency'               => get_woocommerce_currency(),
 			'language'               => $doclang,
 			'pmtype'                 => null,
 			'items'                  => array(),
@@ -230,7 +231,8 @@ class ORDER {
 		}
 		// Order Items.
 		foreach ( $order->get_items() as $item_id => $item ) {
-			$product = $item->get_product();
+			$product    = $item->get_product();
+			$product_id = ! empty( $product ) ? $product->get_id() : 0;
 
 			if ( ! empty( $product ) && $product->is_type( 'woosb' ) ) {
 				$woosb_ids   = get_post_meta( $item['product_id'], 'woosb_ids', true );
@@ -284,12 +286,14 @@ class ORDER {
 				$item_rate = ! empty( $item_tax ) ? floor( array_shift( $rates ) ) : 0;
 
 				$item_data = array(
-					'name'     => $item->get_name(),
-					'desc'     => get_the_excerpt( $product->get_id() ),
-					'units'    => $item_qty,
-					'subtotal' => (float) $price_line,
-					'tax'      => $item_rate,
-					'sku'      => ! empty( $product ) ? $product->get_sku() : '',
+					'name'      => $item->get_name(),
+					'desc'      => get_the_excerpt( $product_id ),
+					'units'     => $item_qty,
+					'subtotal'  => (float) $price_line,
+					'tax'       => $item_rate,
+					'sku'       => ! empty( $product ) ? $product->get_sku() : '',
+					'image_url' => get_the_post_thumbnail_url( $product_id, 'post-thumbnail' ),
+					'permalink' => get_the_permalink( $product_id ),
 				);
 
 				// Discount.
