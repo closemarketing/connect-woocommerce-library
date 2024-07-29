@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## 1.5.8
 
 * Added: Added order tags.
+* Added: Company Field option.
 
 ## 1.5.7
 

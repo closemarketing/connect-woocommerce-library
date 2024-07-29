@@ -354,6 +354,17 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				);
 			}
 
+			// Company.
+			if ( in_array( 'company', $settings_fields, true ) ) {
+				add_settings_field(
+					'wcpimh_company',
+					__( 'Company', 'connect-woocommerce' ),
+					array( $this, 'company_callback' ),
+					$this->options['slug'] . '_admin',
+					'connect_woocommerce_setting_section'
+				);
+			}
+
 			// API Password.
 			if ( in_array( 'apipassword', $settings_fields, true ) ) {
 				add_settings_field(
@@ -442,11 +453,10 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 			}
 
 			if ( $this->options['product_price_rate_option'] ) {
-				$label_filter = __( 'Product price rate for this eCommerce', 'connect-woocommerce' );
 				$desc_tip     = __( 'Copy and paste the ID of the rates for publishing in the web', 'connect-woocommerce' );
 				add_settings_field(
 					'wcpimh_rates',
-					$label_filter,
+					__( 'Product price rate for this eCommerce', 'connect-woocommerce' ),
 					array( $this, 'rates_callback' ),
 					$this->options['slug'] . '_admin',
 					'connect_woocommerce_setting_section'
@@ -758,6 +768,7 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'url'            => '',
 				'username'       => '',
 				'password'       => '',
+				'company'        => '',
 				'dbname'         => '',
 				'stock'          => 'no',
 				'prodst'         => 'draft',
@@ -910,7 +921,9 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'<input class="regular-text" type="text" name="' . $this->options['slug'] . '[dbname]" id="wcpimh_dbname" value="%s">',
 				isset( $this->settings['dbname'] ) ? esc_attr( $this->settings['dbname'] ) : ''
 			);
-		}/**
+		}
+
+		/**
 		 * Password input
 		 *
 		 * @return void
@@ -920,7 +933,21 @@ if ( ! class_exists( 'Connect_WooCommerce_Admin' ) ) {
 				'<input class="regular-text" type="password" name="' . $this->options['slug'] . '[password]" id="wcpimh_password" value="%s">',
 				isset( $this->settings['password'] ) ? esc_attr( $this->settings['password'] ) : ''
 			);
-		}/**
+		}
+
+		/**
+		 * Password input
+		 *
+		 * @return void
+		 */
+		public function company_callback() {
+			printf(
+				'<input class="regular-text" type="text" name="' . $this->options['slug'] . '[company]" id="wcpimh_company" value="%s">',
+				isset( $this->settings['company'] ) ? esc_attr( $this->settings['company'] ) : ''
+			);
+		}
+
+		/**
 		 * API input
 		 * API field
 		 *
