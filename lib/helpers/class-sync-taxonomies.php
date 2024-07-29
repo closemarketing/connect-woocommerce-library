@@ -111,9 +111,9 @@ class TAX {
 	 *
 	 * @return void
 	 */
-	public static function set_terms_taxonomy( $taxonomy, $terms, $post_id ) {
-		$terms     = is_array( $terms ) ? $terms : array( $terms );
-		$terms_ids = self::find_categories_ids( $terms, $taxonomy );
+	public static function set_terms_taxonomy( $settings, $taxonomy, $terms, $post_id ) {
+		$categories_name = self::split_categories_name( $settings, $terms );
+		$terms_ids       = self::find_categories_ids( $categories_name, $taxonomy );
 		wp_set_object_terms( $post_id, $terms_ids, $taxonomy );
 	}
 
@@ -170,22 +170,46 @@ class TAX {
 	 */
 	public static function get_categories_ids( $settings, $item_type, $is_new_product ) {
 		$categories_ids = array();
-		// Category API.
+		// Category Status.
 		$category_newp = isset( $settings['catnp'] ) ? $settings['catnp'] : 'yes';
-		$category_sep  = isset( $settings['catsep'] ) ? $settings['catsep'] : '';
 
 		if ( ( ! empty( $item_type ) && 'yes' === $category_newp && $is_new_product ) ||
 			( ! empty( $item_type ) && 'no' === $category_newp && false === $is_new_product )
 		) {
-			$category_array = array();
-			if ( $category_sep && strpos( $item_type, $category_sep ) ) {
-				$category_array = explode( $category_sep, $item_type );
-			} else {
-				$category_array[] = $item_type;
-			}
-			$categories_ids = self::find_categories_ids( $category_array );
+			$categories_name = self::split_categories_name( $settings, $item_type );
+			$categories_ids  = self::find_categories_ids( $categories_name );
 		}
 		return $categories_ids;
+	}
+
+	/**
+	 * Split categories name
+	 *
+	 * @param array  $settings   Settings of the plugin.
+	 * @param string $item_types Types of the product.
+	 * @return array
+	 */
+	public static function split_categories_name( $settings, $item_types ) {
+		$categories_name = array();
+		$category_sep    = isset( $settings['catsep'] ) ? $settings['catsep'] : '';
+
+		$item_types = is_array( $item_types ) ? $item_types : array( $item_types );
+
+		foreach ( $item_types as $item_type ) {
+			$item_value = isset( $item_type['value'] ) ? $item_type['value'] : $item_type;
+			if ( empty( $item_value ) ) {
+				continue;
+			}
+			if ( $category_sep && strpos( $item_value, $category_sep ) ) {
+				$cats_name = explode( $category_sep, $item_value );
+			} else {
+				$cats_name[] = $item_value;
+			}
+			$categories_name = array_merge( $categories_name, $cats_name );
+			$categories_name = array_map( 'trim', $categories_name );
+		}
+
+		return $categories_name;
 	}
 
 	/**

@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.5.8
+
+* Added: Added order tags.
+* Added: Company Field option.
+
+## 1.5.7
+
+* Added: Publish status in Merge Vars.
+* Added: Split Categories in merge vars.
+
 ## 1.5.6
 
 * Products widgets allow search product by SKU.

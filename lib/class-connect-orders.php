@@ -297,6 +297,9 @@ if ( ! class_exists( 'Connect_WooCommerce_Orders' ) ) {
 				case $this->options['slug']:
 					// Get custom order meta data.
 					$order      = wc_get_order( $order_id );
+					if ( ! $order ) {
+						break;
+					}
 					$invoice_id = $order->get_meta( $this->meta_key_order );
 					if ( 'nocreate' === $invoice_id ) {
 						break;

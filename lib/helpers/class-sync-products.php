@@ -33,7 +33,7 @@ class PROD {
 		$post_id     = 0;
 		$status      = 'ok';
 		$message     = '';
-		$is_filtered = empty( $item['tags'] ) ? false : self::filter_product( $settings, $item['tags'] );
+		$is_filtered = self::filter_product( $settings, $item, $option_prefix );
 		$item_kind   = ! empty( $item['kind'] ) ? $item['kind'] : 'simple';
 
 		if ( in_array( 'woo-product-bundle/wpc-product-bundles.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
@@ -292,7 +292,7 @@ class PROD {
 				if ( isset( $item[ $custom_field ] ) && 'cf' === $field_type ) {
 					$product->update_meta_data( $field_slug, $item[ $custom_field ] );
 				} elseif ( isset( $item[ $custom_field ] ) && 'tax' === $field_type ) {
-					TAX::set_terms_taxonomy( $field_slug, $item[ $custom_field ], $product_id );
+					TAX::set_terms_taxonomy( $settings, $field_slug, $item[ $custom_field ], $product_id );
 				} elseif ( isset( $item[ $custom_field ] ) && 'prod' === $field_type ) {
 					$product_value               = $item[ $custom_field ];
 					$product_info[ $field_slug ] = mb_convert_encoding( $product_value, 'UTF-8', mb_detect_encoding( $product_value ) );
@@ -579,16 +579,28 @@ class PROD {
 	 * Filters product to not import to web
 	 *
 	 * @param array $settings Settings of the plugin.
-	 * @param array $tag_product Tags of the product.
+	 * @param array $item Tags of the product.
 	 * @return boolean True to not get the product, false to get it.
 	 */
-	public static function filter_product( $settings, $tag_product ) {
+	public static function filter_product( $settings, $item, $option_prefix ) {
+		// Filters by Merge vars.
+		$settings_mergevars = get_option( $option_prefix . '_prod_mergevars' );
+		if ( ! empty( $settings_mergevars['prod_mergevars'] ) ) {
+			$key = array_search( 'prod|post_status', $settings_mergevars['prod_mergevars'] );
+			if ( false !== $key ) {
+				$publish_status = $item[ $settings_mergevars['prod_mergevars'][ $key ] ];
+				if ( empty( $publish_status ) ) {
+					return true;
+				}
+			}
+		}
+
 		if ( empty( $settings['filter'] ) ) {
 			return false;
 		}
 		$tags_option = explode( ',', $settings['filter'] );
 
-		return empty( array_intersect( $tags_option, $tag_product ) ) ? true : false;
+		return empty( array_intersect( $tags_option, $item ) ) ? true : false;
 	}
 
 	/**
@@ -777,6 +789,7 @@ class PROD {
 			'prod|post_title'   => __( 'Product Title', 'connect-woocommerce' ),
 			'prod|post_content' => __( 'Product Description', 'connect-woocommerce' ),
 			'prod|post_excerpt' => __( 'Product Short Description', 'connect-woocommerce' ),
+			'prod|post_status'  => __( 'Product Publish Status', 'connect-woocommerce' ),
 		);
 	}
 }
